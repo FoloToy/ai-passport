@@ -1,0 +1,27 @@
+# --- 目标芯片 ---
+CONFIG_IDF_TARGET="esp32c3"
+# 注:ESP32-C3 无 PSRAM,故不设 CONFIG_SPIRAM。
+
+# --- Flash ---
+# 取 4MB:镜像头里的 flash 大小若【大于】芯片实际容量,启动时 esp_flash_init_default_chip
+# 探测失败会 assert 进而无限重启;反之(头 ≤ 实际)正常。开源硬件用户手上可能是 4MB 或
+# 8MB 批次,取 4MB 则同一份产物两种板子都能启动。
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+# 烧录时按实际探测容量回写镜像头,进一步保证兼容。
+CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE=y
+
+# --- 控制台:USB-Serial-JTAG(C3 原生 USB,GPIO18/19)---
+# 不用 UART0:其默认 TX=GPIO21 与本板背光引脚冲突。
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# --- LVGL ---
+CONFIG_LV_COLOR_DEPTH_16=y
+CONFIG_LV_FONT_MONTSERRAT_14=y
+CONFIG_LV_FONT_MONTSERRAT_20=y
+# LVGL 内置 malloc 池大小(KB)。它是独立静态区、不与系统堆共享,配大了会白白占用 RAM。
+# 本 demo UI 简单,24KB 足够;若自建复杂界面出现绘制卡死/看门狗,调大此值。
+CONFIG_LV_MEM_SIZE_KILOBYTES=24
+
+# --- 系统 ---
+CONFIG_FREERTOS_HZ=1000

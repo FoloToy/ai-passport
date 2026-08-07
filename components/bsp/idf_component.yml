@@ -1,0 +1,6 @@
+dependencies:
+  idf: ">=5.5.0"
+  lvgl/lvgl: "^9.5.0"
+  espressif/esp_lvgl_port: "*"
+  espressif/button: "*"
+  espressif/esp_codec_dev: "*"
