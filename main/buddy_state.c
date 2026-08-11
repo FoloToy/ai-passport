@@ -34,6 +34,32 @@ static void buddy_copy_entries(char destination[BUDDY_ENTRY_COUNT][BUDDY_ENTRY_M
     }
 }
 
+static bool buddy_string_matches_length(const char *value, size_t value_size, size_t length)
+{
+    size_t index;
+
+    if (length == 0 || length >= value_size) {
+        return false;
+    }
+    for (index = 0; index < value_size; ++index) {
+        if (value[index] == '\0') {
+            return index == length;
+        }
+    }
+    return false;
+}
+
+static bool buddy_prompt_id_is_valid(const buddy_prompt_t *prompt)
+{
+    return !prompt->id_truncated &&
+           buddy_string_matches_length(prompt->id, sizeof(prompt->id), prompt->id_length);
+}
+
+static void buddy_invalidate_prompt(buddy_state_t *state)
+{
+    memset(&state->prompt, 0, sizeof(state->prompt));
+}
+
 static buddy_character_t buddy_character_for(const buddy_state_t *state, uint64_t now_ms)
 {
     bool has_prompt = state->prompt.id[0] != '\0' && !state->heartbeat_stale;
@@ -68,7 +94,7 @@ static void buddy_clear_stale_prompt(buddy_state_t *state, uint64_t now_ms)
 {
     if (!state->heartbeat_stale && now_ms - state->last_heartbeat_ms >= BUDDY_HEARTBEAT_TIMEOUT_MS) {
         state->heartbeat_stale = true;
-        memset(&state->prompt, 0, sizeof(state->prompt));
+        buddy_invalidate_prompt(state);
     }
 }
 
@@ -88,6 +114,9 @@ static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t 
     state->connected = heartbeat->connected;
     state->connection = heartbeat->connected ? BUDDY_CONNECTION_CONNECTED : BUDDY_CONNECTION_OFFLINE;
     state->heartbeat_stale = !heartbeat->connected;
+    if (!heartbeat->connected) {
+        buddy_invalidate_prompt(state);
+    }
     state->last_heartbeat_ms = now_ms;
     state->running = heartbeat->running;
     state->tokens = heartbeat->tokens;
@@ -113,7 +142,7 @@ static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t 
 static void buddy_apply_prompt(buddy_state_t *state, const buddy_prompt_t *prompt,
                                buddy_action_t *action)
 {
-    if (!prompt->connected || prompt->id[0] == '\0' ||
+    if (!prompt->connected || !buddy_prompt_id_is_valid(prompt) ||
         strcmp(prompt->id, state->last_approved_prompt_id) == 0) {
         return;
     }
@@ -126,9 +155,27 @@ static void buddy_apply_prompt(buddy_state_t *state, const buddy_prompt_t *promp
     buddy_set_ui_refresh(action);
 }
 
-static void buddy_approve_prompt(buddy_state_t *state, uint64_t now_ms, buddy_action_t *action)
+static bool buddy_observed_prompt_matches(const buddy_event_t *event, const buddy_prompt_t *prompt)
 {
-    if (state->prompt.id[0] == '\0' || state->heartbeat_stale) {
+    if (!event->has_observed_prompt_id) {
+        return true;
+    }
+    if (event->observed_prompt_id_truncated ||
+        !buddy_string_matches_length(event->observed_prompt_id,
+                                     sizeof(event->observed_prompt_id),
+                                     event->observed_prompt_id_length)) {
+        return false;
+    }
+    return event->observed_prompt_id_length == prompt->id_length &&
+           memcmp(event->observed_prompt_id, prompt->id, prompt->id_length) == 0;
+}
+
+static void buddy_approve_prompt(buddy_state_t *state, const buddy_event_t *event,
+                                 uint64_t now_ms, buddy_action_t *action)
+{
+    if (state->prompt.id[0] == '\0' || state->heartbeat_stale ||
+        !buddy_prompt_id_is_valid(&state->prompt) ||
+        !buddy_observed_prompt_matches(event, &state->prompt)) {
         return;
     }
 
@@ -140,7 +187,7 @@ static void buddy_approve_prompt(buddy_state_t *state, uint64_t now_ms, buddy_ac
         action->permission.decision = BUDDY_PERMISSION_ONCE;
     }
     buddy_copy(state->last_approved_prompt_id, sizeof(state->last_approved_prompt_id), state->prompt.id);
-    memset(&state->prompt, 0, sizeof(state->prompt));
+    buddy_invalidate_prompt(state);
     state->temporary_character = BUDDY_CHARACTER_HEART;
     state->temporary_until_ms = now_ms + BUDDY_HEART_ANIMATION_MS;
 }
@@ -185,7 +232,7 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         break;
     case BUDDY_EVENT_KEY_CLICK:
         if (event->key == BUDDY_KEY_OK) {
-            buddy_approve_prompt(state, now_ms, action);
+            buddy_approve_prompt(state, event, now_ms, action);
         }
         break;
     case BUDDY_EVENT_KEY_LONG:

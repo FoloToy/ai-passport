@@ -9,14 +9,27 @@ static buddy_event_t test_prompt_event(const char *id, const char *tool,
                                        unsigned connected)
 {
     buddy_event_t event = {0};
+    size_t id_length = strlen(id);
 
     event.type = BUDDY_EVENT_PROMPT;
+    event.prompt.id_length = id_length;
+    event.prompt.id_truncated = id_length >= sizeof(event.prompt.id);
     snprintf(event.prompt.id, sizeof(event.prompt.id), "%s", id);
     snprintf(event.prompt.tool, sizeof(event.prompt.tool), "%s", tool);
     snprintf(event.prompt.hint, sizeof(event.prompt.hint), "%s", hint);
     event.prompt.running = running;
     event.prompt.connected = connected != 0;
     return event;
+}
+
+static void test_set_observed_prompt_id(buddy_event_t *event, const char *id)
+{
+    size_t id_length = strlen(id);
+
+    event->has_observed_prompt_id = true;
+    event->observed_prompt_id_length = id_length;
+    event->observed_prompt_id_truncated = id_length >= sizeof(event->observed_prompt_id);
+    snprintf(event->observed_prompt_id, sizeof(event->observed_prompt_id), "%s", id);
 }
 
 static buddy_event_t test_heartbeat_event(uint64_t tokens, unsigned running)
@@ -198,16 +211,100 @@ static void test_approval_locks_until_a_new_prompt(void)
     assert(strcmp(action.permission.id, "req-2") == 0);
 }
 
-static void test_stale_or_mismatched_prompt_is_ignored(void)
+static void test_absent_prompt_is_ignored(void)
 {
     buddy_state_t state;
     buddy_action_t action = {0};
-    buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 0);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+    assert(action.type == BUDDY_ACTION_NONE);
+}
+
+static void test_timeout_stale_prompt_is_ignored(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t heartbeat = test_heartbeat_event(0, 0);
+    buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 1);
+    buddy_event_t tick = {.type = BUDDY_EVENT_TICK};
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &heartbeat, 1000, &action);
+    buddy_state_reduce(&state, &prompt, 1001, &action);
+    buddy_state_reduce(&state, &tick, 31000, &action);
+    buddy_state_reduce(&state, &approve, 31001, &action);
+    assert(action.type == BUDDY_ACTION_NONE);
+}
+
+static void test_disconnect_then_reconnect_does_not_restore_prompt(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t heartbeat = test_heartbeat_event(0, 0);
+    buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &heartbeat, 1000, &action);
+    buddy_state_reduce(&state, &prompt, 1001, &action);
+
+    heartbeat.heartbeat.connected = false;
+    buddy_state_reduce(&state, &heartbeat, 1002, &action);
+    heartbeat.heartbeat.connected = true;
+    buddy_state_reduce(&state, &heartbeat, 1003, &action);
+    buddy_state_reduce(&state, &approve, 1004, &action);
+
+    assert(state.prompt.id[0] == '\0');
+    assert(action.type == BUDDY_ACTION_NONE);
+}
+
+static void test_mismatched_observed_prompt_is_ignored(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 1);
     buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
 
     buddy_state_init(&state, NULL);
     buddy_state_reduce(&state, &prompt, 1000, &action);
+    test_set_observed_prompt_id(&approve, "req-2");
     buddy_state_reduce(&state, &approve, 1001, &action);
+
+    assert(action.type == BUDDY_ACTION_NONE);
+    assert(strcmp(state.prompt.id, "req-1") == 0);
+}
+
+static void test_nonterminated_prompt_id_is_ignored(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    memset(prompt.prompt.id, 'a', sizeof(prompt.prompt.id));
+    prompt.prompt.id_length = sizeof(prompt.prompt.id);
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+
+    assert(action.type == BUDDY_ACTION_NONE);
+}
+
+static void test_truncated_prompt_id_is_ignored(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    prompt.prompt.id_truncated = true;
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+
     assert(action.type == BUDDY_ACTION_NONE);
 }
 
@@ -233,7 +330,12 @@ int main(void)
     test_token_boundaries_celebrate_once();
     test_persisted_celebration_level_is_not_replayed();
     test_approval_locks_until_a_new_prompt();
-    test_stale_or_mismatched_prompt_is_ignored();
+    test_absent_prompt_is_ignored();
+    test_timeout_stale_prompt_is_ignored();
+    test_disconnect_then_reconnect_does_not_restore_prompt();
+    test_mismatched_observed_prompt_is_ignored();
+    test_nonterminated_prompt_id_is_ignored();
+    test_truncated_prompt_id_is_ignored();
     test_long_ok_opens_settings();
     return 0;
 }

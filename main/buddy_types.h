@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define BUDDY_NAME_MAX 32
@@ -81,7 +82,9 @@ typedef struct {
     char id[BUDDY_PROMPT_ID_MAX];
     char tool[BUDDY_TOOL_MAX];
     char hint[BUDDY_HINT_MAX];
+    size_t id_length;
     unsigned running;
+    bool id_truncated;
     bool connected;
 } buddy_prompt_t;
 
@@ -96,6 +99,10 @@ typedef struct {
     buddy_key_t key;
     buddy_heartbeat_t heartbeat;
     buddy_prompt_t prompt;
+    char observed_prompt_id[BUDDY_PROMPT_ID_MAX];
+    size_t observed_prompt_id_length;
+    bool has_observed_prompt_id;
+    bool observed_prompt_id_truncated;
 } buddy_event_t;
 
 typedef struct {
