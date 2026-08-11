@@ -44,3 +44,8 @@ add_executable(test_buddy_character test_buddy_character.c ../main/buddy_charact
 target_include_directories(test_buddy_character PRIVATE ../main)
 target_compile_options(test_buddy_character PRIVATE -Wall -Wextra -Werror)
 add_test(NAME buddy_character COMMAND test_buddy_character)
+
+add_executable(test_buddy_app_logic test_buddy_app_logic.c ../main/buddy_app_logic.c)
+target_include_directories(test_buddy_app_logic PRIVATE test_shims ../main)
+target_compile_options(test_buddy_app_logic PRIVATE -Wall -Wextra -Werror)
+add_test(NAME buddy_app_logic COMMAND test_buddy_app_logic)

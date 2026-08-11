@@ -697,6 +697,8 @@ int buddy_protocol_device_status_json(char *json, size_t size,
     buddy_writer_u64(&writer, status->approval_count);
     buddy_writer_literal(&writer, ",\"denial_count\":");
     buddy_writer_u64(&writer, status->denial_count);
+    buddy_writer_literal(&writer, ",\"queue_overflow_count\":");
+    buddy_writer_u64(&writer, status->queue_overflow_count);
     buddy_writer_literal(&writer, "}\n");
     return buddy_writer_finish(&writer);
 }

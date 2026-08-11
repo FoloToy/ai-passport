@@ -10,6 +10,7 @@ idf_component_register(
          "buddy_ble.c"
          "buddy_ble_store.c"
          "buddy_ble_lifecycle.c"
+         "buddy_app_logic.c"
          "buddy_protocol.c"
          "buddy_state.c"
          "buddy_settings.c"

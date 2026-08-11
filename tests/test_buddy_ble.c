@@ -175,6 +175,21 @@ static void test_tx_generation_gate_rejects_a_reconnected_peer(void)
     assert(!buddy_ble_tx_generation_matches(true, true, false, 7, 7));
 }
 
+static void test_pending_stop_suspends_transport_until_the_result_is_known(void)
+{
+    assert(buddy_ble_transport_available(true, false));
+    assert(!buddy_ble_transport_available(true, true));
+    assert(!buddy_ble_transport_available(false, false));
+}
+
+static void test_asynchronous_stop_failure_recovers_the_committed_termination(void)
+{
+    assert(buddy_ble_termination_failure_matches(7, 0xffff, 7, 7, false));
+    assert(!buddy_ble_termination_failure_matches(8, 0xffff, 7, 7, false));
+    assert(buddy_ble_termination_failure_matches(9, 9, 7, 0xffff, false));
+    assert(buddy_ble_termination_failure_matches(7, 0xffff, 7, 0xffff, true));
+}
+
 static void test_commit_failure_preserves_retry_truth_across_restart(void)
 {
     fake_store_t store = {
@@ -472,6 +487,8 @@ int main(void)
     test_tx_fragment_size_reserves_att_overhead_and_clamps();
     test_secure_link_requires_mitm_bond_and_full_sc_key();
     test_tx_generation_gate_rejects_a_reconnected_peer();
+    test_pending_stop_suspends_transport_until_the_result_is_known();
+    test_asynchronous_stop_failure_recovers_the_committed_termination();
     test_commit_failure_preserves_retry_truth_across_restart();
     test_persistent_verification_failure_never_clears_volatile_store();
     test_silent_partial_erase_is_detected_before_volatile_reload();

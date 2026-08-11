@@ -9,7 +9,8 @@ typedef struct {
     buddy_heartbeat_t heartbeat;
     buddy_prompt_t prompt;
     buddy_settings_snapshot_t settings;
-    char last_approved_prompt_id[BUDDY_PROMPT_ID_MAX];
+    char last_attempted_prompt_id[BUDDY_PROMPT_ID_MAX];
+    char last_successful_decision_id[BUDDY_PROMPT_ID_MAX];
     char name[BUDDY_NAME_MAX];
     char owner[BUDDY_OWNER_MAX];
     char time[BUDDY_MESSAGE_MAX];
@@ -22,6 +23,7 @@ typedef struct {
     uint64_t temporary_until_ms;
     uint32_t prompt_connection_generation;
     uint32_t confirmation_connection_generation;
+    uint32_t ble_connection_generation;
     buddy_character_t temporary_character;
     bool connected;
     bool heartbeat_stale;
@@ -29,6 +31,7 @@ typedef struct {
     buddy_confirmation_t confirmation;
     bool confirmation_acknowledge;
     buddy_settings_item_t settings_selection;
+    buddy_permission_delivery_t permission_delivery;
     bool approval_locked;
     bool ble_connected;
     bool ble_encrypted;

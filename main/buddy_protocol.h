@@ -19,6 +19,7 @@ typedef struct {
     uint64_t free_heap;
     uint64_t approval_count;
     uint64_t denial_count;
+    uint64_t queue_overflow_count;
     bool encrypted;
     bool battery_available;
     uint8_t battery_percent;

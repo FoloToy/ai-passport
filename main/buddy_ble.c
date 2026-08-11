@@ -57,6 +57,22 @@ bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool has
            expected_generation == current_generation;
 }
 
+bool buddy_ble_transport_available(bool start_requested, bool stop_pending)
+{
+    return start_requested && !stop_pending;
+}
+
+bool buddy_ble_termination_failure_matches(uint16_t failed_conn_handle,
+                                           uint16_t rejecting_conn_handle,
+                                           uint16_t active_conn_handle,
+                                           uint16_t stopping_conn_handle,
+                                           bool delete_bonds_pending)
+{
+    return failed_conn_handle == rejecting_conn_handle ||
+           failed_conn_handle == stopping_conn_handle ||
+           (delete_bonds_pending && failed_conn_handle == active_conn_handle);
+}
+
 bool buddy_ble_should_protect_cccd_read(uint16_t uuid16, bool write_encrypted)
 {
     return uuid16 == 0x2902U && write_encrypted;
@@ -112,10 +128,12 @@ typedef struct {
     uint32_t advertising_epoch;
     uint16_t conn_handle;
     uint16_t rejecting_conn_handle;
+    uint16_t stopping_conn_handle;
     bool initialized;
     bool host_running;
     bool host_synced;
     bool start_requested;
+    bool stop_pending;
     bool encrypted;
     bool secure;
     bool delete_bonds_pending;
@@ -138,6 +156,7 @@ static const char *const s_tag = "buddy_ble";
 static buddy_ble_state_t s_ble = {
     .conn_handle = BLE_HS_CONN_HANDLE_NONE,
     .rejecting_conn_handle = BLE_HS_CONN_HANDLE_NONE,
+    .stopping_conn_handle = BLE_HS_CONN_HANDLE_NONE,
 };
 static char s_device_name[BUDDY_BLE_DEVICE_NAME_SIZE];
 static uint8_t s_tx_scratch[BUDDY_BLE_TX_CHUNK_MAX];
@@ -236,6 +255,7 @@ static void buddy_recover_termination(struct ble_npl_event *event)
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     if (!s_ble.reset_scheduled &&
         (s_ble.rejecting_conn_handle != BLE_HS_CONN_HANDLE_NONE ||
+         s_ble.stopping_conn_handle != BLE_HS_CONN_HANDLE_NONE ||
          (s_ble.delete_bonds_pending && s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE))) {
         s_ble.reset_scheduled = true;
         schedule_reset = true;
@@ -328,7 +348,8 @@ static bool buddy_rx_gate_open(const buddy_rx_context_t *rx_context)
     bool open;
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-    open = s_ble.start_requested && !s_ble.delete_bonds_pending && s_ble.secure &&
+    open = buddy_ble_transport_available(s_ble.start_requested, s_ble.stop_pending) &&
+           !s_ble.delete_bonds_pending && s_ble.secure &&
            s_ble.conn_handle == rx_context->conn_handle &&
            s_ble.connection_generation == rx_context->generation;
     xSemaphoreGive(s_ble.mutex);
@@ -377,7 +398,9 @@ static int buddy_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
     }
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-    accept_write = s_ble.start_requested && s_ble.conn_handle == conn_handle && s_ble.secure;
+    accept_write = buddy_ble_transport_available(s_ble.start_requested,
+                                                 s_ble.stop_pending) &&
+                   s_ble.conn_handle == conn_handle && s_ble.secure;
     rx_context.conn_handle = conn_handle;
     rx_context.generation = s_ble.connection_generation;
     xSemaphoreGive(s_ble.mutex);
@@ -446,7 +469,9 @@ static int buddy_reconcile_advertising(void)
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     physical_link = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE ||
                     s_ble.rejecting_conn_handle != BLE_HS_CONN_HANDLE_NONE;
-    desired = buddy_ble_should_advertise(s_ble.start_requested, s_ble.host_synced,
+    desired = buddy_ble_should_advertise(
+        buddy_ble_transport_available(s_ble.start_requested, s_ble.stop_pending),
+        s_ble.host_synced,
                                          s_ble.delete_bonds_pending, physical_link);
     epoch = s_ble.advertising_epoch;
     xSemaphoreGive(s_ble.mutex);
@@ -506,8 +531,10 @@ static int buddy_reconcile_advertising(void)
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     physical_link = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE ||
                     s_ble.rejecting_conn_handle != BLE_HS_CONN_HANDLE_NONE;
-    if (!buddy_ble_adv_epoch_allows_start(epoch, s_ble.advertising_epoch,
-                                          s_ble.start_requested, s_ble.host_synced,
+    if (!buddy_ble_adv_epoch_allows_start(
+            epoch, s_ble.advertising_epoch,
+            buddy_ble_transport_available(s_ble.start_requested, s_ble.stop_pending),
+            s_ble.host_synced,
                                           s_ble.delete_bonds_pending, physical_link)) {
         xSemaphoreGive(s_ble.mutex);
         buddy_schedule_adv_work();
@@ -898,7 +925,10 @@ static void buddy_finish_bond_deletion(struct ble_npl_event *event)
         s_ble.delete_attempts = 0;
         s_ble.delete_final_reported = false;
     }
-    advertise = rc == 0 && s_ble.start_requested && s_ble.host_synced &&
+    advertise = rc == 0 &&
+                buddy_ble_transport_available(s_ble.start_requested,
+                                              s_ble.stop_pending) &&
+                s_ble.host_synced &&
                 s_ble.conn_handle == BLE_HS_CONN_HANDLE_NONE;
     xSemaphoreGive(s_ble.mutex);
 
@@ -931,6 +961,7 @@ static void buddy_on_disconnect(uint16_t conn_handle, int reason)
     if (s_ble.conn_handle == conn_handle) {
         s_ble.conn_handle = BLE_HS_CONN_HANDLE_NONE;
         ++s_ble.connection_generation;
+        event.data.disconnected.connection_generation = s_ble.connection_generation;
         s_ble.encrypted = false;
         s_ble.secure = false;
         buddy_line_init(&s_ble.rx);
@@ -941,8 +972,13 @@ static void buddy_on_disconnect(uint16_t conn_handle, int reason)
         s_ble.rejecting_conn_handle = BLE_HS_CONN_HANDLE_NONE;
         ++s_ble.advertising_epoch;
     }
+    if (s_ble.stopping_conn_handle == conn_handle) {
+        s_ble.stopping_conn_handle = BLE_HS_CONN_HANDLE_NONE;
+    }
     delete_bonds = s_ble.delete_bonds_pending;
-    advertise = s_ble.start_requested && !delete_bonds &&
+    advertise = buddy_ble_transport_available(s_ble.start_requested,
+                                              s_ble.stop_pending) &&
+                !delete_bonds &&
                 s_ble.conn_handle == BLE_HS_CONN_HANDLE_NONE &&
                 s_ble.rejecting_conn_handle == BLE_HS_CONN_HANDLE_NONE;
     xSemaphoreGive(s_ble.mutex);
@@ -970,8 +1006,12 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             return buddy_reconcile_advertising();
         }
 
+        uint32_t connection_generation;
+
         xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-        if (!s_ble.start_requested || s_ble.delete_bonds_pending ||
+        if (!buddy_ble_transport_available(s_ble.start_requested,
+                                           s_ble.stop_pending) ||
+            s_ble.delete_bonds_pending ||
             s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE) {
             int rc;
 
@@ -987,6 +1027,7 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
         s_ble.conn_handle = event->connect.conn_handle;
         ++s_ble.advertising_epoch;
         ++s_ble.connection_generation;
+        connection_generation = s_ble.connection_generation;
         s_ble.encrypted = false;
         s_ble.secure = false;
         buddy_line_init(&s_ble.rx);
@@ -996,6 +1037,7 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             const buddy_ble_event_t connected_event = {
                 .type = BUDDY_BLE_EVENT_CONNECTED,
                 .data.connected.conn_handle = event->connect.conn_handle,
+                .data.connected.connection_generation = connection_generation,
             };
             buddy_emit(&connected_event);
         }
@@ -1003,7 +1045,9 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             bool initiate_security;
 
             xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-            initiate_security = s_ble.start_requested && !s_ble.delete_bonds_pending &&
+            initiate_security = buddy_ble_transport_available(
+                                    s_ble.start_requested, s_ble.stop_pending) &&
+                                !s_ble.delete_bonds_pending &&
                                 s_ble.conn_handle == event->connect.conn_handle;
             xSemaphoreGive(s_ble.mutex);
             if (!initiate_security) {
@@ -1013,14 +1057,20 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             int rc = ble_gap_security_initiate(event->connect.conn_handle);
             if (rc != 0) {
                 bool publish_event;
-                const buddy_ble_event_t encryption_event = {
+                buddy_ble_event_t encryption_event = {
                     .type = BUDDY_BLE_EVENT_ENCRYPTION,
                     .data.encryption.status = rc,
                 };
 
                 xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-                publish_event = s_ble.start_requested && !s_ble.delete_bonds_pending &&
+                publish_event = buddy_ble_transport_available(
+                                    s_ble.start_requested, s_ble.stop_pending) &&
+                                !s_ble.delete_bonds_pending &&
                                 s_ble.conn_handle == event->connect.conn_handle;
+                if (publish_event) {
+                    encryption_event.data.encryption.connection_generation =
+                        s_ble.connection_generation;
+                }
                 xSemaphoreGive(s_ble.mutex);
                 if (publish_event) {
                     buddy_emit(&encryption_event);
@@ -1038,6 +1088,7 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
 
     case BLE_GAP_EVENT_ENC_CHANGE: {
         struct ble_gap_conn_desc description = {0};
+        bool link_matches;
         bool publish_event;
         buddy_ble_event_t encryption_event = {
             .type = BUDDY_BLE_EVENT_ENCRYPTION,
@@ -1052,16 +1103,21 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
         }
 
         xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-        publish_event = s_ble.start_requested && !s_ble.delete_bonds_pending &&
-                        s_ble.conn_handle == event->enc_change.conn_handle;
-        if (publish_event) {
+        link_matches = s_ble.conn_handle == event->enc_change.conn_handle;
+
+        publish_event = buddy_ble_transport_available(s_ble.start_requested,
+                                                      s_ble.stop_pending) &&
+                        !s_ble.delete_bonds_pending && link_matches;
+        if (link_matches && (s_ble.start_requested || s_ble.stop_pending)) {
+            encryption_event.data.encryption.connection_generation =
+                s_ble.connection_generation;
             s_ble.encrypted = encryption_event.data.encryption.encrypted;
             s_ble.secure = buddy_ble_link_is_secure(
                 encryption_event.data.encryption.encrypted,
                 encryption_event.data.encryption.authenticated,
                 encryption_event.data.encryption.bonded,
                 description.sec_state.key_size);
-        } else if (s_ble.conn_handle == event->enc_change.conn_handle) {
+        } else if (link_matches) {
             s_ble.encrypted = false;
             s_ble.secure = false;
         }
@@ -1074,16 +1130,23 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
 
     case BLE_GAP_EVENT_PASSKEY_ACTION: {
         bool publish_event;
+        uint32_t connection_generation = 0;
 
         xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-        publish_event = s_ble.start_requested && !s_ble.delete_bonds_pending &&
+        publish_event = buddy_ble_transport_available(s_ble.start_requested,
+                                                      s_ble.stop_pending) &&
+                        !s_ble.delete_bonds_pending &&
                         s_ble.conn_handle == event->passkey.conn_handle;
+        if (publish_event) {
+            connection_generation = s_ble.connection_generation;
+        }
         xSemaphoreGive(s_ble.mutex);
         if (publish_event && event->passkey.params.action == BLE_SM_IOACT_DISP) {
             const uint32_t passkey = buddy_random_passkey();
             const buddy_ble_event_t passkey_event = {
                 .type = BUDDY_BLE_EVENT_PASSKEY,
                 .data.passkey.value = passkey,
+                .data.passkey.connection_generation = connection_generation,
             };
             struct ble_sm_io io = {
                 .action = BLE_SM_IOACT_DISP,
@@ -1093,7 +1156,9 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
 
             buddy_emit(&passkey_event);
             xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-            inject_passkey = s_ble.start_requested && !s_ble.delete_bonds_pending &&
+            inject_passkey = buddy_ble_transport_available(
+                                 s_ble.start_requested, s_ble.stop_pending) &&
+                             !s_ble.delete_bonds_pending &&
                              s_ble.conn_handle == event->passkey.conn_handle;
             xSemaphoreGive(s_ble.mutex);
             if (!inject_passkey) {
@@ -1110,7 +1175,9 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
         int rc;
 
         xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-        allow_pairing = s_ble.start_requested && !s_ble.delete_bonds_pending &&
+        allow_pairing = buddy_ble_transport_available(s_ble.start_requested,
+                                                      s_ble.stop_pending) &&
+                        !s_ble.delete_bonds_pending &&
                         s_ble.conn_handle == event->repeat_pairing.conn_handle;
         xSemaphoreGive(s_ble.mutex);
         if (!allow_pairing) {
@@ -1126,14 +1193,15 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
     }
 
     case BLE_GAP_EVENT_TERM_FAILURE: {
-        bool recover_delete;
+        bool recover_termination;
 
         xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-        recover_delete = s_ble.rejecting_conn_handle == event->term_failure.conn_handle ||
-                         (s_ble.delete_bonds_pending &&
-                          s_ble.conn_handle == event->term_failure.conn_handle);
+        recover_termination = buddy_ble_termination_failure_matches(
+            event->term_failure.conn_handle, s_ble.rejecting_conn_handle,
+            s_ble.conn_handle, s_ble.stopping_conn_handle,
+            s_ble.delete_bonds_pending);
         xSemaphoreGive(s_ble.mutex);
-        if (recover_delete) {
+        if (recover_termination) {
             buddy_schedule_termination_recovery(event->term_failure.status);
         }
         return 0;
@@ -1147,12 +1215,15 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
 static void buddy_on_reset(int reason)
 {
     bool was_connected;
+    uint32_t connection_generation;
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     was_connected = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE;
     s_ble.conn_handle = BLE_HS_CONN_HANDLE_NONE;
     ++s_ble.connection_generation;
+    connection_generation = s_ble.connection_generation;
     s_ble.rejecting_conn_handle = BLE_HS_CONN_HANDLE_NONE;
+    s_ble.stopping_conn_handle = BLE_HS_CONN_HANDLE_NONE;
     s_ble.encrypted = false;
     s_ble.secure = false;
     s_ble.host_synced = false;
@@ -1165,6 +1236,7 @@ static void buddy_on_reset(int reason)
         const buddy_ble_event_t event = {
             .type = BUDDY_BLE_EVENT_DISCONNECTED,
             .data.disconnected.reason = reason,
+            .data.disconnected.connection_generation = connection_generation,
         };
         buddy_emit(&event);
     }
@@ -1375,6 +1447,10 @@ esp_err_t buddy_ble_start(void)
     }
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+    if (s_ble.stop_pending) {
+        xSemaphoreGive(s_ble.mutex);
+        return ESP_ERR_INVALID_STATE;
+    }
     s_ble.start_requested = true;
     ++s_ble.advertising_epoch;
     launch_host = !s_ble.host_running;
@@ -1404,23 +1480,35 @@ esp_err_t buddy_ble_stop(void)
     }
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-    s_ble.start_requested = false;
+    if (s_ble.stop_pending) {
+        xSemaphoreGive(s_ble.mutex);
+        return ESP_ERR_INVALID_STATE;
+    }
+    s_ble.stop_pending = true;
     ++s_ble.advertising_epoch;
-    ++s_ble.connection_generation;
-    s_ble.encrypted = false;
-    s_ble.secure = false;
     conn_handle = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE
                       ? s_ble.conn_handle
                       : s_ble.rejecting_conn_handle;
+    s_ble.stopping_conn_handle = conn_handle;
     xSemaphoreGive(s_ble.mutex);
 
-    buddy_schedule_adv_work();
     if (conn_handle != BLE_HS_CONN_HANDLE_NONE) {
-        int terminate_rc = ble_gap_terminate(conn_handle, BLE_ERR_REM_USER_CONN_TERM);
-        if (rc == 0) {
-            rc = terminate_rc;
-        }
+        rc = ble_gap_terminate(conn_handle, BLE_ERR_REM_USER_CONN_TERM);
     }
+
+    xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+    if (rc == 0) {
+        s_ble.start_requested = false;
+        ++s_ble.connection_generation;
+        s_ble.encrypted = false;
+        s_ble.secure = false;
+    } else if (s_ble.stopping_conn_handle == conn_handle) {
+        s_ble.stopping_conn_handle = BLE_HS_CONN_HANDLE_NONE;
+    }
+    s_ble.stop_pending = false;
+    ++s_ble.advertising_epoch;
+    xSemaphoreGive(s_ble.mutex);
+    buddy_schedule_adv_work();
     return rc == 0 ? ESP_OK : buddy_ble_error(rc);
 }
 
@@ -1444,11 +1532,14 @@ static esp_err_t buddy_ble_send_internal(const char *data, size_t length,
     conn_handle = s_ble.conn_handle;
     if (require_generation
             ? !buddy_ble_tx_generation_matches(
-                  s_ble.start_requested, s_ble.secure,
+                  buddy_ble_transport_available(s_ble.start_requested,
+                                                s_ble.stop_pending),
+                  s_ble.secure,
                   conn_handle != BLE_HS_CONN_HANDLE_NONE,
                   expected_generation, s_ble.connection_generation)
-            : (!s_ble.start_requested || conn_handle == BLE_HS_CONN_HANDLE_NONE ||
-               !s_ble.secure)) {
+            : (!buddy_ble_transport_available(s_ble.start_requested,
+                                              s_ble.stop_pending) ||
+               conn_handle == BLE_HS_CONN_HANDLE_NONE || !s_ble.secure)) {
         xSemaphoreGive(s_ble.mutex);
         return ESP_ERR_INVALID_STATE;
     }
@@ -1505,7 +1596,8 @@ bool buddy_ble_is_generation_secure(uint32_t expected_generation)
     }
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     matches = buddy_ble_tx_generation_matches(
-        s_ble.start_requested, s_ble.secure,
+        buddy_ble_transport_available(s_ble.start_requested, s_ble.stop_pending),
+        s_ble.secure,
         s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE,
         expected_generation, s_ble.connection_generation);
     xSemaphoreGive(s_ble.mutex);
@@ -1520,7 +1612,9 @@ bool buddy_ble_is_connected(void)
         return false;
     }
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-    connected = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE;
+    connected = buddy_ble_transport_available(s_ble.start_requested,
+                                              s_ble.stop_pending) &&
+                s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE;
     xSemaphoreGive(s_ble.mutex);
     return connected;
 }
@@ -1533,7 +1627,9 @@ bool buddy_ble_is_encrypted(void)
         return false;
     }
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-    encrypted = s_ble.encrypted;
+    encrypted = buddy_ble_transport_available(s_ble.start_requested,
+                                              s_ble.stop_pending) &&
+                s_ble.encrypted;
     xSemaphoreGive(s_ble.mutex);
     return encrypted;
 }

@@ -37,18 +37,22 @@ typedef struct {
     union {
         struct {
             uint16_t conn_handle;
+            uint32_t connection_generation;
         } connected;
         struct {
             int reason;
+            uint32_t connection_generation;
         } disconnected;
         struct {
             uint32_t value;
+            uint32_t connection_generation;
         } passkey;
         struct {
             bool encrypted;
             bool authenticated;
             bool bonded;
             int status;
+            uint32_t connection_generation;
         } encryption;
         struct {
             const char *data;
@@ -76,6 +80,12 @@ bool buddy_ble_link_is_secure(bool encrypted, bool authenticated, bool bonded, u
 bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool has_connection,
                                      uint32_t expected_generation,
                                      uint32_t current_generation);
+bool buddy_ble_transport_available(bool start_requested, bool stop_pending);
+bool buddy_ble_termination_failure_matches(uint16_t failed_conn_handle,
+                                           uint16_t rejecting_conn_handle,
+                                           uint16_t active_conn_handle,
+                                           uint16_t stopping_conn_handle,
+                                           bool delete_bonds_pending);
 bool buddy_ble_should_protect_cccd_read(uint16_t uuid16, bool write_encrypted);
 bool buddy_ble_should_advertise(bool start_requested, bool host_synced,
                                 bool delete_bonds_pending, bool has_physical_link);

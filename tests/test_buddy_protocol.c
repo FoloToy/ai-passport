@@ -358,6 +358,7 @@ static void test_device_status_omits_unavailable_battery_fields(void)
         .free_heap = 32000,
         .approval_count = 7,
         .denial_count = 2,
+        .queue_overflow_count = 4,
         .battery_available = false,
     };
     char json[320];
@@ -368,7 +369,8 @@ static void test_device_status_omits_unavailable_battery_fields(void)
     assert(strcmp(json,
                   "{\"cmd\":\"status\",\"name\":\"Buddy\",\"owner\":\"Claude\","
                   "\"sec\":true,\"uptime_ms\":123456,\"free_heap\":32000,"
-                  "\"approval_count\":7,\"denial_count\":2}\n") == 0);
+                  "\"approval_count\":7,\"denial_count\":2,"
+                  "\"queue_overflow_count\":4}\n") == 0);
     assert(strstr(json, "battery") == NULL);
 
     status.battery_available = true;
@@ -400,6 +402,7 @@ static void test_task_tx_capacity_handles_worst_case_escaping(void)
     status.free_heap = UINT64_MAX;
     status.approval_count = UINT64_MAX;
     status.denial_count = UINT64_MAX;
+    status.queue_overflow_count = UINT64_MAX;
 
     assert(buddy_protocol_permission_json(json, sizeof(json), id, BUDDY_PERMISSION_ONCE) > 0);
     assert(buddy_protocol_device_status_json(json, sizeof(json), &status) > 0);

@@ -78,6 +78,7 @@ typedef enum {
     BUDDY_EVENT_BLE_PASSKEY,
     BUDDY_EVENT_BLE_ENCRYPTION,
     BUDDY_EVENT_BOND_DELETE_RESULT,
+    BUDDY_EVENT_PERMISSION_SEND_RESULT,
     BUDDY_EVENT_KEY_CLICK,
     BUDDY_EVENT_KEY_LONG,
     BUDDY_EVENT_TICK,
@@ -101,6 +102,13 @@ typedef enum {
     BUDDY_PERMISSION_ALWAYS,
     BUDDY_PERMISSION_DENY,
 } buddy_permission_decision_t;
+
+typedef enum {
+    BUDDY_PERMISSION_DELIVERY_NONE,
+    BUDDY_PERMISSION_DELIVERY_SENDING,
+    BUDDY_PERMISSION_DELIVERY_SENT,
+    BUDDY_PERMISSION_DELIVERY_FAILED,
+} buddy_permission_delivery_t;
 
 typedef struct {
     char id[BUDDY_PROMPT_ID_MAX];
@@ -154,12 +162,20 @@ typedef struct {
 } buddy_ble_state_event_t;
 
 typedef struct {
+    char id[BUDDY_PROMPT_ID_MAX];
+    size_t id_length;
+    buddy_permission_decision_t decision;
+    bool success;
+} buddy_permission_result_event_t;
+
+typedef struct {
     buddy_event_type_t type;
     buddy_key_t key;
     buddy_heartbeat_t heartbeat;
     buddy_prompt_t prompt;
     buddy_command_t command;
     buddy_ble_state_event_t ble;
+    buddy_permission_result_event_t permission_result;
     char observed_prompt_id[BUDDY_PROMPT_ID_MAX];
     size_t observed_prompt_id_length;
     bool has_observed_prompt_id;
@@ -204,6 +220,7 @@ typedef struct {
     buddy_confirmation_t confirmation;
     buddy_settings_item_t settings_selection;
     bool approval_locked;
+    buddy_permission_delivery_t permission_delivery;
     bool ble_connected;
     bool ble_encrypted;
     bool ble_enabled;

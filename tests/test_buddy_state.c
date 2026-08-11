@@ -33,6 +33,20 @@ static void test_set_observed_prompt_id(buddy_event_t *event, const char *id)
     snprintf(event->observed_prompt_id, sizeof(event->observed_prompt_id), "%s", id);
 }
 
+static buddy_event_t test_permission_result_event(const char *id,
+                                                   buddy_permission_decision_t decision,
+                                                   bool success)
+{
+    buddy_event_t event = {0};
+
+    event.type = BUDDY_EVENT_PERMISSION_SEND_RESULT;
+    event.permission_result.id_length = strlen(id);
+    snprintf(event.permission_result.id, sizeof(event.permission_result.id), "%s", id);
+    event.permission_result.decision = decision;
+    event.permission_result.success = success;
+    return event;
+}
+
 static buddy_event_t test_heartbeat_event(uint64_t tokens, unsigned running)
 {
     buddy_event_t event = {0};
@@ -200,7 +214,7 @@ static void test_approval_locks_until_a_new_prompt(void)
     assert(action.type == BUDDY_ACTION_PERMISSION);
     assert(strcmp(action.permission.id, "req-1") == 0);
     assert(action.permission.decision == BUDDY_PERMISSION_ONCE);
-    assert(state.character == BUDDY_CHARACTER_HEART);
+    assert(state.character != BUDDY_CHARACTER_HEART);
     buddy_state_snapshot(&state, &snapshot);
     assert(snapshot.approval_locked);
     assert(strcmp(snapshot.prompt_id, "req-1") == 0);
@@ -252,6 +266,60 @@ static void test_permission_action_is_bound_to_the_prompt_connection(void)
 
     assert(action.type == BUDDY_ACTION_PERMISSION);
     assert(action.permission.connection_generation == 7);
+}
+
+static void test_permission_success_moves_from_attempted_to_successful_state(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_ui_snapshot_t snapshot;
+    buddy_event_t prompt = test_prompt_event("req-success", "Bash", "git push", 1, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+    buddy_event_t result = test_permission_result_event(
+        "req-success", BUDDY_PERMISSION_ONCE, true);
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+    assert(action.type == BUDDY_ACTION_PERMISSION);
+    assert(strcmp(state.last_attempted_prompt_id, "req-success") == 0);
+    assert(state.last_successful_decision_id[0] == '\0');
+    assert(state.permission_delivery == BUDDY_PERMISSION_DELIVERY_SENDING);
+    assert(state.character != BUDDY_CHARACTER_HEART);
+
+    buddy_state_reduce(&state, &result, 1002, &action);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(action.type == BUDDY_ACTION_UI_REFRESH);
+    assert(strcmp(state.last_successful_decision_id, "req-success") == 0);
+    assert(snapshot.permission_delivery == BUDDY_PERMISSION_DELIVERY_SENT);
+    assert(state.character == BUDDY_CHARACTER_HEART);
+}
+
+static void test_permission_failure_is_visible_and_same_id_replay_stays_locked(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_ui_snapshot_t snapshot;
+    buddy_event_t prompt = test_prompt_event("req-failed", "Bash", "git push", 1, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+    buddy_event_t failure = test_permission_result_event(
+        "req-failed", BUDDY_PERMISSION_ONCE, false);
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+    buddy_state_reduce(&state, &failure, 1002, &action);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(snapshot.permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED);
+    assert(strcmp(state.last_attempted_prompt_id, "req-failed") == 0);
+    assert(state.last_successful_decision_id[0] == '\0');
+    assert(state.approval_locked);
+    assert(state.character != BUDDY_CHARACTER_HEART);
+
+    buddy_state_reduce(&state, &prompt, 1003, &action);
+    buddy_state_reduce(&state, &approve, 1004, &action);
+    assert(action.type == BUDDY_ACTION_NONE);
+    assert(state.permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED);
 }
 
 static void test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock(void)
@@ -684,6 +752,62 @@ static void test_ble_security_events_update_owned_state_and_clear_sensitive_prom
     assert(state.prompt.id[0] == '\0');
 }
 
+static void test_stale_security_mailbox_event_cannot_override_latest_link(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t connected = {.type = BUDDY_EVENT_BLE_CONNECTED};
+    buddy_event_t passkey = {.type = BUDDY_EVENT_BLE_PASSKEY};
+    buddy_event_t encrypted = {.type = BUDDY_EVENT_BLE_ENCRYPTION};
+
+    connected.ble.connection_generation = 8;
+    passkey.ble.connection_generation = 7;
+    passkey.ble.passkey = 123456;
+    encrypted.ble.connection_generation = 7;
+    encrypted.ble.secure = true;
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &connected, 1000, &action);
+    assert(state.ble_connection_generation == 8);
+
+    buddy_state_reduce(&state, &passkey, 1001, &action);
+    buddy_state_reduce(&state, &encrypted, 1002, &action);
+    assert(!state.passkey_visible);
+    assert(!state.ble_encrypted);
+
+    passkey.ble.connection_generation = 8;
+    buddy_state_reduce(&state, &passkey, 1003, &action);
+    assert(state.passkey_visible);
+}
+
+static void test_new_link_generation_invalidates_sensitive_state_when_disconnect_was_coalesced(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t connected = {.type = BUDDY_EVENT_BLE_CONNECTED};
+    buddy_event_t prompt = test_prompt_event("old-link", "Bash", "deploy", 1, 1);
+    buddy_event_t unpair = {.type = BUDDY_EVENT_UNPAIR_CONFIRMATION};
+
+    buddy_state_init(&state, NULL);
+    connected.ble.connection_generation = 7;
+    buddy_state_reduce(&state, &connected, 1000, &action);
+    prompt.ble.connection_generation = 7;
+    buddy_state_reduce(&state, &prompt, 1001, &action);
+
+    connected.ble.connection_generation = 8;
+    buddy_state_reduce(&state, &connected, 1002, &action);
+    assert(state.prompt.id[0] == '\0');
+    assert(!state.connected);
+    assert(state.heartbeat_stale);
+
+    unpair.ble.connection_generation = 8;
+    buddy_state_reduce(&state, &unpair, 1003, &action);
+    assert(state.confirmation == BUDDY_CONFIRM_UNPAIR);
+    connected.ble.connection_generation = 9;
+    buddy_state_reduce(&state, &connected, 1004, &action);
+    assert(state.confirmation == BUDDY_CONFIRM_NONE);
+    assert(!state.confirmation_pending);
+}
+
 int main(void)
 {
     test_offline_initialization();
@@ -695,6 +819,8 @@ int main(void)
     test_approval_locks_until_a_new_prompt();
     test_denial_locks_and_emits_exactly_once();
     test_permission_action_is_bound_to_the_prompt_connection();
+    test_permission_success_moves_from_attempted_to_successful_state();
+    test_permission_failure_is_visible_and_same_id_replay_stays_locked();
     test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock();
     test_ui_snapshot_runtime_indicators_default_off();
     test_absent_prompt_is_ignored();
@@ -716,5 +842,7 @@ int main(void)
     test_remote_unpair_confirmation_remembers_ack();
     test_remote_unpair_cannot_replace_a_local_confirmation();
     test_ble_security_events_update_owned_state_and_clear_sensitive_prompt();
+    test_stale_security_mailbox_event_cannot_override_latest_link();
+    test_new_link_generation_invalidates_sensitive_state_when_disconnect_was_coalesced();
     return 0;
 }

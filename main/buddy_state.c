@@ -203,13 +203,13 @@ static bool buddy_prompt_ids_match(const buddy_prompt_t *left, const buddy_promp
            memcmp(left->id, right->id, left->id_length) == 0;
 }
 
-static bool buddy_prompt_is_last_approved(const buddy_state_t *state,
-                                          const buddy_prompt_t *prompt)
+static bool buddy_prompt_was_attempted(const buddy_state_t *state,
+                                       const buddy_prompt_t *prompt)
 {
-    return buddy_string_matches_length(state->last_approved_prompt_id,
-                                       sizeof(state->last_approved_prompt_id),
+    return buddy_string_matches_length(state->last_attempted_prompt_id,
+                                       sizeof(state->last_attempted_prompt_id),
                                        prompt->id_length) &&
-           memcmp(state->last_approved_prompt_id, prompt->id, prompt->id_length) == 0;
+           memcmp(state->last_attempted_prompt_id, prompt->id, prompt->id_length) == 0;
 }
 
 static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t *heartbeat,
@@ -232,12 +232,13 @@ static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t 
                buddy_prompt_ids_match(&state->prompt, &heartbeat->prompt)) {
         state->prompt = heartbeat->prompt;
         state->prompt_connection_generation = connection_generation;
-    } else if (buddy_prompt_is_last_approved(state, &heartbeat->prompt)) {
+    } else if (buddy_prompt_was_attempted(state, &heartbeat->prompt)) {
         buddy_invalidate_prompt(state);
     } else {
         state->prompt = heartbeat->prompt;
         state->prompt_connection_generation = connection_generation;
         state->approval_locked = false;
+        state->permission_delivery = BUDDY_PERMISSION_DELIVERY_NONE;
     }
     state->last_heartbeat_ms = now_ms;
     state->running = heartbeat->running;
@@ -266,13 +267,14 @@ static void buddy_apply_prompt(buddy_state_t *state, const buddy_prompt_t *promp
                                buddy_action_t *action)
 {
     if (!prompt->connected || !buddy_prompt_id_is_valid(prompt) ||
-        strcmp(prompt->id, state->last_approved_prompt_id) == 0) {
+        buddy_prompt_was_attempted(state, prompt)) {
         return;
     }
 
     state->prompt = *prompt;
     state->prompt_connection_generation = connection_generation;
     state->approval_locked = false;
+    state->permission_delivery = BUDDY_PERMISSION_DELIVERY_NONE;
     state->connected = true;
     state->connection = BUDDY_CONNECTION_CONNECTED;
     state->heartbeat_stale = false;
@@ -297,7 +299,7 @@ static bool buddy_observed_prompt_matches(const buddy_event_t *event, const budd
 }
 
 static void buddy_decide_prompt(buddy_state_t *state, const buddy_event_t *event,
-                                buddy_permission_decision_t decision, uint64_t now_ms,
+                                buddy_permission_decision_t decision,
                                 buddy_action_t *action)
 {
     if (state->approval_locked || state->prompt.id[0] == '\0' || state->heartbeat_stale ||
@@ -314,12 +316,36 @@ static void buddy_decide_prompt(buddy_state_t *state, const buddy_event_t *event
         action->permission.decision = decision;
         action->permission.connection_generation = state->prompt_connection_generation;
     }
-    buddy_copy(state->last_approved_prompt_id, sizeof(state->last_approved_prompt_id), state->prompt.id);
+    buddy_copy(state->last_attempted_prompt_id, sizeof(state->last_attempted_prompt_id),
+               state->prompt.id);
     state->approval_locked = true;
-    if (decision == BUDDY_PERMISSION_ONCE) {
-        state->temporary_character = BUDDY_CHARACTER_HEART;
-        state->temporary_until_ms = now_ms + BUDDY_HEART_ANIMATION_MS;
+    state->permission_delivery = BUDDY_PERMISSION_DELIVERY_SENDING;
+}
+
+static void buddy_apply_permission_result(buddy_state_t *state,
+                                          const buddy_permission_result_event_t *result,
+                                          uint64_t now_ms, buddy_action_t *action)
+{
+    if (state->permission_delivery != BUDDY_PERMISSION_DELIVERY_SENDING ||
+        !buddy_string_matches_length(result->id, sizeof(result->id), result->id_length) ||
+        !buddy_string_matches_length(state->last_attempted_prompt_id,
+                                     sizeof(state->last_attempted_prompt_id),
+                                     result->id_length) ||
+        memcmp(state->last_attempted_prompt_id, result->id, result->id_length) != 0) {
+        return;
     }
+    if (result->success) {
+        buddy_copy(state->last_successful_decision_id,
+                   sizeof(state->last_successful_decision_id), result->id);
+        state->permission_delivery = BUDDY_PERMISSION_DELIVERY_SENT;
+        if (result->decision == BUDDY_PERMISSION_ONCE) {
+            state->temporary_character = BUDDY_CHARACTER_HEART;
+            state->temporary_until_ms = now_ms + BUDDY_HEART_ANIMATION_MS;
+        }
+    } else {
+        state->permission_delivery = BUDDY_PERMISSION_DELIVERY_FAILED;
+    }
+    buddy_set_ui_refresh(action);
 }
 
 void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *settings)
@@ -391,6 +417,16 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         }
         break;
     case BUDDY_EVENT_BLE_CONNECTED:
+        if (state->ble_connection_generation != event->ble.connection_generation) {
+            buddy_invalidate_prompt(state);
+            state->passkey_visible = false;
+            state->connected = false;
+            state->heartbeat_stale = true;
+            if (state->confirmation_acknowledge) {
+                buddy_close_confirmation(state);
+            }
+        }
+        state->ble_connection_generation = event->ble.connection_generation;
         state->ble_connected = true;
         state->ble_encrypted = false;
         if (state->confirmation == BUDDY_CONFIRM_NONE) {
@@ -399,6 +435,7 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_BLE_DISCONNECTED:
+        state->ble_connection_generation = event->ble.connection_generation;
         state->ble_connected = false;
         state->ble_encrypted = false;
         state->passkey_visible = false;
@@ -413,12 +450,18 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_BLE_PASSKEY:
+        if (event->ble.connection_generation != state->ble_connection_generation) {
+            break;
+        }
         state->passkey = event->ble.passkey;
         state->passkey_visible = true;
         state->connection = BUDDY_CONNECTION_PAIRING;
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_BLE_ENCRYPTION:
+        if (event->ble.connection_generation != state->ble_connection_generation) {
+            break;
+        }
         state->ble_encrypted = event->ble.secure;
         if (event->ble.secure) {
             state->passkey_visible = false;
@@ -436,6 +479,9 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_copy(state->message, sizeof(state->message),
                    event->ble.success ? "Unpaired" : "Unpair failed");
         buddy_set_ui_refresh(action);
+        break;
+    case BUDDY_EVENT_PERMISSION_SEND_RESULT:
+        buddy_apply_permission_result(state, &event->permission_result, now_ms, action);
         break;
     case BUDDY_EVENT_KEY_CLICK:
         if (state->confirmation != BUDDY_CONFIRM_NONE && event->key == BUDDY_KEY_OK) {
@@ -462,9 +508,9 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
             break;
         }
         if (buddy_has_actionable_prompt(state) && event->key == BUDDY_KEY_OK) {
-            buddy_decide_prompt(state, event, BUDDY_PERMISSION_ONCE, now_ms, action);
+            buddy_decide_prompt(state, event, BUDDY_PERMISSION_ONCE, action);
         } else if (buddy_has_actionable_prompt(state) && event->key == BUDDY_KEY_DOWN) {
-            buddy_decide_prompt(state, event, BUDDY_PERMISSION_DENY, now_ms, action);
+            buddy_decide_prompt(state, event, BUDDY_PERMISSION_DENY, action);
         } else if (buddy_has_actionable_prompt(state) && event->key == BUDDY_KEY_UP) {
             if (action != NULL) {
                 action->type = BUDDY_ACTION_UI_SCROLL;
@@ -509,6 +555,7 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->confirmation = state->confirmation;
     snapshot->settings_selection = state->settings_selection;
     snapshot->approval_locked = state->approval_locked;
+    snapshot->permission_delivery = state->permission_delivery;
     snapshot->ble_connected = state->ble_connected;
     snapshot->ble_encrypted = state->ble_encrypted;
     snapshot->ble_enabled = state->settings.ble_enabled;

@@ -302,13 +302,23 @@ void buddy_ui_render(const buddy_ui_snapshot_t *snapshot)
         lv_label_set_text(s_approval_hint_label, snapshot->prompt_hint);
         if (snapshot->approval_locked) {
             lv_label_set_text(s_approval_character_label,
-                              buddy_character_frame(BUDDY_CHARACTER_HEART, 0));
+                              buddy_character_frame(
+                                  snapshot->permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED
+                                      ? BUDDY_CHARACTER_DIZZY
+                                      : snapshot->character,
+                                  0));
             lv_obj_remove_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN);
             lv_obj_set_y(s_approval_tool_label, 134);
             lv_obj_set_pos(s_approval_hint_box, 12, 166);
             lv_obj_set_height(s_approval_hint_box, 78);
             lv_obj_set_y(s_approval_action_label, 252);
-            lv_label_set_text(s_approval_action_label, "Sending...");
+            lv_label_set_text(
+                s_approval_action_label,
+                snapshot->permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED
+                    ? "Send failed"
+                    : (snapshot->permission_delivery == BUDDY_PERMISSION_DELIVERY_SENT
+                           ? "Sent"
+                           : "Sending..."));
         } else {
             lv_obj_add_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN);
             lv_obj_set_y(s_approval_tool_label, 52);

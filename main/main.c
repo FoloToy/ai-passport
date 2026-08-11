@@ -19,15 +19,19 @@
 #include "bsp_display.h"
 #include "bsp_i2c.h"
 #include "bsp_pins.h"
+#include "buddy_app_logic.h"
 #include "buddy_ble.h"
 #include "buddy_protocol.h"
 #include "buddy_settings.h"
 #include "buddy_state.h"
 #include "buddy_ui.h"
 
-#define BUDDY_CONTROL_QUEUE_DEPTH 8U
+#define BUDDY_CRITICAL_QUEUE_DEPTH 1U
 #define BUDDY_BUTTON_QUEUE_DEPTH 4U
-#define BUDDY_RX_QUEUE_DEPTH 3U
+#define BUDDY_RX_NORMAL_QUEUE_DEPTH 1U
+#define BUDDY_RX_SLOT_COUNT 6U
+/* Priority may consume the entire shared pool after evicting the normal slot. */
+#define BUDDY_RX_PRIORITY_QUEUE_DEPTH BUDDY_RX_SLOT_COUNT
 #define BUDDY_APP_STACK_SIZE 12288U
 #define BUDDY_APP_PRIORITY 5U
 #define BUDDY_APP_TICK_MS 100U
@@ -61,6 +65,7 @@ typedef struct {
         } key;
         struct {
             uint32_t passkey;
+            uint32_t connection_generation;
             int status;
             bool secure;
             bool success;
@@ -90,18 +95,27 @@ typedef struct {
 } buddy_rx_slot_t;
 
 static const char *const TAG = "buddy_app";
-static QueueHandle_t s_control_queue;
+static QueueHandle_t s_link_queue;
+static QueueHandle_t s_passkey_queue;
+static QueueHandle_t s_security_queue;
+static QueueHandle_t s_bond_queue;
 static QueueHandle_t s_button_queue;
-static QueueHandle_t s_rx_queue;
-static QueueSetHandle_t s_queue_set;
+static QueueHandle_t s_rx_normal_queue;
+static QueueHandle_t s_rx_priority_queue;
 static TaskHandle_t s_app_task_handle;
-static buddy_rx_slot_t s_rx_slots[BUDDY_RX_QUEUE_DEPTH];
+static buddy_rx_slot_t s_rx_slots[BUDDY_RX_SLOT_COUNT];
 static portMUX_TYPE s_rx_pool_lock = portMUX_INITIALIZER_UNLOCKED;
 static portMUX_TYPE s_view_lock = portMUX_INITIALIZER_UNLOCKED;
 static buddy_rendered_view_t s_rendered_view;
 static buddy_settings_snapshot_t s_initial_settings;
 static bool s_initial_battery_available;
 static atomic_bool s_ble_initialized;
+static atomic_bool s_app_ready;
+static atomic_uint s_control_coalesced;
+static atomic_uint s_button_dropped;
+static atomic_uint s_rx_normal_coalesced;
+static atomic_uint s_rx_priority_evicted;
+static atomic_uint s_rx_dropped;
 static char s_tx_buffer[BUDDY_PROTOCOL_TX_MAX];
 
 static uint64_t buddy_now_ms(void)
@@ -142,7 +156,7 @@ static buddy_rx_slot_t *buddy_rx_slot_acquire(void)
     unsigned index;
 
     taskENTER_CRITICAL(&s_rx_pool_lock);
-    for (index = 0; index < BUDDY_RX_QUEUE_DEPTH; ++index) {
+    for (index = 0; index < BUDDY_RX_SLOT_COUNT; ++index) {
         if (!s_rx_slots[index].in_use) {
             s_rx_slots[index].in_use = true;
             slot = &s_rx_slots[index];
@@ -166,12 +180,106 @@ static void buddy_rx_slot_release(buddy_rx_slot_t *slot)
     taskEXIT_CRITICAL(&s_rx_pool_lock);
 }
 
-static void buddy_queue_control(const buddy_control_event_t *event)
+static void buddy_count(atomic_uint *counter)
 {
-    if (s_control_queue == NULL || event == NULL) {
+    (void)atomic_fetch_add_explicit(counter, 1U, memory_order_relaxed);
+}
+
+static void buddy_notify_app(void)
+{
+    if (s_app_task_handle != NULL &&
+        atomic_load_explicit(&s_app_ready, memory_order_acquire)) {
+        xTaskNotifyGive(s_app_task_handle);
+    }
+}
+
+static void buddy_queue_critical(QueueHandle_t queue,
+                                 const buddy_control_event_t *event)
+{
+    BaseType_t queued;
+
+    if (queue == NULL || event == NULL) {
         return;
     }
-    (void)xQueueSend(s_control_queue, event, 0);
+    if (uxQueueMessagesWaiting(queue) != 0U) {
+        buddy_count(&s_control_coalesced);
+    }
+    queued = xQueueOverwrite(queue, event);
+    configASSERT(queued == pdPASS);
+    (void)queued;
+    buddy_notify_app();
+}
+
+static bool buddy_rx_evict(QueueHandle_t queue, atomic_uint *counter)
+{
+    buddy_rx_slot_t *evicted = NULL;
+
+    if (xQueueReceive(queue, &evicted, 0) != pdTRUE || evicted == NULL) {
+        return false;
+    }
+    buddy_rx_slot_release(evicted);
+    buddy_count(counter);
+    return true;
+}
+
+static void buddy_queue_rx_line(const buddy_ble_event_t *event)
+{
+    if (event->data.rx_line.data == NULL || event->data.rx_line.length == 0U) {
+        buddy_count(&s_rx_dropped);
+        return;
+    }
+    buddy_app_rx_class_t classification =
+        buddy_app_classify_rx(event->data.rx_line.data, event->data.rx_line.length);
+    QueueHandle_t target = classification == BUDDY_APP_RX_NORMAL_HEARTBEAT
+                               ? s_rx_normal_queue
+                               : s_rx_priority_queue;
+    buddy_rx_slot_t *slot = buddy_rx_slot_acquire();
+    bool normal_pending = uxQueueMessagesWaiting(s_rx_normal_queue) != 0U;
+    bool priority_pending = uxQueueMessagesWaiting(s_rx_priority_queue) != 0U;
+    bool priority_full =
+        uxQueueMessagesWaiting(s_rx_priority_queue) >= BUDDY_RX_PRIORITY_QUEUE_DEPTH;
+    buddy_app_rx_overflow_action_t overflow = buddy_app_rx_overflow_policy(
+        classification, slot != NULL, normal_pending, priority_pending, priority_full);
+
+    if (overflow == BUDDY_APP_RX_REPLACE_NORMAL) {
+        (void)buddy_rx_evict(s_rx_normal_queue, &s_rx_normal_coalesced);
+    } else if (overflow == BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY) {
+        (void)buddy_rx_evict(s_rx_priority_queue, &s_rx_priority_evicted);
+    } else if (overflow == BUDDY_APP_RX_DROP) {
+        if (slot != NULL) {
+            buddy_rx_slot_release(slot);
+        }
+        buddy_count(&s_rx_dropped);
+        return;
+    }
+    if (slot == NULL) {
+        slot = buddy_rx_slot_acquire();
+    }
+    if (slot == NULL) {
+        buddy_count(&s_rx_dropped);
+        return;
+    }
+    memcpy(slot->data, event->data.rx_line.data, event->data.rx_line.length);
+    slot->data[event->data.rx_line.length] = '\0';
+    slot->length = event->data.rx_line.length;
+    slot->connection_generation = event->data.rx_line.connection_generation;
+    if (xQueueSend(target, &slot, 0) == pdTRUE) {
+        buddy_notify_app();
+        return;
+    }
+
+    /* The app may race the initial snapshot; retain the newest item once. */
+    if (classification == BUDDY_APP_RX_NORMAL_HEARTBEAT) {
+        (void)buddy_rx_evict(s_rx_normal_queue, &s_rx_normal_coalesced);
+    } else {
+        (void)buddy_rx_evict(s_rx_priority_queue, &s_rx_priority_evicted);
+    }
+    if (xQueueSend(target, &slot, 0) != pdTRUE) {
+        buddy_rx_slot_release(slot);
+        buddy_count(&s_rx_dropped);
+    } else {
+        buddy_notify_app();
+    }
 }
 
 static void on_key(bsp_btn_t button, bsp_btn_ev_t event, void *context)
@@ -198,7 +306,11 @@ static void on_key(bsp_btn_t button, bsp_btn_ev_t event, void *context)
     memcpy(control.data.key.prompt_id, s_rendered_view.prompt_id,
            sizeof(control.data.key.prompt_id));
     taskEXIT_CRITICAL(&s_view_lock);
-    (void)xQueueSend(s_button_queue, &control, 0);
+    if (xQueueSend(s_button_queue, &control, 0) != pdTRUE) {
+        buddy_count(&s_button_dropped);
+    } else {
+        buddy_notify_app();
+    }
 }
 
 static void on_ble_event(const buddy_ble_event_t *event, void *context)
@@ -210,54 +322,55 @@ static void on_ble_event(const buddy_ble_event_t *event, void *context)
         return;
     }
     if (event->type == BUDDY_BLE_EVENT_RX_LINE) {
-        buddy_rx_slot_t *slot;
-
         if (event->data.rx_line.length > BUDDY_JSON_LINE_MAX) {
+            buddy_count(&s_rx_dropped);
             return;
         }
-        slot = buddy_rx_slot_acquire();
-        if (slot == NULL) {
-            return;
-        }
-        memcpy(slot->data, event->data.rx_line.data, event->data.rx_line.length);
-        slot->data[event->data.rx_line.length] = '\0';
-        slot->length = event->data.rx_line.length;
-        slot->connection_generation = event->data.rx_line.connection_generation;
-        if (xQueueSend(s_rx_queue, &slot, 0) != pdTRUE) {
-            buddy_rx_slot_release(slot);
-        }
+        buddy_queue_rx_line(event);
         return;
     }
 
     switch (event->type) {
     case BUDDY_BLE_EVENT_CONNECTED:
         control.type = BUDDY_CONTROL_BLE_CONNECTED;
+        control.data.ble.connection_generation =
+            event->data.connected.connection_generation;
+        buddy_queue_critical(s_link_queue, &control);
         break;
     case BUDDY_BLE_EVENT_DISCONNECTED:
         control.type = BUDDY_CONTROL_BLE_DISCONNECTED;
         control.data.ble.status = event->data.disconnected.reason;
+        control.data.ble.connection_generation =
+            event->data.disconnected.connection_generation;
+        buddy_queue_critical(s_link_queue, &control);
         break;
     case BUDDY_BLE_EVENT_PASSKEY:
         control.type = BUDDY_CONTROL_BLE_PASSKEY;
         control.data.ble.passkey = event->data.passkey.value;
+        control.data.ble.connection_generation =
+            event->data.passkey.connection_generation;
+        buddy_queue_critical(s_passkey_queue, &control);
         break;
     case BUDDY_BLE_EVENT_ENCRYPTION:
         control.type = BUDDY_CONTROL_BLE_ENCRYPTION;
         control.data.ble.status = event->data.encryption.status;
+        control.data.ble.connection_generation =
+            event->data.encryption.connection_generation;
         control.data.ble.secure = event->data.encryption.status == 0 &&
                                   event->data.encryption.encrypted &&
                                   event->data.encryption.authenticated &&
                                   event->data.encryption.bonded;
+        buddy_queue_critical(s_security_queue, &control);
         break;
     case BUDDY_BLE_EVENT_BOND_DELETE_RESULT:
         control.type = BUDDY_CONTROL_BOND_DELETE_RESULT;
         control.data.ble.status = event->data.bond_delete_result.status;
         control.data.ble.success = event->data.bond_delete_result.success;
+        buddy_queue_critical(s_bond_queue, &control);
         break;
     case BUDDY_BLE_EVENT_RX_LINE:
         return;
     }
-    buddy_queue_control(&control);
 }
 
 static bool buddy_key_matches_rendered_view(const buddy_control_event_t *control)
@@ -345,19 +458,23 @@ static bool buddy_control_to_event(const buddy_control_event_t *control,
     switch (control->type) {
     case BUDDY_CONTROL_BLE_CONNECTED:
         event->type = BUDDY_EVENT_BLE_CONNECTED;
+        event->ble.connection_generation = control->data.ble.connection_generation;
         break;
     case BUDDY_CONTROL_BLE_DISCONNECTED:
         event->type = BUDDY_EVENT_BLE_DISCONNECTED;
         event->ble.status = control->data.ble.status;
+        event->ble.connection_generation = control->data.ble.connection_generation;
         break;
     case BUDDY_CONTROL_BLE_PASSKEY:
         event->type = BUDDY_EVENT_BLE_PASSKEY;
         event->ble.passkey = control->data.ble.passkey;
+        event->ble.connection_generation = control->data.ble.connection_generation;
         break;
     case BUDDY_CONTROL_BLE_ENCRYPTION:
         event->type = BUDDY_EVENT_BLE_ENCRYPTION;
         event->ble.status = control->data.ble.status;
         event->ble.secure = control->data.ble.secure;
+        event->ble.connection_generation = control->data.ble.connection_generation;
         break;
     case BUDDY_CONTROL_BOND_DELETE_RESULT:
         event->type = BUDDY_EVENT_BOND_DELETE_RESULT;
@@ -442,25 +559,38 @@ static esp_err_t buddy_ble_ensure_initialized(void)
     return err;
 }
 
+static uint64_t buddy_queue_overflow_total(void)
+{
+    return (uint64_t)atomic_load_explicit(&s_control_coalesced, memory_order_relaxed) +
+           (uint64_t)atomic_load_explicit(&s_button_dropped, memory_order_relaxed) +
+           (uint64_t)atomic_load_explicit(&s_rx_normal_coalesced, memory_order_relaxed) +
+           (uint64_t)atomic_load_explicit(&s_rx_priority_evicted, memory_order_relaxed) +
+           (uint64_t)atomic_load_explicit(&s_rx_dropped, memory_order_relaxed);
+}
+
 static void buddy_send_status(const buddy_state_t *state, uint32_t connection_generation)
 {
     buddy_settings_snapshot_t settings;
-    buddy_status_report_t status = {0};
+    buddy_status_report_t status;
+    buddy_app_status_runtime_t runtime = {
+        .encrypted = atomic_load(&s_ble_initialized) && buddy_ble_is_encrypted(),
+        .battery_available = state->battery_available,
+        .battery_percent = state->battery_percent,
+        .battery_mv = state->battery_mv,
+        .uptime_ms = buddy_now_ms(),
+        .free_heap = esp_get_free_heap_size(),
+        .queue_overflow_count = buddy_queue_overflow_total(),
+    };
     int length;
 
     if (buddy_settings_load(&settings) != ESP_OK) {
-        settings = state->settings;
+        ESP_LOGW(TAG, "status settings snapshot failed");
+        return;
     }
-    buddy_copy_text(status.name, sizeof(status.name), state->name);
-    buddy_copy_text(status.owner, sizeof(status.owner), state->owner);
-    status.encrypted = atomic_load(&s_ble_initialized) && buddy_ble_is_encrypted();
-    status.battery_available = state->battery_available;
-    status.battery_percent = state->battery_percent;
-    status.battery_mv = state->battery_mv;
-    status.uptime_ms = buddy_now_ms();
-    status.free_heap = esp_get_free_heap_size();
-    status.approval_count = settings.approval_count;
-    status.denial_count = settings.denial_count;
+    if (!buddy_app_build_status(&status, &settings, &runtime)) {
+        ESP_LOGW(TAG, "status snapshot invalid");
+        return;
+    }
     length = buddy_protocol_device_status_json(s_tx_buffer, sizeof(s_tx_buffer), &status);
     if (length == 0 || buddy_ble_send_for_generation(s_tx_buffer, (size_t)length,
                                                      connection_generation) != ESP_OK) {
@@ -468,28 +598,57 @@ static void buddy_send_status(const buddy_state_t *state, uint32_t connection_ge
     }
 }
 
+static esp_err_t buddy_transport_start(void *context)
+{
+    (void)context;
+    return buddy_ble_start();
+}
+
+static esp_err_t buddy_transport_stop(void *context)
+{
+    (void)context;
+    return buddy_ble_stop();
+}
+
 static void buddy_set_ble_enabled(buddy_state_t *state, bool enabled)
 {
-    bool old_enabled = !enabled;
-    esp_err_t err;
+    const buddy_app_ble_transport_ops_t ops = {
+        .context = NULL,
+        .start = buddy_transport_start,
+        .stop = buddy_transport_stop,
+    };
+    buddy_app_ble_transport_result_t result = {
+        .request_status = ESP_OK,
+        .effective_enabled = enabled,
+    };
 
     if (buddy_settings_set_ble_enabled(enabled) != ESP_OK) {
-        state->settings.ble_enabled = old_enabled;
+        state->settings.ble_enabled = !enabled;
         buddy_copy_text(state->message, sizeof(state->message), "BLE setting failed");
         return;
     }
     if (enabled) {
-        err = buddy_ble_ensure_initialized();
-        if (err == ESP_OK) {
-            err = buddy_ble_start();
+        result.request_status = buddy_ble_ensure_initialized();
+        if (result.request_status == ESP_OK) {
+            result = buddy_app_set_ble_transport(&ops, true);
+        } else {
+            result.effective_enabled = false;
         }
-    } else {
-        err = atomic_load(&s_ble_initialized) ? buddy_ble_stop() : ESP_OK;
+    } else if (atomic_load(&s_ble_initialized)) {
+        result = buddy_app_set_ble_transport(&ops, false);
     }
-    if (err != ESP_OK) {
-        (void)buddy_settings_set_ble_enabled(old_enabled);
-        state->settings.ble_enabled = old_enabled;
-        buddy_copy_text(state->message, sizeof(state->message), "BLE update failed");
+    if (result.request_status != ESP_OK) {
+        if (buddy_settings_set_ble_enabled(result.effective_enabled) != ESP_OK ||
+            buddy_settings_flush(true) != ESP_OK) {
+            buddy_copy_text(state->message, sizeof(state->message),
+                            "BLE rollback failed");
+        } else {
+            buddy_copy_text(state->message, sizeof(state->message),
+                            result.recovery_attempted && result.effective_enabled
+                                ? "BLE stop failed; restored"
+                                : "BLE update failed");
+        }
+        state->settings.ble_enabled = result.effective_enabled;
         return;
     }
     state->settings.ble_enabled = enabled;
@@ -506,6 +665,12 @@ static void buddy_factory_reset(buddy_state_t *state)
     }
     defaults.ble_enabled = true;
     buddy_default_name(defaults.name);
+    if (buddy_settings_set_name(defaults.name) != ESP_OK ||
+        buddy_settings_flush(true) != ESP_OK) {
+        buddy_copy_text(state->message, sizeof(state->message),
+                        "Factory defaults save failed");
+        return;
+    }
     buddy_state_init(state, &defaults);
     buddy_sample_battery(state);
     buddy_copy_text(state->message, sizeof(state->message), "Factory reset complete");
@@ -516,24 +681,34 @@ static void buddy_factory_reset(buddy_state_t *state)
     }
 }
 
-static void buddy_execute_action(buddy_state_t *state, const buddy_action_t *action)
+static bool buddy_execute_action(buddy_state_t *state, const buddy_action_t *action,
+                                 buddy_event_t *result_event)
 {
     int length;
 
     switch (action->type) {
     case BUDDY_ACTION_PERMISSION:
+        memset(result_event, 0, sizeof(*result_event));
+        result_event->type = BUDDY_EVENT_PERMISSION_SEND_RESULT;
+        buddy_copy_text(result_event->permission_result.id,
+                        sizeof(result_event->permission_result.id),
+                        action->permission.id);
+        result_event->permission_result.id_length =
+            strlen(result_event->permission_result.id);
+        result_event->permission_result.decision = action->permission.decision;
         length = buddy_protocol_permission_json(s_tx_buffer, sizeof(s_tx_buffer),
                                                 action->permission.id,
                                                 action->permission.decision);
-        if (length == 0 ||
+        result_event->permission_result.success =
+            length > 0 &&
             buddy_ble_send_for_generation(s_tx_buffer, (size_t)length,
-                                          action->permission.connection_generation) != ESP_OK) {
-            buddy_copy_text(state->message, sizeof(state->message), "Permission send failed");
+                                          action->permission.connection_generation) == ESP_OK;
+        if (!result_event->permission_result.success) {
             ESP_LOGW(TAG, "permission response failed");
         } else {
             buddy_settings_record_permission(action->permission.decision);
         }
-        break;
+        return true;
     case BUDDY_ACTION_SETTINGS:
         (void)buddy_settings_set_highest_celebrated_level(
             action->settings.highest_celebrated_level);
@@ -566,6 +741,7 @@ static void buddy_execute_action(buddy_state_t *state, const buddy_action_t *act
     case BUDDY_ACTION_UI_SCROLL:
         break;
     }
+    return false;
 }
 
 static bool buddy_rendered_view_same(const buddy_rendered_view_t *left,
@@ -700,6 +876,38 @@ static bool buddy_handle_rx(buddy_state_t *state, buddy_rx_slot_t *slot,
     return false;
 }
 
+static QueueHandle_t buddy_next_ready_queue(void)
+{
+    static QueueHandle_t *const ordered[] = {
+        &s_link_queue,
+        &s_passkey_queue,
+        &s_security_queue,
+        &s_bond_queue,
+        &s_rx_priority_queue,
+        &s_button_queue,
+        &s_rx_normal_queue,
+    };
+    size_t index;
+
+    for (index = 0; index < sizeof(ordered) / sizeof(ordered[0]); ++index) {
+        if (*ordered[index] != NULL && uxQueueMessagesWaiting(*ordered[index]) != 0U) {
+            return *ordered[index];
+        }
+    }
+    return NULL;
+}
+
+static QueueHandle_t buddy_wait_for_queue(void)
+{
+    QueueHandle_t ready = buddy_next_ready_queue();
+
+    if (ready == NULL) {
+        (void)ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(BUDDY_APP_TICK_MS));
+        ready = buddy_next_ready_queue();
+    }
+    return ready;
+}
+
 static void buddy_app_task(void *context)
 {
     static buddy_state_t state;
@@ -714,26 +922,26 @@ static void buddy_app_task(void *context)
     buddy_sample_battery(&state);
 
     for (;;) {
-        QueueSetMemberHandle_t ready =
-            xQueueSelectFromSet(s_queue_set, pdMS_TO_TICKS(BUDDY_APP_TICK_MS));
+        QueueHandle_t ready = buddy_wait_for_queue();
         uint64_t now_ms = buddy_now_ms();
         bool reduced = false;
 
         memset(&action, 0, sizeof(action));
 
-        if (ready == s_control_queue || ready == s_button_queue) {
+        if (ready == s_link_queue || ready == s_passkey_queue ||
+            ready == s_security_queue || ready == s_bond_queue ||
+            ready == s_button_queue) {
             buddy_control_event_t control;
-            QueueHandle_t queue = ready == s_control_queue ? s_control_queue : s_button_queue;
 
-            if (xQueueReceive(queue, &control, 0) == pdTRUE &&
+            if (xQueueReceive(ready, &control, 0) == pdTRUE &&
                 buddy_control_to_event(&control, &state, &event)) {
                 buddy_state_reduce(&state, &event, now_ms, &action);
                 reduced = true;
             }
-        } else if (ready == s_rx_queue) {
+        } else if (ready == s_rx_priority_queue || ready == s_rx_normal_queue) {
             buddy_rx_slot_t *slot = NULL;
 
-            if (xQueueReceive(s_rx_queue, &slot, 0) == pdTRUE && slot != NULL) {
+            if (xQueueReceive(ready, &slot, 0) == pdTRUE && slot != NULL) {
                 reduced = buddy_handle_rx(&state, slot, &event, now_ms, &action);
                 buddy_rx_slot_release(slot);
             }
@@ -744,7 +952,9 @@ static void buddy_app_task(void *context)
             buddy_state_reduce(&state, &tick, now_ms, &action);
         }
 
-        buddy_execute_action(&state, &action);
+        if (buddy_execute_action(&state, &action, &event)) {
+            buddy_state_reduce(&state, &event, now_ms, &action);
+        }
         if (now_ms - last_battery_ms >= BUDDY_BATTERY_SAMPLE_MS) {
             buddy_sample_battery(&state);
             last_battery_ms = now_ms;
@@ -802,18 +1012,27 @@ void app_main(void)
     }
     if (s_initial_settings.name[0] == '\0') {
         buddy_default_name(s_initial_settings.name);
+        if (buddy_settings_set_name(s_initial_settings.name) != ESP_OK ||
+            buddy_settings_flush(true) != ESP_OK) {
+            ESP_LOGE(TAG, "default name persistence failed");
+            return;
+        }
     }
 
-    s_control_queue = xQueueCreate(BUDDY_CONTROL_QUEUE_DEPTH, sizeof(buddy_control_event_t));
+    s_link_queue = xQueueCreate(BUDDY_CRITICAL_QUEUE_DEPTH, sizeof(buddy_control_event_t));
+    s_passkey_queue = xQueueCreate(BUDDY_CRITICAL_QUEUE_DEPTH,
+                                   sizeof(buddy_control_event_t));
+    s_security_queue = xQueueCreate(BUDDY_CRITICAL_QUEUE_DEPTH,
+                                    sizeof(buddy_control_event_t));
+    s_bond_queue = xQueueCreate(BUDDY_CRITICAL_QUEUE_DEPTH, sizeof(buddy_control_event_t));
     s_button_queue = xQueueCreate(BUDDY_BUTTON_QUEUE_DEPTH, sizeof(buddy_control_event_t));
-    s_rx_queue = xQueueCreate(BUDDY_RX_QUEUE_DEPTH, sizeof(buddy_rx_slot_t *));
-    s_queue_set = xQueueCreateSet(BUDDY_CONTROL_QUEUE_DEPTH + BUDDY_BUTTON_QUEUE_DEPTH +
-                                  BUDDY_RX_QUEUE_DEPTH);
-    if (s_control_queue == NULL || s_button_queue == NULL || s_rx_queue == NULL ||
-        s_queue_set == NULL ||
-        xQueueAddToSet(s_control_queue, s_queue_set) != pdPASS ||
-        xQueueAddToSet(s_button_queue, s_queue_set) != pdPASS ||
-        xQueueAddToSet(s_rx_queue, s_queue_set) != pdPASS ||
+    s_rx_normal_queue = xQueueCreate(BUDDY_RX_NORMAL_QUEUE_DEPTH,
+                                     sizeof(buddy_rx_slot_t *));
+    s_rx_priority_queue = xQueueCreate(BUDDY_RX_PRIORITY_QUEUE_DEPTH,
+                                       sizeof(buddy_rx_slot_t *));
+    if (s_link_queue == NULL || s_passkey_queue == NULL || s_security_queue == NULL ||
+        s_bond_queue == NULL || s_button_queue == NULL || s_rx_normal_queue == NULL ||
+        s_rx_priority_queue == NULL ||
         xTaskCreate(buddy_app_task, "buddy_app", BUDDY_APP_STACK_SIZE, NULL,
                     BUDDY_APP_PRIORITY, &s_app_task_handle) != pdPASS) {
         ESP_LOGE(TAG, "application queue/task initialization failed");
@@ -831,5 +1050,6 @@ void app_main(void)
             ESP_LOGE(TAG, "BLE initialization failed: %s", esp_err_to_name(err));
         }
     }
+    atomic_store_explicit(&s_app_ready, true, memory_order_release);
     xTaskNotifyGive(s_app_task_handle);
 }
