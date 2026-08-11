@@ -178,7 +178,6 @@ static void test_documented_command_events_have_bounded_payloads(void)
         {"{\"cmd\":\"time\",\"time\":\"12:34\"}", BUDDY_EVENT_TIME, "12:34"},
         {"{\"cmd\":\"name\",\"name\":\"Buddy\"}", BUDDY_EVENT_NAME, "Buddy"},
         {"{\"cmd\":\"owner\",\"owner\":\"Claude\"}", BUDDY_EVENT_OWNER, "Claude"},
-        {"{\"cmd\":\"status\",\"status\":\"Ready\"}", BUDDY_EVENT_STATUS, "Ready"},
     };
     size_t index;
 
@@ -190,6 +189,16 @@ static void test_documented_command_events_have_bounded_payloads(void)
         assert(strcmp(event.command.value, cases[index].value) == 0);
         assert(!event.command.value_truncated);
     }
+}
+
+static void test_status_is_a_no_payload_request(void)
+{
+    buddy_event_t event = {0};
+
+    assert(parse("{\"cmd\":\"status\"}", &event) == BUDDY_EVENT_STATUS_REQUEST);
+    assert(event.type == BUDDY_EVENT_STATUS_REQUEST);
+    assert(event.command.value[0] == '\0');
+    assert(parse("{\"cmd\":\"status\",\"status\":\"Ready\"}", &event) == BUDDY_EVENT_MALFORMED);
 }
 
 static void test_name_command_truncates_at_a_utf8_codepoint_boundary(void)
@@ -218,6 +227,30 @@ static void test_parser_rejects_oversized_or_invalid_utf8_lines(void)
     memset(oversized, 'x', sizeof(oversized));
     assert(buddy_protocol_parse(oversized, sizeof(oversized), &event) == BUDDY_EVENT_MALFORMED);
     assert(parse(invalid_utf8, &event) == BUDDY_EVENT_MALFORMED);
+}
+
+static void test_parser_rejects_raw_nul_and_control_bytes(void)
+{
+    buddy_event_t event = {0};
+    static const char raw_nul[] = {
+        '{', '"', 'c', 'm', 'd', '"', ':', '"', 'p', 'r', 'o', 'm', 'p', 't', '"', ',',
+        '"', 'i', 'd', '"', ':', '"', 'r', 'e', 'q', '\0', 's', 'u', 'f', 'f', 'i', 'x',
+        '"', '}',
+    };
+    static const char string_control[] = {
+        '{', '"', 'c', 'm', 'd', '"', ':', '"', 'n', 'a', 'm', 'e', '"', ',',
+        '"', 'n', 'a', 'm', 'e', '"', ':', '"', 'a', '\x1f', 'b', '"', '}',
+    };
+    static const char structural_control[] = {
+        '{', '\x01', '"', 'c', 'm', 'd', '"', ':', '"', 's', 't', 'a', 't', 'u', 's', '"', '}',
+    };
+
+    assert(buddy_protocol_parse(raw_nul, sizeof(raw_nul), &event) == BUDDY_EVENT_MALFORMED);
+    assert(buddy_protocol_parse(string_control, sizeof(string_control), &event) ==
+           BUDDY_EVENT_MALFORMED);
+    assert(buddy_protocol_parse(structural_control, sizeof(structural_control), &event) ==
+           BUDDY_EVENT_MALFORMED);
+    assert(parse("{\n\"cmd\":\"status\"\n}", &event) == BUDDY_EVENT_STATUS_REQUEST);
 }
 
 static void test_serializers_write_documented_json(void)
@@ -289,8 +322,10 @@ int main(void)
     test_heartbeat_rejects_nonintegral_counters();
     test_display_strings_are_bounded();
     test_documented_command_events_have_bounded_payloads();
+    test_status_is_a_no_payload_request();
     test_name_command_truncates_at_a_utf8_codepoint_boundary();
     test_parser_rejects_oversized_or_invalid_utf8_lines();
+    test_parser_rejects_raw_nul_and_control_bytes();
     test_serializers_write_documented_json();
     test_serializers_fail_without_writing_past_the_output_bound();
     test_serializers_reject_invalid_or_unterminated_inputs();

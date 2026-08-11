@@ -23,6 +23,7 @@ typedef struct {
     buddy_character_t temporary_character;
     bool connected;
     bool heartbeat_stale;
+    bool confirmation_pending;
 } buddy_state_t;
 
 void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *settings);

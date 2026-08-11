@@ -312,6 +312,40 @@ static bool buddy_json_contains_nul_escape(const char *json, size_t length)
     return false;
 }
 
+static bool buddy_json_raw_controls_valid(const char *json, size_t length)
+{
+    bool in_string = false;
+    bool escaped = false;
+    size_t index;
+
+    for (index = 0; index < length; ++index) {
+        unsigned char byte = (unsigned char)json[index];
+
+        if (byte == 0) {
+            return false;
+        }
+        if (in_string) {
+            if (byte < 0x20) {
+                return false;
+            }
+            if (escaped) {
+                escaped = false;
+            } else if (byte == '\\') {
+                escaped = true;
+            } else if (byte == '"') {
+                in_string = false;
+            }
+        } else {
+            if (byte == '"') {
+                in_string = true;
+            } else if (byte < 0x20 && byte != '\t' && byte != '\n' && byte != '\r') {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
 {
     cJSON *root;
@@ -322,7 +356,8 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     int result = BUDDY_EVENT_MALFORMED;
 
     if (json == NULL || event == NULL || length > BUDDY_JSON_LINE_MAX ||
-        !buddy_utf8_valid(json, length) || buddy_json_contains_nul_escape(json, length)) {
+        !buddy_utf8_valid(json, length) || !buddy_json_raw_controls_valid(json, length) ||
+        buddy_json_contains_nul_escape(json, length)) {
         return BUDDY_EVENT_MALFORMED;
     }
     memset(event, 0, sizeof(*event));
@@ -348,7 +383,11 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     } else if (strcmp(command, "owner") == 0) {
         result = buddy_parse_command(root, "owner", BUDDY_EVENT_OWNER, event) ? (int)event->type : result;
     } else if (strcmp(command, "status") == 0) {
-        result = buddy_parse_command(root, "status", BUDDY_EVENT_STATUS, event) ? (int)event->type : result;
+        if (cJSON_GetObjectItemCaseSensitive(root, "status") == NULL &&
+            cJSON_GetObjectItemCaseSensitive(root, "value") == NULL) {
+            event->type = BUDDY_EVENT_STATUS_REQUEST;
+            result = (int)event->type;
+        }
     } else if (strcmp(command, "unpair") == 0) {
         event->type = BUDDY_EVENT_UNPAIR_CONFIRMATION;
         result = (int)event->type;

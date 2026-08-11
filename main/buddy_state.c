@@ -64,7 +64,7 @@ static buddy_character_t buddy_character_for(const buddy_state_t *state, uint64_
 {
     bool has_prompt = state->prompt.id[0] != '\0' && !state->heartbeat_stale;
 
-    if (state->connection == BUDDY_CONNECTION_CONFIRMING) {
+    if (state->confirmation_pending || state->connection == BUDDY_CONNECTION_CONFIRMING) {
         return BUDDY_CHARACTER_CONFIRMATION;
     }
     if (state->connection == BUDDY_CONNECTION_PAIRING) {
@@ -246,12 +246,26 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_copy(state->message, sizeof(state->message), event->command.value);
         buddy_set_ui_refresh(action);
         break;
+    case BUDDY_EVENT_STATUS_REQUEST:
+        if (action != NULL) {
+            action->type = BUDDY_ACTION_STATUS;
+        }
+        break;
     case BUDDY_EVENT_UNPAIR_CONFIRMATION:
         buddy_invalidate_prompt(state);
+        state->confirmation_pending = true;
         state->connection = BUDDY_CONNECTION_CONFIRMING;
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_KEY_CLICK:
+        if (state->confirmation_pending &&
+            (event->key == BUDDY_KEY_OK || event->key == BUDDY_KEY_BACK)) {
+            state->confirmation_pending = false;
+            state->connection = state->connected ? BUDDY_CONNECTION_CONNECTED
+                                                 : BUDDY_CONNECTION_OFFLINE;
+            buddy_set_ui_refresh(action);
+            break;
+        }
         if (event->key == BUDDY_KEY_OK) {
             buddy_approve_prompt(state, event, now_ms, action);
         }
@@ -285,6 +299,7 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->running = state->running;
     snapshot->tokens = state->tokens;
     snapshot->heartbeat_stale = state->heartbeat_stale;
+    snapshot->confirmation_pending = state->confirmation_pending;
     buddy_copy(snapshot->name, sizeof(snapshot->name), state->name);
     buddy_copy(snapshot->owner, sizeof(snapshot->owner), state->owner);
     buddy_copy(snapshot->time, sizeof(snapshot->time), state->time);

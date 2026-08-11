@@ -53,6 +53,7 @@ typedef enum {
     BUDDY_EVENT_NAME,
     BUDDY_EVENT_OWNER,
     BUDDY_EVENT_STATUS,
+    BUDDY_EVENT_STATUS_REQUEST,
     BUDDY_EVENT_UNPAIR_CONFIRMATION,
     BUDDY_EVENT_KEY_CLICK,
     BUDDY_EVENT_KEY_LONG,
@@ -64,6 +65,7 @@ typedef enum {
     BUDDY_ACTION_UI_REFRESH,
     BUDDY_ACTION_PERMISSION,
     BUDDY_ACTION_SETTINGS,
+    BUDDY_ACTION_STATUS,
 } buddy_action_type_t;
 
 typedef enum {
@@ -152,4 +154,5 @@ typedef struct {
     unsigned running;
     uint64_t tokens;
     bool heartbeat_stale;
+    bool confirmation_pending;
 } buddy_ui_snapshot_t;

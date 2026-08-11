@@ -354,6 +354,36 @@ static void test_protocol_command_events_refresh_the_display(void)
     assert(state.character == BUDDY_CHARACTER_CONFIRMATION);
 }
 
+static void test_status_request_does_not_overwrite_message(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t event = {.type = BUDDY_EVENT_STATUS_REQUEST};
+
+    buddy_state_init(&state, NULL);
+    snprintf(state.message, sizeof(state.message), "%s", "Keep this");
+    buddy_state_reduce(&state, &event, 1000, &action);
+
+    assert(action.type == BUDDY_ACTION_STATUS);
+    assert(strcmp(state.message, "Keep this") == 0);
+}
+
+static void test_unpair_confirmation_survives_a_heartbeat(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t unpair = {.type = BUDDY_EVENT_UNPAIR_CONFIRMATION};
+    buddy_event_t heartbeat = test_heartbeat_event(0, 0);
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &unpair, 1000, &action);
+    buddy_state_reduce(&state, &heartbeat, 1001, &action);
+
+    assert(state.confirmation_pending);
+    assert(state.connection == BUDDY_CONNECTION_CONNECTED);
+    assert(state.character == BUDDY_CHARACTER_CONFIRMATION);
+}
+
 int main(void)
 {
     test_offline_initialization();
@@ -371,5 +401,7 @@ int main(void)
     test_truncated_prompt_id_is_ignored();
     test_long_ok_opens_settings();
     test_protocol_command_events_refresh_the_display();
+    test_status_request_does_not_overwrite_message();
+    test_unpair_confirmation_survives_a_heartbeat();
     return 0;
 }
