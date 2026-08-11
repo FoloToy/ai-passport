@@ -107,10 +107,15 @@ static const buddy_settings_backend_internal_t s_nvs_backend = {
 };
 #endif
 
+static void buddy_settings_snapshot_defaults(buddy_settings_snapshot_t *settings)
+{
+    memset(settings, 0, sizeof(*settings));
+    settings->ble_enabled = true;
+}
+
 static void buddy_settings_defaults(void)
 {
-    memset(&s_settings, 0, sizeof(s_settings));
-    s_settings.ble_enabled = true;
+    buddy_settings_snapshot_defaults(&s_settings);
 }
 
 static uint64_t buddy_settings_now_ms(void)
@@ -286,24 +291,54 @@ esp_err_t buddy_settings_load(buddy_settings_snapshot_t *snapshot)
         return ESP_ERR_INVALID_ARG;
     }
     if (!s_loaded) {
-        length = sizeof(s_settings.name);
-        err = s_backend->get_str(s_backend_context, "name", s_settings.name, &length);
-        if (err != ESP_OK || !buddy_value_is_valid(s_settings.name, sizeof(s_settings.name), false)) {
-            s_settings.name[0] = '\0';
+        buddy_settings_snapshot_t loaded;
+
+        buddy_settings_snapshot_defaults(&loaded);
+        length = sizeof(loaded.name);
+        err = s_backend->get_str(s_backend_context, "name", loaded.name, &length);
+        if (err == ESP_OK) {
+            /* Readable but malformed values use the documented empty default. */
+            if (!buddy_value_is_valid(loaded.name, sizeof(loaded.name), false)) {
+                loaded.name[0] = '\0';
+            }
+        } else if (err != ESP_ERR_NVS_NOT_FOUND) {
+            return err;
         }
-        length = sizeof(s_settings.owner);
-        err = s_backend->get_str(s_backend_context, "owner", s_settings.owner, &length);
-        if (err != ESP_OK || !buddy_value_is_valid(s_settings.owner, sizeof(s_settings.owner), false)) {
-            s_settings.owner[0] = '\0';
+        length = sizeof(loaded.owner);
+        err = s_backend->get_str(s_backend_context, "owner", loaded.owner, &length);
+        if (err == ESP_OK) {
+            if (!buddy_value_is_valid(loaded.owner, sizeof(loaded.owner), false)) {
+                loaded.owner[0] = '\0';
+            }
+        } else if (err != ESP_ERR_NVS_NOT_FOUND) {
+            return err;
         }
         err = s_backend->get_u8(s_backend_context, "ble", &ble);
-        s_settings.ble_enabled = err == ESP_OK && ble <= 1U ? ble != 0U : true;
+        if (err == ESP_OK) {
+            /* Values outside the bool encoding are malformed and default enabled. */
+            loaded.ble_enabled = ble <= 1U ? ble != 0U : true;
+        } else if (err != ESP_ERR_NVS_NOT_FOUND) {
+            return err;
+        }
         err = s_backend->get_u64(s_backend_context, "approve", &value);
-        s_settings.approval_count = err == ESP_OK ? value : 0;
+        if (err == ESP_OK) {
+            loaded.approval_count = value;
+        } else if (err != ESP_ERR_NVS_NOT_FOUND) {
+            return err;
+        }
         err = s_backend->get_u64(s_backend_context, "deny", &value);
-        s_settings.denial_count = err == ESP_OK ? value : 0;
+        if (err == ESP_OK) {
+            loaded.denial_count = value;
+        } else if (err != ESP_ERR_NVS_NOT_FOUND) {
+            return err;
+        }
         err = s_backend->get_u64(s_backend_context, "level", &value);
-        s_settings.highest_celebrated_level = err == ESP_OK ? value : 0;
+        if (err == ESP_OK) {
+            loaded.highest_celebrated_level = value;
+        } else if (err != ESP_ERR_NVS_NOT_FOUND) {
+            return err;
+        }
+        s_settings = loaded;
         s_loaded = true;
     }
     *snapshot = s_settings;

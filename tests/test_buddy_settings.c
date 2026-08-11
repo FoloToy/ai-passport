@@ -17,6 +17,9 @@ typedef struct {
     bool has_approvals;
     bool has_denials;
     bool has_level;
+    esp_err_t get_str_error;
+    esp_err_t get_u8_error;
+    esp_err_t get_u64_error;
     unsigned commit_count;
     unsigned erase_count;
 } fake_storage_t;
@@ -27,6 +30,10 @@ static esp_err_t fake_get_str(void *context, const char *key, char *value, size_
     const char *stored = NULL;
     bool present = false;
     size_t needed;
+
+    if (storage->get_str_error != ESP_OK) {
+        return storage->get_str_error;
+    }
 
     if (strcmp(key, "name") == 0) {
         stored = storage->name;
@@ -68,6 +75,10 @@ static esp_err_t fake_get_u8(void *context, const char *key, uint8_t *value)
 {
     fake_storage_t *storage = context;
 
+    if (storage->get_u8_error != ESP_OK) {
+        return storage->get_u8_error;
+    }
+
     if (strcmp(key, "ble") != 0 || !storage->has_ble) {
         return ESP_ERR_NVS_NOT_FOUND;
     }
@@ -91,6 +102,10 @@ static esp_err_t fake_get_u64(void *context, const char *key, uint64_t *value)
 {
     fake_storage_t *storage = context;
     bool present = false;
+
+    if (storage->get_u64_error != ESP_OK) {
+        return storage->get_u64_error;
+    }
 
     if (strcmp(key, "approve") == 0) {
         *value = storage->approvals;
@@ -165,6 +180,41 @@ static void test_setup(fake_storage_t *storage)
     buddy_settings_test_set_backend(&fake_backend, storage);
     buddy_settings_test_set_time_ms(0);
     assert(buddy_settings_init() == ESP_OK);
+}
+
+static void test_seed_stored_settings(fake_storage_t *storage)
+{
+    snprintf(storage->name, sizeof(storage->name), "%s", "Claude-C3");
+    snprintf(storage->owner, sizeof(storage->owner), "%s", "Ada");
+    storage->ble = 0;
+    storage->approvals = 42;
+    storage->denials = 7;
+    storage->level = 9;
+    storage->has_name = true;
+    storage->has_owner = true;
+    storage->has_ble = true;
+    storage->has_approvals = true;
+    storage->has_denials = true;
+    storage->has_level = true;
+}
+
+static void test_initialize_stored_settings(fake_storage_t *storage)
+{
+    memset(storage, 0, sizeof(*storage));
+    test_seed_stored_settings(storage);
+    buddy_settings_test_set_backend(&fake_backend, storage);
+    buddy_settings_test_set_time_ms(0);
+    assert(buddy_settings_init() == ESP_OK);
+}
+
+static void test_assert_stored_settings(const buddy_settings_snapshot_t *snapshot)
+{
+    assert(strcmp(snapshot->name, "Claude-C3") == 0);
+    assert(strcmp(snapshot->owner, "Ada") == 0);
+    assert(!snapshot->ble_enabled);
+    assert(snapshot->approval_count == 42);
+    assert(snapshot->denial_count == 7);
+    assert(snapshot->highest_celebrated_level == 9);
 }
 
 static void test_rapid_permissions_only_commit_on_forced_flush(void)
@@ -247,6 +297,45 @@ static void test_settings_round_trip_through_storage(void)
     assert(snapshot.highest_celebrated_level == 7);
 }
 
+static void test_string_read_failure_does_not_activate_defaults(void)
+{
+    fake_storage_t storage;
+    buddy_settings_snapshot_t snapshot;
+
+    test_initialize_stored_settings(&storage);
+    storage.get_str_error = ESP_ERR_INVALID_STATE;
+    assert(buddy_settings_load(&snapshot) == ESP_ERR_INVALID_STATE);
+    storage.get_str_error = ESP_OK;
+    assert(buddy_settings_load(&snapshot) == ESP_OK);
+    test_assert_stored_settings(&snapshot);
+}
+
+static void test_ble_read_failure_does_not_activate_defaults(void)
+{
+    fake_storage_t storage;
+    buddy_settings_snapshot_t snapshot;
+
+    test_initialize_stored_settings(&storage);
+    storage.get_u8_error = ESP_ERR_INVALID_STATE;
+    assert(buddy_settings_load(&snapshot) == ESP_ERR_INVALID_STATE);
+    storage.get_u8_error = ESP_OK;
+    assert(buddy_settings_load(&snapshot) == ESP_OK);
+    test_assert_stored_settings(&snapshot);
+}
+
+static void test_counter_read_failure_does_not_activate_defaults(void)
+{
+    fake_storage_t storage;
+    buddy_settings_snapshot_t snapshot;
+
+    test_initialize_stored_settings(&storage);
+    storage.get_u64_error = ESP_ERR_INVALID_STATE;
+    assert(buddy_settings_load(&snapshot) == ESP_ERR_INVALID_STATE);
+    storage.get_u64_error = ESP_OK;
+    assert(buddy_settings_load(&snapshot) == ESP_OK);
+    test_assert_stored_settings(&snapshot);
+}
+
 static void test_factory_reset_only_erases_buddy_backend(void)
 {
     fake_storage_t storage;
@@ -270,6 +359,9 @@ int main(void)
     test_regular_flush_is_limited_to_once_per_minute();
     test_name_validation_and_defaults();
     test_settings_round_trip_through_storage();
+    test_string_read_failure_does_not_activate_defaults();
+    test_ble_read_failure_does_not_activate_defaults();
+    test_counter_read_failure_does_not_activate_defaults();
     test_factory_reset_only_erases_buddy_backend();
     puts("buddy settings tests passed");
     return 0;
