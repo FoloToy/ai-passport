@@ -19,6 +19,7 @@
 #include "host/util/util.h"
 #include "nimble/ble.h"
 #include "nimble/nimble_npl.h"
+#include "nimble/nimble_npl_os.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "nvs.h"
@@ -28,6 +29,7 @@
 
 #include "buddy_line.h"
 #include "buddy_ble_store.h"
+#include "buddy_ble_lifecycle.h"
 #endif
 
 size_t buddy_ble_tx_fragment_size(uint16_t mtu)
@@ -69,6 +71,20 @@ uint32_t buddy_ble_retry_delay_ms(unsigned int attempt)
     return delay_ms > 4000U ? 4000U : delay_ms;
 }
 
+bool buddy_ble_adv_epoch_allows_start(uint32_t snapshot_epoch, uint32_t current_epoch,
+                                      bool start_requested, bool host_synced,
+                                      bool delete_bonds_pending, bool has_physical_link)
+{
+    return snapshot_epoch == current_epoch &&
+           buddy_ble_should_advertise(start_requested, host_synced,
+                                      delete_bonds_pending, has_physical_link);
+}
+
+bool buddy_ble_delete_request_is_new(bool delete_bonds_pending, bool final_reported)
+{
+    return !delete_bonds_pending || final_reported;
+}
+
 #ifndef BUDDY_BLE_HOST_TEST
 
 #define BUDDY_BLE_DEVICE_NAME_SIZE 14U
@@ -79,6 +95,7 @@ typedef struct {
     void *event_context;
     buddy_line_buffer_t rx;
     uint32_t connection_generation;
+    uint32_t advertising_epoch;
     uint16_t conn_handle;
     uint16_t rejecting_conn_handle;
     bool initialized;
@@ -94,6 +111,13 @@ typedef struct {
     uint8_t adv_retry_attempts;
     int delete_bonds_result;
     int termination_failure_reason;
+    ble_addr_t delete_peers[MYNEWT_VAL(BLE_STORE_MAX_BONDS) * 2U];
+    struct ble_store_value_sec delete_peer_secs[MYNEWT_VAL(BLE_STORE_MAX_BONDS) * 2U];
+    bool delete_peer_sec_present[MYNEWT_VAL(BLE_STORE_MAX_BONDS) * 2U];
+    size_t delete_peer_count;
+    struct ble_store_value_local_irk delete_local_irk;
+    bool delete_snapshot_ready;
+    bool init_rollback_blocked;
 } buddy_ble_state_t;
 
 static const char *const s_tag = "buddy_ble";
@@ -401,6 +425,7 @@ static int buddy_reconcile_advertising(void)
     struct ble_gap_adv_params parameters;
     bool desired;
     bool physical_link;
+    uint32_t epoch;
     int rc;
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
@@ -408,10 +433,18 @@ static int buddy_reconcile_advertising(void)
                     s_ble.rejecting_conn_handle != BLE_HS_CONN_HANDLE_NONE;
     desired = buddy_ble_should_advertise(s_ble.start_requested, s_ble.host_synced,
                                          s_ble.delete_bonds_pending, physical_link);
+    epoch = s_ble.advertising_epoch;
     xSemaphoreGive(s_ble.mutex);
 
     if (!desired) {
+        xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+        if (epoch != s_ble.advertising_epoch) {
+            xSemaphoreGive(s_ble.mutex);
+            buddy_schedule_adv_work();
+            return 0;
+        }
         rc = ble_gap_adv_active() ? ble_gap_adv_stop() : 0;
+        xSemaphoreGive(s_ble.mutex);
         if (rc != 0) {
             buddy_schedule_adv_retry(rc);
         } else {
@@ -455,8 +488,19 @@ static int buddy_reconcile_advertising(void)
     parameters.conn_mode = BLE_GAP_CONN_MODE_UND;
     parameters.disc_mode = BLE_GAP_DISC_MODE_GEN;
 
+    xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+    physical_link = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE ||
+                    s_ble.rejecting_conn_handle != BLE_HS_CONN_HANDLE_NONE;
+    if (!buddy_ble_adv_epoch_allows_start(epoch, s_ble.advertising_epoch,
+                                          s_ble.start_requested, s_ble.host_synced,
+                                          s_ble.delete_bonds_pending, physical_link)) {
+        xSemaphoreGive(s_ble.mutex);
+        buddy_schedule_adv_work();
+        return 0;
+    }
     rc = ble_gap_adv_start(s_own_addr_type, NULL, BLE_HS_FOREVER, &parameters, buddy_gap_event,
                            NULL);
+    xSemaphoreGive(s_ble.mutex);
     if (rc != 0) {
         buddy_schedule_adv_retry(rc);
     } else {
@@ -480,6 +524,115 @@ static uint32_t buddy_random_passkey(void)
 }
 
 #define BUDDY_NIMBLE_NVS_NAMESPACE "nimble_bond"
+#define BUDDY_NIMBLE_LOCAL_IRK_PREFIX "local_irk_"
+
+static int buddy_collect_delete_peer(int obj_type, union ble_store_value *value, void *context)
+{
+    buddy_ble_state_t *state = context;
+    size_t index;
+
+    (void)obj_type;
+    for (index = 0; index < state->delete_peer_count; ++index) {
+        if (ble_addr_cmp(&state->delete_peers[index], &value->sec.peer_addr) == 0) {
+            if (obj_type == BLE_STORE_OBJ_TYPE_PEER_SEC) {
+                state->delete_peer_secs[index] = value->sec;
+                state->delete_peer_sec_present[index] = true;
+            }
+            return 0;
+        }
+    }
+    if (state->delete_peer_count >=
+        sizeof(state->delete_peers) / sizeof(state->delete_peers[0])) {
+        return BLE_HS_ENOMEM;
+    }
+    state->delete_peers[state->delete_peer_count++] = value->sec.peer_addr;
+    if (obj_type == BLE_STORE_OBJ_TYPE_PEER_SEC) {
+        state->delete_peer_secs[state->delete_peer_count - 1U] = value->sec;
+        state->delete_peer_sec_present[state->delete_peer_count - 1U] = true;
+    }
+    return 0;
+}
+
+static int buddy_store_snapshot_delete(void)
+{
+    struct ble_store_key_local_irk key = {0};
+    uint8_t active_irk[16];
+    int rc;
+
+    if (s_ble.delete_snapshot_ready) {
+        return 0;
+    }
+    s_ble.delete_peer_count = 0;
+    memset(s_ble.delete_peer_sec_present, 0, sizeof(s_ble.delete_peer_sec_present));
+    rc = ble_store_read_local_irk(&key, &s_ble.delete_local_irk);
+    if (rc != 0) {
+        return rc;
+    }
+    rc = ble_gap_read_local_irk(active_irk);
+    if (rc != 0) {
+        return rc;
+    }
+    if (memcmp(active_irk, s_ble.delete_local_irk.irk, sizeof(active_irk)) != 0) {
+        return BLE_HS_ESTORE_FAIL;
+    }
+    rc = ble_store_iterate(BLE_STORE_OBJ_TYPE_PEER_SEC, buddy_collect_delete_peer, &s_ble);
+    if (rc == 0) {
+        rc = ble_store_iterate(BLE_STORE_OBJ_TYPE_OUR_SEC, buddy_collect_delete_peer, &s_ble);
+    }
+    if (rc == 0) {
+        s_ble.delete_snapshot_ready = true;
+    }
+    return rc;
+}
+
+static int buddy_store_remove_controller_peers(void *context)
+{
+    uint8_t rpa[6];
+    size_t index;
+    int rc;
+
+    (void)context;
+    rc = buddy_store_snapshot_delete();
+    if (rc != 0) {
+        return rc;
+    }
+    for (index = 0; index < s_ble.delete_peer_count; ++index) {
+        const ble_addr_t *peer = &s_ble.delete_peers[index];
+        const uint8_t controller_addr_type = peer->type > BLE_ADDR_RANDOM
+                                                 ? peer->type % 2U
+                                                 : peer->type;
+
+        rc = ble_gap_unpair(peer);
+        if (rc != 0 && rc != BLE_HS_ENOENT) {
+            return rc;
+        }
+        rc = ble_gap_rd_local_resolv_addr(controller_addr_type, peer, rpa);
+        if (rc == 0 && s_ble.delete_peer_sec_present[index]) {
+            /* ble_gap_unpair() in IDF 5.5.3 can report success after a
+             * controller remove failure while deleting the RAM record. Put
+             * the captured peer IRK back so its supported unpair lifecycle
+             * can retry the controller operation. The data gate remains
+             * closed and the verified erase below removes this temporary
+             * record. */
+            rc = ble_store_write_peer_sec(&s_ble.delete_peer_secs[index]);
+            if (rc != 0) {
+                return rc;
+            }
+            rc = ble_gap_unpair(peer);
+            if (rc != 0 && rc != BLE_HS_ENOENT) {
+                return rc;
+            }
+            rc = ble_gap_rd_local_resolv_addr(controller_addr_type, peer, rpa);
+        }
+        if (rc == 0) {
+            return BLE_HS_EBUSY;
+        }
+        if (rc != BLE_HS_HCI_ERR(BLE_ERR_UNK_CONN_ID)) {
+            return rc;
+        }
+    }
+    return 0;
+}
 
 static int buddy_store_erase_persistent(void *context)
 {
@@ -529,6 +682,61 @@ static int buddy_store_reload_volatile(void *context)
     return 0;
 }
 
+static int buddy_store_restore_local_identity(void *context)
+{
+    (void)context;
+    return ble_store_write_local_irk(&s_ble.delete_local_irk);
+}
+
+static int buddy_store_persistent_is_clean(void *context, bool *clean)
+{
+    nvs_handle_t handle;
+    nvs_iterator_t iterator = NULL;
+    struct ble_store_value_local_irk stored_irk;
+    nvs_entry_info_t info;
+    size_t blob_size = sizeof(stored_irk);
+    size_t identity_entries = 0;
+    esp_err_t err;
+
+    (void)context;
+    *clean = false;
+    err = nvs_open(BUDDY_NIMBLE_NVS_NAMESPACE, NVS_READONLY, &handle);
+    if (err != ESP_OK) {
+        return err;
+    }
+    err = nvs_entry_find_in_handle(handle, NVS_TYPE_ANY, &iterator);
+    while (err == ESP_OK) {
+        nvs_entry_info(iterator, &info);
+        if (strncmp(info.key, BUDDY_NIMBLE_LOCAL_IRK_PREFIX,
+                    strlen(BUDDY_NIMBLE_LOCAL_IRK_PREFIX)) != 0) {
+            nvs_release_iterator(iterator);
+            nvs_close(handle);
+            return 0;
+        }
+        ++identity_entries;
+        if (identity_entries != 1U) {
+            nvs_release_iterator(iterator);
+            nvs_close(handle);
+            return 0;
+        }
+        err = nvs_get_blob(handle, info.key, &stored_irk, &blob_size);
+        if (err != ESP_OK || blob_size != sizeof(stored_irk) ||
+            memcmp(&stored_irk, &s_ble.delete_local_irk, sizeof(stored_irk)) != 0) {
+            nvs_release_iterator(iterator);
+            nvs_close(handle);
+            return err == ESP_OK ? ESP_ERR_INVALID_STATE : err;
+        }
+        err = nvs_entry_next(&iterator);
+    }
+    nvs_release_iterator(iterator);
+    nvs_close(handle);
+    if (err != ESP_ERR_NVS_NOT_FOUND) {
+        return err;
+    }
+    *clean = identity_entries == 1U;
+    return 0;
+}
+
 static int buddy_store_volatile_is_empty(void *context, bool *empty)
 {
     static const int object_types[] = {
@@ -537,7 +745,6 @@ static int buddy_store_volatile_is_empty(void *context, bool *empty)
         BLE_STORE_OBJ_TYPE_CCCD,
         BLE_STORE_OBJ_TYPE_CSFC,
         BLE_STORE_OBJ_TYPE_PEER_ADDR,
-        BLE_STORE_OBJ_TYPE_LOCAL_IRK,
 #if MYNEWT_VAL(ENC_ADV_DATA)
         BLE_STORE_OBJ_TYPE_ENC_ADV_DATA,
 #endif
@@ -556,17 +763,68 @@ static int buddy_store_volatile_is_empty(void *context, bool *empty)
             return 0;
         }
     }
+    {
+        struct ble_store_key_local_irk key = {0};
+        struct ble_store_value_local_irk identity;
+        int count;
+        int rc = ble_store_util_count(BLE_STORE_OBJ_TYPE_LOCAL_IRK, &count);
+        if (rc != 0) {
+            return rc;
+        }
+        if (count != 1 || ble_store_read_local_irk(&key, &identity) != 0 ||
+            memcmp(&identity, &s_ble.delete_local_irk, sizeof(identity)) != 0) {
+            *empty = false;
+            return 0;
+        }
+    }
     *empty = true;
+    return 0;
+}
+
+static int buddy_store_controller_is_clean(void *context, bool *clean)
+{
+    uint8_t active_irk[16];
+    uint8_t rpa[6];
+    size_t index;
+    int rc;
+
+    (void)context;
+    *clean = false;
+    rc = ble_gap_read_local_irk(active_irk);
+    if (rc != 0) {
+        return rc;
+    }
+    if (memcmp(active_irk, s_ble.delete_local_irk.irk, sizeof(active_irk)) != 0) {
+        return 0;
+    }
+    for (index = 0; index < s_ble.delete_peer_count; ++index) {
+        const ble_addr_t *peer = &s_ble.delete_peers[index];
+        const uint8_t controller_addr_type = peer->type > BLE_ADDR_RANDOM
+                                                 ? peer->type % 2U
+                                                 : peer->type;
+        rc = ble_gap_rd_local_resolv_addr(controller_addr_type, peer, rpa);
+        if (rc == 0) {
+            return 0;
+        }
+        if (rc != BLE_HS_HCI_ERR(BLE_ERR_UNK_CONN_ID)) {
+            return rc;
+        }
+    }
+    *clean = true;
     return 0;
 }
 
 static int buddy_delete_all_peers(void)
 {
     const buddy_ble_store_ops_t ops = {
+        .remove_controller_peers = buddy_store_remove_controller_peers,
         .erase_persistent = buddy_store_erase_persistent,
         .persistent_is_empty = buddy_store_persistent_is_empty,
         .reload_volatile = buddy_store_reload_volatile,
+        .restore_local_identity = buddy_store_restore_local_identity,
+        .persistent_is_clean = buddy_store_persistent_is_clean,
         .volatile_is_empty = buddy_store_volatile_is_empty,
+        .controller_is_clean = buddy_store_controller_is_clean,
     };
 
     return buddy_ble_store_clear_verified(&ops);
@@ -619,6 +877,7 @@ static void buddy_finish_bond_deletion(struct ble_npl_event *event)
     s_ble.delete_bonds_result = rc;
     if (rc == 0) {
         s_ble.delete_bonds_pending = false;
+        ++s_ble.advertising_epoch;
         s_ble.delete_attempts = 0;
         s_ble.delete_final_reported = false;
     }
@@ -659,9 +918,11 @@ static void buddy_on_disconnect(uint16_t conn_handle, int reason)
         s_ble.secure = false;
         buddy_line_init(&s_ble.rx);
         emit_disconnect = true;
+        ++s_ble.advertising_epoch;
     }
     if (s_ble.rejecting_conn_handle == conn_handle) {
         s_ble.rejecting_conn_handle = BLE_HS_CONN_HANDLE_NONE;
+        ++s_ble.advertising_epoch;
     }
     delete_bonds = s_ble.delete_bonds_pending;
     advertise = s_ble.start_requested && !delete_bonds &&
@@ -698,6 +959,7 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             int rc;
 
             s_ble.rejecting_conn_handle = event->connect.conn_handle;
+            ++s_ble.advertising_epoch;
             xSemaphoreGive(s_ble.mutex);
             rc = ble_gap_terminate(event->connect.conn_handle, BLE_ERR_CONN_LIMIT);
             if (rc != 0) {
@@ -706,6 +968,7 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             return rc;
         }
         s_ble.conn_handle = event->connect.conn_handle;
+        ++s_ble.advertising_epoch;
         ++s_ble.connection_generation;
         s_ble.encrypted = false;
         s_ble.secure = false;
@@ -876,6 +1139,7 @@ static void buddy_on_reset(int reason)
     s_ble.encrypted = false;
     s_ble.secure = false;
     s_ble.host_synced = false;
+    ++s_ble.advertising_epoch;
     s_ble.reset_scheduled = false;
     buddy_line_init(&s_ble.rx);
     xSemaphoreGive(s_ble.mutex);
@@ -905,6 +1169,7 @@ static void buddy_on_sync(void)
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     s_ble.host_synced = true;
+    ++s_ble.advertising_epoch;
     delete_bonds = s_ble.delete_bonds_pending;
     xSemaphoreGive(s_ble.mutex);
 
@@ -926,63 +1191,40 @@ static void buddy_host_task(void *context)
     nimble_port_freertos_deinit();
 }
 
-esp_err_t buddy_ble_init(const buddy_ble_config_t *config)
+static int buddy_runtime_host_init(void *context)
 {
-    uint8_t mac[6];
-    esp_err_t err;
-    int rc;
+    (void)context;
+    return nimble_port_init();
+}
 
-    if (config == NULL || config->event_cb == NULL) {
-        return ESP_ERR_INVALID_ARG;
-    }
-    if (s_ble.initialized) {
-        return ESP_ERR_INVALID_STATE;
-    }
-
-    s_ble.mutex = xSemaphoreCreateMutex();
-    if (s_ble.mutex == NULL) {
-        return ESP_ERR_NO_MEM;
-    }
-    s_ble.event_cb = config->event_cb;
-    s_ble.event_context = config->event_context;
-    buddy_line_init(&s_ble.rx);
+static int buddy_runtime_events_init(void *context)
+{
+    (void)context;
     ble_npl_event_init(&s_delete_bonds_event, buddy_finish_bond_deletion, NULL);
     ble_npl_event_init(&s_termination_recovery_event, buddy_recover_termination, NULL);
     ble_npl_event_init(&s_adv_reconcile_event, buddy_adv_reconcile_work, NULL);
+    return 0;
+}
 
-    err = esp_read_mac(mac, ESP_MAC_BT);
-    if (err != ESP_OK) {
-        vSemaphoreDelete(s_ble.mutex);
-        s_ble.mutex = NULL;
-        return err;
-    }
-    (void)snprintf(s_device_name, sizeof(s_device_name), "Claude-%02X%02X%02X", mac[3], mac[4],
-                   mac[5]);
+static int buddy_runtime_bond_callout_init(void *context)
+{
+    (void)context;
+    return ble_npl_callout_init(&s_bond_retry_callout, nimble_port_get_dflt_eventq(),
+                                buddy_finish_bond_deletion, NULL);
+}
 
-    err = nimble_port_init();
-    if (err != ESP_OK) {
-        vSemaphoreDelete(s_ble.mutex);
-        s_ble.mutex = NULL;
-        return err;
-    }
+static int buddy_runtime_adv_callout_init(void *context)
+{
+    (void)context;
+    return ble_npl_callout_init(&s_adv_retry_callout, nimble_port_get_dflt_eventq(),
+                                buddy_adv_retry, NULL);
+}
 
-    rc = ble_npl_callout_init(&s_bond_retry_callout, nimble_port_get_dflt_eventq(),
-                              buddy_finish_bond_deletion, NULL);
-    if (rc != 0) {
-        (void)nimble_port_deinit();
-        vSemaphoreDelete(s_ble.mutex);
-        s_ble.mutex = NULL;
-        return buddy_ble_error(rc);
-    }
-    rc = ble_npl_callout_init(&s_adv_retry_callout, nimble_port_get_dflt_eventq(),
-                              buddy_adv_retry, NULL);
-    if (rc != 0) {
-        (void)nimble_port_deinit();
-        vSemaphoreDelete(s_ble.mutex);
-        s_ble.mutex = NULL;
-        return buddy_ble_error(rc);
-    }
+static int buddy_runtime_gatt_init(void *context)
+{
+    int rc;
 
+    (void)context;
     ble_hs_cfg.reset_cb = buddy_on_reset;
     ble_hs_cfg.sync_cb = buddy_on_sync;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
@@ -1004,10 +1246,99 @@ esp_err_t buddy_ble_init(const buddy_ble_config_t *config)
     if (rc == 0) {
         rc = ble_svc_gap_device_name_set(s_device_name);
     }
-    if (rc != 0) {
-        (void)nimble_port_deinit();
+    return rc;
+}
+
+static void buddy_runtime_adv_callout_deinit(void *context)
+{
+    (void)context;
+    ble_npl_callout_stop(&s_adv_retry_callout);
+    ble_npl_callout_deinit(&s_adv_retry_callout);
+}
+
+static void buddy_runtime_bond_callout_deinit(void *context)
+{
+    (void)context;
+    ble_npl_callout_stop(&s_bond_retry_callout);
+    ble_npl_callout_deinit(&s_bond_retry_callout);
+}
+
+static void buddy_runtime_events_deinit(void *context)
+{
+    (void)context;
+    ble_npl_event_deinit(&s_adv_reconcile_event);
+    ble_npl_event_deinit(&s_termination_recovery_event);
+    ble_npl_event_deinit(&s_delete_bonds_event);
+}
+
+static int buddy_runtime_host_deinit(void *context)
+{
+    (void)context;
+    return nimble_port_deinit();
+}
+
+static void buddy_runtime_clear(void *context)
+{
+    (void)context;
+    memset(&s_bond_retry_callout, 0, sizeof(s_bond_retry_callout));
+    memset(&s_adv_retry_callout, 0, sizeof(s_adv_retry_callout));
+    memset(&s_delete_bonds_event, 0, sizeof(s_delete_bonds_event));
+    memset(&s_termination_recovery_event, 0, sizeof(s_termination_recovery_event));
+    memset(&s_adv_reconcile_event, 0, sizeof(s_adv_reconcile_event));
+}
+
+esp_err_t buddy_ble_init(const buddy_ble_config_t *config)
+{
+    const buddy_ble_lifecycle_ops_t lifecycle_ops = {
+        .host_init = buddy_runtime_host_init,
+        .events_init = buddy_runtime_events_init,
+        .bond_callout_init = buddy_runtime_bond_callout_init,
+        .adv_callout_init = buddy_runtime_adv_callout_init,
+        .gatt_init = buddy_runtime_gatt_init,
+        .adv_callout_deinit = buddy_runtime_adv_callout_deinit,
+        .bond_callout_deinit = buddy_runtime_bond_callout_deinit,
+        .events_deinit = buddy_runtime_events_deinit,
+        .host_deinit = buddy_runtime_host_deinit,
+        .clear = buddy_runtime_clear,
+    };
+    uint8_t mac[6];
+    bool retry_safe;
+    esp_err_t err;
+    int rc;
+
+    if (config == NULL || config->event_cb == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (s_ble.initialized || s_ble.init_rollback_blocked) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    s_ble.mutex = xSemaphoreCreateMutex();
+    if (s_ble.mutex == NULL) {
+        return ESP_ERR_NO_MEM;
+    }
+    s_ble.event_cb = config->event_cb;
+    s_ble.event_context = config->event_context;
+    buddy_line_init(&s_ble.rx);
+    err = esp_read_mac(mac, ESP_MAC_BT);
+    if (err != ESP_OK) {
         vSemaphoreDelete(s_ble.mutex);
         s_ble.mutex = NULL;
+        return err;
+    }
+    (void)snprintf(s_device_name, sizeof(s_device_name), "Claude-%02X%02X%02X", mac[3], mac[4],
+                   mac[5]);
+
+    rc = buddy_ble_lifecycle_init(&lifecycle_ops, &retry_safe);
+    if (rc != 0) {
+        if (!retry_safe) {
+            s_ble.init_rollback_blocked = true;
+            return buddy_ble_error(rc);
+        }
+        vSemaphoreDelete(s_ble.mutex);
+        s_ble.mutex = NULL;
+        s_ble.event_cb = NULL;
+        s_ble.event_context = NULL;
         return buddy_ble_error(rc);
     }
 
@@ -1027,6 +1358,7 @@ esp_err_t buddy_ble_start(void)
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     s_ble.start_requested = true;
+    ++s_ble.advertising_epoch;
     launch_host = !s_ble.host_running;
     if (launch_host) {
         s_ble.host_running = true;
@@ -1055,6 +1387,7 @@ esp_err_t buddy_ble_stop(void)
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     s_ble.start_requested = false;
+    ++s_ble.advertising_epoch;
     ++s_ble.connection_generation;
     s_ble.encrypted = false;
     s_ble.secure = false;
@@ -1156,19 +1489,27 @@ esp_err_t buddy_ble_delete_bonds(void)
 {
     uint16_t conn_handle;
     bool launch_host;
+    bool new_request;
 
     if (!s_ble.initialized) {
         return ESP_ERR_INVALID_STATE;
     }
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+    new_request = buddy_ble_delete_request_is_new(s_ble.delete_bonds_pending,
+                                                   s_ble.delete_final_reported);
     s_ble.delete_bonds_pending = true;
+    ++s_ble.advertising_epoch;
     ++s_ble.connection_generation;
     s_ble.encrypted = false;
     s_ble.secure = false;
-    s_ble.delete_bonds_result = 0;
-    s_ble.delete_attempts = 0;
-    s_ble.delete_final_reported = false;
+    if (new_request) {
+        s_ble.delete_bonds_result = 0;
+        s_ble.delete_attempts = 0;
+        s_ble.delete_final_reported = false;
+        s_ble.delete_snapshot_ready = false;
+        s_ble.delete_peer_count = 0;
+    }
     conn_handle = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE
                       ? s_ble.conn_handle
                       : s_ble.rejecting_conn_handle;

@@ -9,6 +9,7 @@ idf_component_register(
          "buddy_line.c"
          "buddy_ble.c"
          "buddy_ble_store.c"
+         "buddy_ble_lifecycle.c"
          "buddy_settings.c"
     INCLUDE_DIRS "."
     REQUIRES bsp bt esp_hw_support esp_timer nvs_flash

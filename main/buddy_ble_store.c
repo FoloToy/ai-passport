@@ -15,6 +15,13 @@ int buddy_ble_store_clear_verified(const buddy_ble_store_ops_t *ops)
         return BUDDY_BLE_STORE_INVALID_ARG;
     }
 
+    if (ops->remove_controller_peers != NULL) {
+        rc = ops->remove_controller_peers(ops->context);
+        if (rc != 0) {
+            return rc;
+        }
+    }
+
     rc = ops->erase_persistent(ops->context);
     if (rc != 0) {
         return rc;
@@ -31,7 +38,15 @@ int buddy_ble_store_clear_verified(const buddy_ble_store_ops_t *ops)
     if (rc != 0) {
         return rc;
     }
-    rc = ops->persistent_is_empty(ops->context, &empty);
+    if (ops->restore_local_identity != NULL) {
+        rc = ops->restore_local_identity(ops->context);
+        if (rc != 0) {
+            return rc;
+        }
+    }
+    rc = ops->persistent_is_clean != NULL
+             ? ops->persistent_is_clean(ops->context, &empty)
+             : ops->persistent_is_empty(ops->context, &empty);
     if (rc != 0) {
         return rc;
     }
@@ -42,5 +57,17 @@ int buddy_ble_store_clear_verified(const buddy_ble_store_ops_t *ops)
     if (rc != 0) {
         return rc;
     }
-    return empty ? 0 : BUDDY_BLE_STORE_NOT_EMPTY;
+    if (!empty) {
+        return BUDDY_BLE_STORE_NOT_EMPTY;
+    }
+    if (ops->controller_is_clean != NULL) {
+        rc = ops->controller_is_clean(ops->context, &empty);
+        if (rc != 0) {
+            return rc;
+        }
+        if (!empty) {
+            return BUDDY_BLE_STORE_NOT_EMPTY;
+        }
+    }
+    return 0;
 }
