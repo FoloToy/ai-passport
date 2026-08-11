@@ -15,41 +15,132 @@ typedef struct {
     bool valid;
 } buddy_json_writer_t;
 
-static void buddy_copy_string(char *destination, size_t destination_size, const char *source,
-                              size_t *source_length, bool *truncated)
+static size_t buddy_bounded_length(const char *value, size_t limit)
 {
-    size_t length = 0;
+    size_t length;
 
-    if (source != NULL) {
-        length = strlen(source);
+    if (value == NULL) {
+        return 0;
     }
-    if (source_length != NULL) {
-        *source_length = length;
+    for (length = 0; length < limit && value[length] != '\0'; ++length) {
     }
-    if (truncated != NULL) {
-        *truncated = length >= destination_size;
-    }
-    if (destination_size == 0) {
-        return;
-    }
-    if (source != NULL) {
-        size_t copied = length;
-
-        if (copied >= destination_size) {
-            copied = destination_size - 1;
-        }
-        memcpy(destination, source, copied);
-        destination[copied] = '\0';
-        return;
-    }
-    destination[0] = '\0';
+    return length;
 }
 
-static const char *buddy_json_string(const cJSON *object, const char *name)
+static bool buddy_utf8_next(const unsigned char *data, size_t length, size_t *width)
+{
+    unsigned char first;
+
+    if (length == 0) {
+        return false;
+    }
+    first = data[0];
+    if (first <= 0x7f) {
+        *width = 1;
+        return true;
+    }
+    if (first >= 0xc2 && first <= 0xdf && length >= 2 &&
+        data[1] >= 0x80 && data[1] <= 0xbf) {
+        *width = 2;
+        return true;
+    }
+    if (first == 0xe0 && length >= 3 && data[1] >= 0xa0 && data[1] <= 0xbf &&
+        data[2] >= 0x80 && data[2] <= 0xbf) {
+        *width = 3;
+        return true;
+    }
+    if (first >= 0xe1 && first <= 0xec && length >= 3 &&
+        data[1] >= 0x80 && data[1] <= 0xbf && data[2] >= 0x80 && data[2] <= 0xbf) {
+        *width = 3;
+        return true;
+    }
+    if (first == 0xed && length >= 3 && data[1] >= 0x80 && data[1] <= 0x9f &&
+        data[2] >= 0x80 && data[2] <= 0xbf) {
+        *width = 3;
+        return true;
+    }
+    if (first >= 0xee && first <= 0xef && length >= 3 &&
+        data[1] >= 0x80 && data[1] <= 0xbf && data[2] >= 0x80 && data[2] <= 0xbf) {
+        *width = 3;
+        return true;
+    }
+    if (first == 0xf0 && length >= 4 && data[1] >= 0x90 && data[1] <= 0xbf &&
+        data[2] >= 0x80 && data[2] <= 0xbf && data[3] >= 0x80 && data[3] <= 0xbf) {
+        *width = 4;
+        return true;
+    }
+    if (first >= 0xf1 && first <= 0xf3 && length >= 4 &&
+        data[1] >= 0x80 && data[1] <= 0xbf && data[2] >= 0x80 && data[2] <= 0xbf &&
+        data[3] >= 0x80 && data[3] <= 0xbf) {
+        *width = 4;
+        return true;
+    }
+    if (first == 0xf4 && length >= 4 && data[1] >= 0x80 && data[1] <= 0x8f &&
+        data[2] >= 0x80 && data[2] <= 0xbf && data[3] >= 0x80 && data[3] <= 0xbf) {
+        *width = 4;
+        return true;
+    }
+    return false;
+}
+
+static bool buddy_utf8_valid(const char *value, size_t length)
+{
+    size_t offset = 0;
+
+    while (offset < length) {
+        size_t width;
+
+        if (!buddy_utf8_next((const unsigned char *)value + offset, length - offset, &width)) {
+            return false;
+        }
+        offset += width;
+    }
+    return true;
+}
+
+static bool buddy_copy_utf8(char *destination, size_t destination_size, const char *source,
+                            size_t source_length, bool *truncated)
+{
+    size_t offset = 0;
+    size_t copied = 0;
+
+    if (destination_size == 0 || (source != NULL && !buddy_utf8_valid(source, source_length))) {
+        return false;
+    }
+    while (source != NULL && offset < source_length) {
+        size_t width;
+
+        (void)buddy_utf8_next((const unsigned char *)source + offset, source_length - offset, &width);
+        if (width > destination_size - 1 - copied) {
+            break;
+        }
+        memcpy(destination + copied, source + offset, width);
+        copied += width;
+        offset += width;
+    }
+    destination[copied] = '\0';
+    if (truncated != NULL) {
+        *truncated = offset != source_length;
+    }
+    return true;
+}
+
+static bool buddy_json_optional_string(const cJSON *object, const char *name,
+                                       const char **value, size_t *length)
 {
     const cJSON *item = cJSON_GetObjectItemCaseSensitive(object, name);
 
-    return cJSON_IsString(item) && item->valuestring != NULL ? item->valuestring : NULL;
+    *value = NULL;
+    *length = 0;
+    if (item == NULL) {
+        return true;
+    }
+    if (!cJSON_IsString(item) || item->valuestring == NULL) {
+        return false;
+    }
+    *value = item->valuestring;
+    *length = buddy_bounded_length(*value, BUDDY_JSON_LINE_MAX + 1);
+    return *length <= BUDDY_JSON_LINE_MAX && buddy_utf8_valid(*value, *length);
 }
 
 static bool buddy_json_unsigned(const cJSON *object, const char *name, unsigned *value)
@@ -83,21 +174,30 @@ static bool buddy_json_u64(const cJSON *object, const char *name, uint64_t *valu
 
 static bool buddy_parse_prompt(const cJSON *prompt_json, unsigned running, buddy_event_t *event)
 {
-    const char *id = buddy_json_string(prompt_json, "id");
-    const char *tool = buddy_json_string(prompt_json, "tool");
-    const char *hint = buddy_json_string(prompt_json, "hint");
+    const char *id;
+    const char *tool;
+    const char *hint;
+    size_t id_length;
+    size_t tool_length;
+    size_t hint_length;
 
-    if (id == NULL || id[0] == '\0') {
+    if (!buddy_json_optional_string(prompt_json, "id", &id, &id_length) || id == NULL ||
+        id_length == 0 || id_length >= sizeof(event->prompt.id) ||
+        !buddy_json_optional_string(prompt_json, "tool", &tool, &tool_length) ||
+        !buddy_json_optional_string(prompt_json, "hint", &hint, &hint_length)) {
         return false;
     }
     event->type = BUDDY_EVENT_PROMPT;
     event->prompt.connected = true;
     event->prompt.running = running;
-    buddy_copy_string(event->prompt.id, sizeof(event->prompt.id), id, &event->prompt.id_length,
-                      &event->prompt.id_truncated);
-    buddy_copy_string(event->prompt.tool, sizeof(event->prompt.tool), tool, NULL, NULL);
-    buddy_copy_string(event->prompt.hint, sizeof(event->prompt.hint), hint, NULL, NULL);
-    return true;
+    event->prompt.id_length = id_length;
+    event->prompt.id_truncated = false;
+    return buddy_copy_utf8(event->prompt.id, sizeof(event->prompt.id), id, id_length,
+                           &event->prompt.id_truncated) &&
+           buddy_copy_utf8(event->prompt.tool, sizeof(event->prompt.tool), tool, tool_length,
+                           &event->prompt.tool_truncated) &&
+           buddy_copy_utf8(event->prompt.hint, sizeof(event->prompt.hint), hint, hint_length,
+                           &event->prompt.hint_truncated);
 }
 
 static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
@@ -107,21 +207,27 @@ static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
     const char *name;
     const char *owner;
     const char *status;
+    size_t name_length;
+    size_t owner_length;
+    size_t status_length;
     unsigned running = 0;
     unsigned index;
 
     if (!buddy_json_unsigned(object, "running", &running) ||
-        !buddy_json_u64(object, "tokens", &event->heartbeat.tokens)) {
+        !buddy_json_u64(object, "tokens", &event->heartbeat.tokens) ||
+        !buddy_json_optional_string(object, "name", &name, &name_length) ||
+        !buddy_json_optional_string(object, "owner", &owner, &owner_length) ||
+        !buddy_json_optional_string(object, "status", &status, &status_length) ||
+        !buddy_copy_utf8(event->heartbeat.name, sizeof(event->heartbeat.name), name, name_length,
+                         &event->heartbeat.name_truncated) ||
+        !buddy_copy_utf8(event->heartbeat.owner, sizeof(event->heartbeat.owner), owner, owner_length,
+                         &event->heartbeat.owner_truncated) ||
+        !buddy_copy_utf8(event->heartbeat.message, sizeof(event->heartbeat.message), status,
+                         status_length, &event->heartbeat.message_truncated)) {
         return false;
     }
     event->heartbeat.connected = true;
     event->heartbeat.running = running;
-    name = buddy_json_string(object, "name");
-    owner = buddy_json_string(object, "owner");
-    status = buddy_json_string(object, "status");
-    buddy_copy_string(event->heartbeat.name, sizeof(event->heartbeat.name), name, NULL, NULL);
-    buddy_copy_string(event->heartbeat.owner, sizeof(event->heartbeat.owner), owner, NULL, NULL);
-    buddy_copy_string(event->heartbeat.message, sizeof(event->heartbeat.message), status, NULL, NULL);
 
     entries = cJSON_GetObjectItemCaseSensitive(object, "entries");
     if (entries != NULL) {
@@ -130,6 +236,8 @@ static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
         }
         for (index = 0; index < BUDDY_ENTRY_COUNT; ++index) {
             const cJSON *entry = cJSON_GetArrayItem(entries, (int)index);
+            const char *entry_value;
+            size_t entry_length;
 
             if (entry == NULL) {
                 break;
@@ -137,8 +245,14 @@ static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
             if (!cJSON_IsString(entry) || entry->valuestring == NULL) {
                 return false;
             }
-            buddy_copy_string(event->heartbeat.entries[index],
-                              sizeof(event->heartbeat.entries[index]), entry->valuestring, NULL, NULL);
+            entry_value = entry->valuestring;
+            entry_length = buddy_bounded_length(entry_value, BUDDY_JSON_LINE_MAX + 1);
+            if (entry_length > BUDDY_JSON_LINE_MAX ||
+                !buddy_copy_utf8(event->heartbeat.entries[index],
+                                 sizeof(event->heartbeat.entries[index]), entry_value, entry_length,
+                                 &event->heartbeat.entries_truncated[index])) {
+                return false;
+            }
         }
     }
 
@@ -150,10 +264,39 @@ static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
     return true;
 }
 
+static bool buddy_parse_command(const cJSON *object, const char *field, buddy_event_type_t type,
+                                buddy_event_t *event)
+{
+    const char *value;
+    size_t length;
+    size_t value_size = sizeof(event->command.value);
+
+    if (type == BUDDY_EVENT_NAME) {
+        value_size = BUDDY_NAME_MAX;
+    } else if (type == BUDDY_EVENT_OWNER) {
+        value_size = BUDDY_OWNER_MAX;
+    }
+
+    if (!buddy_json_optional_string(object, field, &value, &length)) {
+        return false;
+    }
+    if (value == NULL && !buddy_json_optional_string(object, "value", &value, &length)) {
+        return false;
+    }
+    if (value == NULL ||
+        !buddy_copy_utf8(event->command.value, value_size, value, length,
+                         &event->command.value_truncated)) {
+        return false;
+    }
+    event->type = type;
+    return true;
+}
+
 static bool buddy_is_unsupported_folder_command(const char *command)
 {
-    return strcmp(command, "char_begin") == 0 || strncmp(command, "char_", 5) == 0 ||
-           strncmp(command, "folder_", 7) == 0;
+    return strcmp(command, "char_begin") == 0 || strcmp(command, "file") == 0 ||
+           strcmp(command, "chunk") == 0 || strcmp(command, "file_end") == 0 ||
+           strcmp(command, "char_end") == 0 || strncmp(command, "folder_", 7) == 0;
 }
 
 static bool buddy_json_contains_nul_escape(const char *json, size_t length)
@@ -174,20 +317,19 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     cJSON *root;
     const char *end = NULL;
     const char *command;
+    size_t command_length;
     unsigned running = 0;
     int result = BUDDY_EVENT_MALFORMED;
 
-    if (json == NULL || event == NULL || buddy_json_contains_nul_escape(json, length)) {
+    if (json == NULL || event == NULL || length > BUDDY_JSON_LINE_MAX ||
+        !buddy_utf8_valid(json, length) || buddy_json_contains_nul_escape(json, length)) {
         return BUDDY_EVENT_MALFORMED;
     }
     memset(event, 0, sizeof(*event));
     root = cJSON_ParseWithLengthOpts(json, length, &end, 0);
-    if (root == NULL || end != json + length || !cJSON_IsObject(root)) {
-        cJSON_Delete(root);
-        return BUDDY_EVENT_MALFORMED;
-    }
-    command = buddy_json_string(root, "cmd");
-    if (command == NULL) {
+    if (root == NULL || end != json + length || !cJSON_IsObject(root) ||
+        !buddy_json_optional_string(root, "cmd", &command, &command_length) || command == NULL ||
+        command_length == 0) {
         cJSON_Delete(root);
         return BUDDY_EVENT_MALFORMED;
     }
@@ -197,12 +339,19 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
         }
     } else if (strcmp(command, "prompt") == 0) {
         if (buddy_json_unsigned(root, "running", &running) && buddy_parse_prompt(root, running, event)) {
-            result = event->type;
+            result = (int)event->type;
         }
+    } else if (strcmp(command, "time") == 0) {
+        result = buddy_parse_command(root, "time", BUDDY_EVENT_TIME, event) ? (int)event->type : result;
+    } else if (strcmp(command, "name") == 0) {
+        result = buddy_parse_command(root, "name", BUDDY_EVENT_NAME, event) ? (int)event->type : result;
+    } else if (strcmp(command, "owner") == 0) {
+        result = buddy_parse_command(root, "owner", BUDDY_EVENT_OWNER, event) ? (int)event->type : result;
+    } else if (strcmp(command, "status") == 0) {
+        result = buddy_parse_command(root, "status", BUDDY_EVENT_STATUS, event) ? (int)event->type : result;
     } else if (strcmp(command, "unpair") == 0) {
-        event->type = BUDDY_EVENT_HEARTBEAT;
-        event->heartbeat.connected = false;
-        result = event->type;
+        event->type = BUDDY_EVENT_UNPAIR_CONFIRMATION;
+        result = (int)event->type;
     } else if (buddy_is_unsupported_folder_command(command)) {
         result = BUDDY_EVENT_UNSUPPORTED_COMMAND;
     } else {
@@ -238,18 +387,23 @@ static void buddy_writer_char(buddy_json_writer_t *writer, char value)
 
 static void buddy_writer_literal(buddy_json_writer_t *writer, const char *value)
 {
-    while (*value != '\0') {
+    while (writer->valid && *value != '\0') {
         buddy_writer_char(writer, *value++);
     }
 }
 
-static void buddy_writer_json_string(buddy_json_writer_t *writer, const char *value)
+static void buddy_writer_json_string(buddy_json_writer_t *writer, const char *value, size_t length)
 {
     static const char digits[] = "0123456789abcdef";
+    size_t index;
 
+    if (!writer->valid || !buddy_utf8_valid(value, length)) {
+        writer->valid = false;
+        return;
+    }
     buddy_writer_char(writer, '"');
-    while (value != NULL && *value != '\0') {
-        unsigned char byte = (unsigned char)*value++;
+    for (index = 0; writer->valid && index < length; ++index) {
+        unsigned char byte = (unsigned char)value[index];
 
         switch (byte) {
         case '"':
@@ -324,15 +478,17 @@ int buddy_protocol_permission_json(char *json, size_t size, const char *id,
 {
     buddy_json_writer_t writer;
     const char *decision_name = buddy_decision_name(decision);
+    size_t id_length = buddy_bounded_length(id, BUDDY_PROMPT_ID_MAX);
 
-    if (id == NULL || id[0] == '\0' || decision_name == NULL) {
+    if (id == NULL || id_length == 0 || id_length == BUDDY_PROMPT_ID_MAX ||
+        !buddy_utf8_valid(id, id_length) || decision_name == NULL) {
         return 0;
     }
     buddy_writer_init(&writer, json, size);
     buddy_writer_literal(&writer, "{\"cmd\":\"permission\",\"id\":");
-    buddy_writer_json_string(&writer, id);
+    buddy_writer_json_string(&writer, id, id_length);
     buddy_writer_literal(&writer, ",\"decision\":");
-    buddy_writer_json_string(&writer, decision_name);
+    buddy_writer_json_string(&writer, decision_name, strlen(decision_name));
     buddy_writer_literal(&writer, "}\n");
     return buddy_writer_finish(&writer);
 }
@@ -350,17 +506,29 @@ int buddy_protocol_ack_json(char *json, size_t size, bool ok)
 int buddy_protocol_status_json(char *json, size_t size, const buddy_heartbeat_t *heartbeat)
 {
     buddy_json_writer_t writer;
+    size_t name_length;
+    size_t owner_length;
+    size_t message_length;
 
     if (heartbeat == NULL) {
         return 0;
     }
+    name_length = buddy_bounded_length(heartbeat->name, sizeof(heartbeat->name));
+    owner_length = buddy_bounded_length(heartbeat->owner, sizeof(heartbeat->owner));
+    message_length = buddy_bounded_length(heartbeat->message, sizeof(heartbeat->message));
+    if (name_length == sizeof(heartbeat->name) || owner_length == sizeof(heartbeat->owner) ||
+        message_length == sizeof(heartbeat->message) || !buddy_utf8_valid(heartbeat->name, name_length) ||
+        !buddy_utf8_valid(heartbeat->owner, owner_length) ||
+        !buddy_utf8_valid(heartbeat->message, message_length)) {
+        return 0;
+    }
     buddy_writer_init(&writer, json, size);
     buddy_writer_literal(&writer, "{\"cmd\":\"status\",\"name\":");
-    buddy_writer_json_string(&writer, heartbeat->name);
+    buddy_writer_json_string(&writer, heartbeat->name, name_length);
     buddy_writer_literal(&writer, ",\"owner\":");
-    buddy_writer_json_string(&writer, heartbeat->owner);
+    buddy_writer_json_string(&writer, heartbeat->owner, owner_length);
     buddy_writer_literal(&writer, ",\"status\":");
-    buddy_writer_json_string(&writer, heartbeat->message);
+    buddy_writer_json_string(&writer, heartbeat->message, message_length);
     buddy_writer_literal(&writer, ",\"running\":");
     buddy_writer_u64(&writer, heartbeat->running);
     buddy_writer_literal(&writer, ",\"tokens\":");

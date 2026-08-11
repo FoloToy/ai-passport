@@ -230,6 +230,27 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
     case BUDDY_EVENT_PROMPT:
         buddy_apply_prompt(state, &event->prompt, action);
         break;
+    case BUDDY_EVENT_TIME:
+        buddy_copy(state->time, sizeof(state->time), event->command.value);
+        buddy_set_ui_refresh(action);
+        break;
+    case BUDDY_EVENT_NAME:
+        buddy_copy(state->name, sizeof(state->name), event->command.value);
+        buddy_set_ui_refresh(action);
+        break;
+    case BUDDY_EVENT_OWNER:
+        buddy_copy(state->owner, sizeof(state->owner), event->command.value);
+        buddy_set_ui_refresh(action);
+        break;
+    case BUDDY_EVENT_STATUS:
+        buddy_copy(state->message, sizeof(state->message), event->command.value);
+        buddy_set_ui_refresh(action);
+        break;
+    case BUDDY_EVENT_UNPAIR_CONFIRMATION:
+        buddy_invalidate_prompt(state);
+        state->connection = BUDDY_CONNECTION_CONFIRMING;
+        buddy_set_ui_refresh(action);
+        break;
     case BUDDY_EVENT_KEY_CLICK:
         if (event->key == BUDDY_KEY_OK) {
             buddy_approve_prompt(state, event, now_ms, action);
@@ -266,6 +287,7 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->heartbeat_stale = state->heartbeat_stale;
     buddy_copy(snapshot->name, sizeof(snapshot->name), state->name);
     buddy_copy(snapshot->owner, sizeof(snapshot->owner), state->owner);
+    buddy_copy(snapshot->time, sizeof(snapshot->time), state->time);
     buddy_copy(snapshot->message, sizeof(snapshot->message), state->message);
     buddy_copy_entries(snapshot->entries, state->entries);
     buddy_copy(snapshot->prompt_id, sizeof(snapshot->prompt_id), state->prompt.id);

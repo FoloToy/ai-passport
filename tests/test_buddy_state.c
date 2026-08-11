@@ -321,6 +321,39 @@ static void test_long_ok_opens_settings(void)
     assert(action.type == BUDDY_ACTION_UI_REFRESH);
 }
 
+static void test_protocol_command_events_refresh_the_display(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t event = {.type = BUDDY_EVENT_NAME};
+
+    buddy_state_init(&state, NULL);
+    snprintf(event.command.value, sizeof(event.command.value), "%s", "Buddy");
+    buddy_state_reduce(&state, &event, 1000, &action);
+    assert(strcmp(state.name, "Buddy") == 0);
+    assert(action.type == BUDDY_ACTION_UI_REFRESH);
+
+    event.type = BUDDY_EVENT_OWNER;
+    snprintf(event.command.value, sizeof(event.command.value), "%s", "Claude");
+    buddy_state_reduce(&state, &event, 1001, &action);
+    assert(strcmp(state.owner, "Claude") == 0);
+
+    event.type = BUDDY_EVENT_STATUS;
+    snprintf(event.command.value, sizeof(event.command.value), "%s", "Ready");
+    buddy_state_reduce(&state, &event, 1002, &action);
+    assert(strcmp(state.message, "Ready") == 0);
+
+    event.type = BUDDY_EVENT_TIME;
+    snprintf(event.command.value, sizeof(event.command.value), "%s", "12:34");
+    buddy_state_reduce(&state, &event, 1003, &action);
+    assert(strcmp(state.time, "12:34") == 0);
+
+    event.type = BUDDY_EVENT_UNPAIR_CONFIRMATION;
+    buddy_state_reduce(&state, &event, 1004, &action);
+    assert(state.connection == BUDDY_CONNECTION_CONFIRMING);
+    assert(state.character == BUDDY_CHARACTER_CONFIRMATION);
+}
+
 int main(void)
 {
     test_offline_initialization();
@@ -337,5 +370,6 @@ int main(void)
     test_nonterminated_prompt_id_is_ignored();
     test_truncated_prompt_id_is_ignored();
     test_long_ok_opens_settings();
+    test_protocol_command_events_refresh_the_display();
     return 0;
 }

@@ -12,6 +12,7 @@ typedef struct {
     char last_approved_prompt_id[BUDDY_PROMPT_ID_MAX];
     char name[BUDDY_NAME_MAX];
     char owner[BUDDY_OWNER_MAX];
+    char time[BUDDY_MESSAGE_MAX];
     char message[BUDDY_MESSAGE_MAX];
     char entries[BUDDY_ENTRY_COUNT][BUDDY_ENTRY_MAX];
     unsigned running;

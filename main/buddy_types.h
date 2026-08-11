@@ -49,6 +49,11 @@ typedef enum {
     BUDDY_EVENT_NONE,
     BUDDY_EVENT_HEARTBEAT,
     BUDDY_EVENT_PROMPT,
+    BUDDY_EVENT_TIME,
+    BUDDY_EVENT_NAME,
+    BUDDY_EVENT_OWNER,
+    BUDDY_EVENT_STATUS,
+    BUDDY_EVENT_UNPAIR_CONFIRMATION,
     BUDDY_EVENT_KEY_CLICK,
     BUDDY_EVENT_KEY_LONG,
     BUDDY_EVENT_TICK,
@@ -71,11 +76,16 @@ typedef enum {
 typedef struct {
     char name[BUDDY_NAME_MAX];
     char owner[BUDDY_OWNER_MAX];
+    char time[BUDDY_MESSAGE_MAX];
     char message[BUDDY_MESSAGE_MAX];
     char entries[BUDDY_ENTRY_COUNT][BUDDY_ENTRY_MAX];
     unsigned running;
     uint64_t tokens;
     bool connected;
+    bool name_truncated;
+    bool owner_truncated;
+    bool message_truncated;
+    bool entries_truncated[BUDDY_ENTRY_COUNT];
 } buddy_heartbeat_t;
 
 typedef struct {
@@ -85,8 +95,15 @@ typedef struct {
     size_t id_length;
     unsigned running;
     bool id_truncated;
+    bool tool_truncated;
+    bool hint_truncated;
     bool connected;
 } buddy_prompt_t;
+
+typedef struct {
+    char value[BUDDY_MESSAGE_MAX];
+    bool value_truncated;
+} buddy_command_t;
 
 typedef struct {
     char name[BUDDY_NAME_MAX];
@@ -99,6 +116,7 @@ typedef struct {
     buddy_key_t key;
     buddy_heartbeat_t heartbeat;
     buddy_prompt_t prompt;
+    buddy_command_t command;
     char observed_prompt_id[BUDDY_PROMPT_ID_MAX];
     size_t observed_prompt_id_length;
     bool has_observed_prompt_id;
@@ -125,6 +143,7 @@ typedef struct {
     buddy_page_t page;
     char name[BUDDY_NAME_MAX];
     char owner[BUDDY_OWNER_MAX];
+    char time[BUDDY_MESSAGE_MAX];
     char message[BUDDY_MESSAGE_MAX];
     char entries[BUDDY_ENTRY_COUNT][BUDDY_ENTRY_MAX];
     char prompt_id[BUDDY_PROMPT_ID_MAX];

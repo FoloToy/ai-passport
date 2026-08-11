@@ -27,11 +27,15 @@ static void test_split_and_multiple_lines(void)
 {
     buddy_line_buffer_t rx;
     line_capture_t capture = {0};
+    static const char third_write[] = "1}\n{\"b\":2}\n";
 
     buddy_line_init(&rx);
-    assert(buddy_line_push(&rx, (const uint8_t *)"{\"a\":", 5, capture_line, &capture) ==
+    assert(buddy_line_push(&rx, (const uint8_t *)"{\"", 2, capture_line, &capture) ==
            BUDDY_LINE_OK);
-    assert(buddy_line_push(&rx, (const uint8_t *)"1}\n{\"b\":2}\n", 13, capture_line, &capture) ==
+    assert(buddy_line_push(&rx, (const uint8_t *)"a\":", 3, capture_line, &capture) ==
+           BUDDY_LINE_OK);
+    assert(buddy_line_push(&rx, (const uint8_t *)third_write, sizeof(third_write) - 1,
+                           capture_line, &capture) ==
            BUDDY_LINE_OK);
     assert(capture.count == 2);
     assert(strcmp(capture.lines[0], "{\"a\":1}") == 0);
