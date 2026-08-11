@@ -3,7 +3,25 @@ project(buddy_host_tests C)
 
 enable_testing()
 
+if(NOT DEFINED ENV{IDF_PATH} OR "$ENV{IDF_PATH}" STREQUAL "")
+    message(FATAL_ERROR "IDF_PATH must point to an ESP-IDF checkout")
+endif()
+
+set(BUDDY_CJSON_DIR "$ENV{IDF_PATH}/components/json/cJSON")
+set(BUDDY_CJSON_SOURCE "${BUDDY_CJSON_DIR}/cJSON.c")
+
 add_executable(test_buddy_state test_buddy_state.c ../main/buddy_state.c)
 target_include_directories(test_buddy_state PRIVATE ../main)
 target_compile_options(test_buddy_state PRIVATE -Wall -Wextra -Werror)
 add_test(NAME buddy_state COMMAND test_buddy_state)
+
+add_executable(test_buddy_line test_buddy_line.c ../main/buddy_line.c)
+target_include_directories(test_buddy_line PRIVATE ../main)
+target_compile_options(test_buddy_line PRIVATE -Wall -Wextra -Werror)
+add_test(NAME buddy_line COMMAND test_buddy_line)
+
+add_executable(test_buddy_protocol test_buddy_protocol.c ../main/buddy_protocol.c
+               ${BUDDY_CJSON_SOURCE})
+target_include_directories(test_buddy_protocol PRIVATE ../main ${BUDDY_CJSON_DIR})
+target_compile_options(test_buddy_protocol PRIVATE -Wall -Wextra -Werror)
+add_test(NAME buddy_protocol COMMAND test_buddy_protocol)
