@@ -168,11 +168,13 @@ static void test_secure_link_requires_mitm_bond_and_full_sc_key(void)
 
 static void test_tx_generation_gate_rejects_a_reconnected_peer(void)
 {
-    assert(buddy_ble_tx_generation_matches(true, true, true, 7, 7));
-    assert(!buddy_ble_tx_generation_matches(true, true, true, 7, 8));
-    assert(!buddy_ble_tx_generation_matches(false, true, true, 7, 7));
-    assert(!buddy_ble_tx_generation_matches(true, false, true, 7, 7));
-    assert(!buddy_ble_tx_generation_matches(true, true, false, 7, 7));
+    assert(buddy_ble_tx_generation_matches(true, true, true, true, 7, 7, 7));
+    assert(!buddy_ble_tx_generation_matches(true, true, true, true, 7, 7, 8));
+    assert(!buddy_ble_tx_generation_matches(true, true, true, true, 7, 8, 8));
+    assert(!buddy_ble_tx_generation_matches(false, true, true, true, 7, 7, 7));
+    assert(!buddy_ble_tx_generation_matches(true, false, true, true, 7, 7, 7));
+    assert(!buddy_ble_tx_generation_matches(true, true, false, true, 7, 7, 7));
+    assert(!buddy_ble_tx_generation_matches(true, true, true, false, 7, 7, 7));
 }
 
 static void test_pending_stop_suspends_transport_until_the_result_is_known(void)

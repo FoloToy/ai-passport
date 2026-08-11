@@ -77,9 +77,10 @@ typedef struct {
 
 size_t buddy_ble_tx_fragment_size(uint16_t mtu);
 bool buddy_ble_link_is_secure(bool encrypted, bool authenticated, bool bonded, uint8_t key_size);
-bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool has_connection,
-                                     uint32_t expected_generation,
-                                     uint32_t current_generation);
+bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool notify_subscribed,
+                                     bool has_connection, uint32_t expected_generation,
+                                     uint32_t current_generation,
+                                     uint32_t subscription_generation);
 bool buddy_ble_transport_available(bool start_requested, bool stop_pending);
 bool buddy_ble_termination_failure_matches(uint16_t failed_conn_handle,
                                            uint16_t rejecting_conn_handle,

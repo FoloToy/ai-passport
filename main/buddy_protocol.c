@@ -172,6 +172,19 @@ static bool buddy_json_u64(const cJSON *object, const char *name, uint64_t *valu
     return (double)*value == item->valuedouble;
 }
 
+static bool buddy_json_required_unsigned(const cJSON *object, const char *name,
+                                         unsigned *value)
+{
+    return cJSON_GetObjectItemCaseSensitive(object, name) != NULL &&
+           buddy_json_unsigned(object, name, value);
+}
+
+static bool buddy_json_required_u64(const cJSON *object, const char *name, uint64_t *value)
+{
+    return cJSON_GetObjectItemCaseSensitive(object, name) != NULL &&
+           buddy_json_u64(object, name, value);
+}
+
 static bool buddy_parse_prompt(const cJSON *prompt_json, unsigned running, buddy_prompt_t *prompt)
 {
     const char *id;
@@ -203,62 +216,52 @@ static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
 {
     const cJSON *entries;
     const cJSON *prompt;
-    const char *name;
-    const char *owner;
-    const char *status;
-    size_t name_length;
-    size_t owner_length;
-    size_t status_length;
-    unsigned running = 0;
+    const char *message;
+    size_t message_length;
     unsigned index;
 
-    if (!buddy_json_unsigned(object, "running", &running) ||
-        !buddy_json_u64(object, "tokens", &event->heartbeat.tokens) ||
-        !buddy_json_optional_string(object, "name", &name, &name_length) ||
-        !buddy_json_optional_string(object, "owner", &owner, &owner_length) ||
-        !buddy_json_optional_string(object, "status", &status, &status_length) ||
-        !buddy_copy_utf8(event->heartbeat.name, sizeof(event->heartbeat.name), name, name_length,
-                         &event->heartbeat.name_truncated) ||
-        !buddy_copy_utf8(event->heartbeat.owner, sizeof(event->heartbeat.owner), owner, owner_length,
-                         &event->heartbeat.owner_truncated) ||
-        !buddy_copy_utf8(event->heartbeat.message, sizeof(event->heartbeat.message), status,
-                         status_length, &event->heartbeat.message_truncated)) {
+    if (!buddy_json_required_unsigned(object, "total", &event->heartbeat.total) ||
+        !buddy_json_required_unsigned(object, "running", &event->heartbeat.running) ||
+        !buddy_json_required_unsigned(object, "waiting", &event->heartbeat.waiting) ||
+        !buddy_json_required_u64(object, "tokens", &event->heartbeat.tokens) ||
+        !buddy_json_required_u64(object, "tokens_today", &event->heartbeat.tokens_today) ||
+        !buddy_json_optional_string(object, "msg", &message, &message_length) ||
+        message == NULL ||
+        !buddy_copy_utf8(event->heartbeat.message, sizeof(event->heartbeat.message), message,
+                         message_length, &event->heartbeat.message_truncated)) {
         return false;
     }
     event->heartbeat.connected = true;
-    event->heartbeat.running = running;
 
     entries = cJSON_GetObjectItemCaseSensitive(object, "entries");
-    if (entries != NULL) {
-        if (!cJSON_IsArray(entries)) {
+    if (entries == NULL || !cJSON_IsArray(entries)) {
+        return false;
+    }
+    for (index = 0; index < BUDDY_ENTRY_COUNT; ++index) {
+        const cJSON *entry = cJSON_GetArrayItem(entries, (int)index);
+        const char *entry_value;
+        size_t entry_length;
+
+        if (entry == NULL) {
+            break;
+        }
+        if (!cJSON_IsString(entry) || entry->valuestring == NULL) {
             return false;
         }
-        for (index = 0; index < BUDDY_ENTRY_COUNT; ++index) {
-            const cJSON *entry = cJSON_GetArrayItem(entries, (int)index);
-            const char *entry_value;
-            size_t entry_length;
-
-            if (entry == NULL) {
-                break;
-            }
-            if (!cJSON_IsString(entry) || entry->valuestring == NULL) {
-                return false;
-            }
-            entry_value = entry->valuestring;
-            entry_length = buddy_bounded_length(entry_value, BUDDY_JSON_LINE_MAX + 1);
-            if (entry_length > BUDDY_JSON_LINE_MAX ||
-                !buddy_copy_utf8(event->heartbeat.entries[index],
-                                 sizeof(event->heartbeat.entries[index]), entry_value, entry_length,
-                                 &event->heartbeat.entries_truncated[index])) {
-                return false;
-            }
+        entry_value = entry->valuestring;
+        entry_length = buddy_bounded_length(entry_value, BUDDY_JSON_LINE_MAX + 1);
+        if (entry_length > BUDDY_JSON_LINE_MAX ||
+            !buddy_copy_utf8(event->heartbeat.entries[index],
+                             sizeof(event->heartbeat.entries[index]), entry_value, entry_length,
+                             &event->heartbeat.entries_truncated[index])) {
+            return false;
         }
     }
 
     prompt = cJSON_GetObjectItemCaseSensitive(object, "prompt");
     if (prompt != NULL) {
         if (!cJSON_IsObject(prompt) ||
-            !buddy_parse_prompt(prompt, running, &event->heartbeat.prompt)) {
+            !buddy_parse_prompt(prompt, event->heartbeat.running, &event->heartbeat.prompt)) {
             return false;
         }
     }
@@ -282,15 +285,42 @@ static bool buddy_parse_command(const cJSON *object, const char *field, buddy_ev
     if (!buddy_json_optional_string(object, field, &value, &length)) {
         return false;
     }
-    if (value == NULL && !buddy_json_optional_string(object, "value", &value, &length)) {
-        return false;
-    }
     if (value == NULL ||
         !buddy_copy_utf8(event->command.value, value_size, value, length,
                          &event->command.value_truncated)) {
         return false;
     }
     event->type = type;
+    return true;
+}
+
+static bool buddy_parse_time(const cJSON *object, buddy_event_t *event)
+{
+    const cJSON *time = cJSON_GetObjectItemCaseSensitive(object, "time");
+    const cJSON *epoch;
+    const cJSON *offset;
+    int64_t epoch_value;
+    int32_t offset_value;
+
+    if (!cJSON_IsArray(time) || cJSON_GetArraySize(time) != 2) {
+        return false;
+    }
+    epoch = cJSON_GetArrayItem(time, 0);
+    offset = cJSON_GetArrayItem(time, 1);
+    if (!cJSON_IsNumber(epoch) || epoch->valuedouble < 0 ||
+        epoch->valuedouble > 9007199254740991.0 || !cJSON_IsNumber(offset) ||
+        offset->valuedouble < INT32_MIN || offset->valuedouble > INT32_MAX) {
+        return false;
+    }
+    epoch_value = (int64_t)epoch->valuedouble;
+    offset_value = (int32_t)offset->valuedouble;
+    if ((double)epoch_value != epoch->valuedouble ||
+        (double)offset_value != offset->valuedouble) {
+        return false;
+    }
+    event->time.epoch_seconds = epoch_value;
+    event->time.timezone_offset_seconds = offset_value;
+    event->type = BUDDY_EVENT_TIME;
     return true;
 }
 
@@ -386,7 +416,6 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     const char *end = NULL;
     const char *command;
     size_t command_length;
-    unsigned running = 0;
     int result = BUDDY_EVENT_MALFORMED;
 
     if (event == NULL) {
@@ -401,8 +430,20 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     }
     root = cJSON_ParseWithLengthOpts(json, length, &end, 0);
     if (root == NULL || end != json + length || !cJSON_IsObject(root) ||
-        !buddy_json_optional_string(root, "cmd", &command, &command_length) || command == NULL ||
-        command_length == 0) {
+        !buddy_json_optional_string(root, "cmd", &command, &command_length)) {
+        cJSON_Delete(root);
+        return BUDDY_EVENT_MALFORMED;
+    }
+    if (command == NULL) {
+        if (cJSON_GetObjectItemCaseSensitive(root, "time") != NULL) {
+            result = buddy_parse_time(root, event) ? (int)event->type : result;
+        } else if (buddy_parse_heartbeat(root, event)) {
+            result = (int)event->type;
+        }
+        cJSON_Delete(root);
+        return result;
+    }
+    if (command_length == 0) {
         cJSON_Delete(root);
         return BUDDY_EVENT_MALFORMED;
     }
@@ -413,22 +454,10 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
         memset(event, 0, sizeof(*event));
         return BUDDY_EVENT_MALFORMED;
     }
-    if (strcmp(command, "heartbeat") == 0) {
-        if (buddy_parse_heartbeat(root, event)) {
-            result = (int)event->type;
-        }
-    } else if (strcmp(command, "prompt") == 0) {
-        if (buddy_json_unsigned(root, "running", &running) &&
-            buddy_parse_prompt(root, running, &event->prompt)) {
-            event->type = BUDDY_EVENT_PROMPT;
-            result = (int)event->type;
-        }
-    } else if (strcmp(command, "time") == 0) {
-        result = buddy_parse_command(root, "time", BUDDY_EVENT_TIME, event) ? (int)event->type : result;
-    } else if (strcmp(command, "name") == 0) {
+    if (strcmp(command, "name") == 0) {
         result = buddy_parse_command(root, "name", BUDDY_EVENT_NAME, event) ? (int)event->type : result;
     } else if (strcmp(command, "owner") == 0) {
-        result = buddy_parse_command(root, "owner", BUDDY_EVENT_OWNER, event) ? (int)event->type : result;
+        result = buddy_parse_command(root, "name", BUDDY_EVENT_OWNER, event) ? (int)event->type : result;
     } else if (strcmp(command, "status") == 0) {
         if (cJSON_GetObjectItemCaseSensitive(root, "status") == NULL &&
             cJSON_GetObjectItemCaseSensitive(root, "value") == NULL) {
@@ -588,50 +617,6 @@ int buddy_protocol_permission_json(char *json, size_t size, const char *id,
     return buddy_writer_finish(&writer);
 }
 
-int buddy_protocol_ack_json(char *json, size_t size, bool ok)
-{
-    buddy_json_writer_t writer;
-
-    buddy_writer_init(&writer, json, size);
-    buddy_writer_literal(&writer, ok ? "{\"cmd\":\"ack\",\"ok\":true}\n"
-                                    : "{\"cmd\":\"ack\",\"ok\":false}\n");
-    return buddy_writer_finish(&writer);
-}
-
-int buddy_protocol_status_json(char *json, size_t size, const buddy_heartbeat_t *heartbeat)
-{
-    buddy_json_writer_t writer;
-    size_t name_length;
-    size_t owner_length;
-    size_t message_length;
-
-    if (heartbeat == NULL) {
-        return 0;
-    }
-    name_length = buddy_bounded_length(heartbeat->name, sizeof(heartbeat->name));
-    owner_length = buddy_bounded_length(heartbeat->owner, sizeof(heartbeat->owner));
-    message_length = buddy_bounded_length(heartbeat->message, sizeof(heartbeat->message));
-    if (name_length == sizeof(heartbeat->name) || owner_length == sizeof(heartbeat->owner) ||
-        message_length == sizeof(heartbeat->message) || !buddy_utf8_valid(heartbeat->name, name_length) ||
-        !buddy_utf8_valid(heartbeat->owner, owner_length) ||
-        !buddy_utf8_valid(heartbeat->message, message_length)) {
-        return 0;
-    }
-    buddy_writer_init(&writer, json, size);
-    buddy_writer_literal(&writer, "{\"cmd\":\"status\",\"name\":");
-    buddy_writer_json_string(&writer, heartbeat->name, name_length);
-    buddy_writer_literal(&writer, ",\"owner\":");
-    buddy_writer_json_string(&writer, heartbeat->owner, owner_length);
-    buddy_writer_literal(&writer, ",\"status\":");
-    buddy_writer_json_string(&writer, heartbeat->message, message_length);
-    buddy_writer_literal(&writer, ",\"running\":");
-    buddy_writer_u64(&writer, heartbeat->running);
-    buddy_writer_literal(&writer, ",\"tokens\":");
-    buddy_writer_u64(&writer, heartbeat->tokens);
-    buddy_writer_literal(&writer, "}\n");
-    return buddy_writer_finish(&writer);
-}
-
 int buddy_protocol_command_ack_json(char *json, size_t size, const char *command,
                                     bool ok, const char *error)
 {
@@ -663,42 +648,38 @@ int buddy_protocol_device_status_json(char *json, size_t size,
 {
     buddy_json_writer_t writer;
     size_t name_length;
-    size_t owner_length;
 
     if (status == NULL) {
         return 0;
     }
     name_length = buddy_bounded_length(status->name, sizeof(status->name));
-    owner_length = buddy_bounded_length(status->owner, sizeof(status->owner));
-    if (name_length == sizeof(status->name) || owner_length == sizeof(status->owner) ||
-        !buddy_utf8_valid(status->name, name_length) ||
-        !buddy_utf8_valid(status->owner, owner_length)) {
+    if (name_length == sizeof(status->name) ||
+        !buddy_utf8_valid(status->name, name_length)) {
         return 0;
     }
 
     buddy_writer_init(&writer, json, size);
-    buddy_writer_literal(&writer, "{\"cmd\":\"status\",\"name\":");
+    buddy_writer_literal(&writer, "{\"ack\":\"status\",\"ok\":true,\"data\":{\"name\":");
     buddy_writer_json_string(&writer, status->name, name_length);
-    buddy_writer_literal(&writer, ",\"owner\":");
-    buddy_writer_json_string(&writer, status->owner, owner_length);
     buddy_writer_literal(&writer, ",\"sec\":");
     buddy_writer_bool(&writer, status->encrypted);
     if (status->battery_available) {
-        buddy_writer_literal(&writer, ",\"battery_percent\":");
+        buddy_writer_literal(&writer, ",\"bat\":{\"pct\":");
         buddy_writer_u64(&writer, status->battery_percent);
-        buddy_writer_literal(&writer, ",\"battery_mv\":");
+        buddy_writer_literal(&writer, ",\"mV\":");
         buddy_writer_u64(&writer, status->battery_mv);
+        buddy_writer_literal(&writer, "}");
     }
-    buddy_writer_literal(&writer, ",\"uptime_ms\":");
-    buddy_writer_u64(&writer, status->uptime_ms);
-    buddy_writer_literal(&writer, ",\"free_heap\":");
+    buddy_writer_literal(&writer, ",\"sys\":{\"up\":");
+    buddy_writer_u64(&writer, status->uptime_ms / 1000U);
+    buddy_writer_literal(&writer, ",\"heap\":");
     buddy_writer_u64(&writer, status->free_heap);
-    buddy_writer_literal(&writer, ",\"approval_count\":");
+    buddy_writer_literal(&writer, "},\"stats\":{\"appr\":");
     buddy_writer_u64(&writer, status->approval_count);
-    buddy_writer_literal(&writer, ",\"denial_count\":");
+    buddy_writer_literal(&writer, ",\"deny\":");
     buddy_writer_u64(&writer, status->denial_count);
-    buddy_writer_literal(&writer, ",\"queue_overflow_count\":");
-    buddy_writer_u64(&writer, status->queue_overflow_count);
-    buddy_writer_literal(&writer, "}\n");
+    buddy_writer_literal(&writer, ",\"lvl\":");
+    buddy_writer_u64(&writer, status->highest_celebrated_level);
+    buddy_writer_literal(&writer, "}}}\n");
     return buddy_writer_finish(&writer);
 }

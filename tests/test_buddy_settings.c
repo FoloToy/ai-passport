@@ -20,6 +20,7 @@ typedef struct {
     esp_err_t get_str_error;
     esp_err_t get_u8_error;
     esp_err_t get_u64_error;
+    esp_err_t commit_error;
     unsigned commit_count;
     unsigned erase_count;
 } fake_storage_t;
@@ -160,7 +161,7 @@ static esp_err_t fake_commit(void *context)
     fake_storage_t *storage = context;
 
     ++storage->commit_count;
-    return ESP_OK;
+    return storage->commit_error;
 }
 
 static const buddy_settings_backend_t fake_backend = {
@@ -297,6 +298,36 @@ static void test_settings_round_trip_through_storage(void)
     assert(snapshot.highest_celebrated_level == 7);
 }
 
+static void test_committed_name_rolls_back_after_commit_failure(void)
+{
+    fake_storage_t storage;
+    buddy_settings_snapshot_t snapshot;
+
+    test_initialize_stored_settings(&storage);
+    assert(buddy_settings_load(&snapshot) == ESP_OK);
+    storage.commit_error = ESP_ERR_INVALID_STATE;
+    assert(buddy_settings_set_name_committed("Broken") == ESP_ERR_INVALID_STATE);
+    assert(buddy_settings_load(&snapshot) == ESP_OK);
+    assert(strcmp(snapshot.name, "Claude-C3") == 0);
+    assert(strcmp(storage.name, "Claude-C3") == 0);
+    storage.commit_error = ESP_OK;
+    assert(buddy_settings_flush(true) == ESP_OK);
+    assert(strcmp(storage.name, "Claude-C3") == 0);
+}
+
+static void test_committed_owner_is_durable_before_success(void)
+{
+    fake_storage_t storage;
+    buddy_settings_snapshot_t snapshot;
+
+    test_setup(&storage);
+    assert(buddy_settings_set_owner_committed("Felix") == ESP_OK);
+    assert(storage.commit_count == 1U);
+    assert(strcmp(storage.owner, "Felix") == 0);
+    assert(buddy_settings_load(&snapshot) == ESP_OK);
+    assert(strcmp(snapshot.owner, "Felix") == 0);
+}
+
 static void test_string_read_failure_does_not_activate_defaults(void)
 {
     fake_storage_t storage;
@@ -359,6 +390,8 @@ int main(void)
     test_regular_flush_is_limited_to_once_per_minute();
     test_name_validation_and_defaults();
     test_settings_round_trip_through_storage();
+    test_committed_name_rolls_back_after_commit_failure();
+    test_committed_owner_is_durable_before_success();
     test_string_read_failure_does_not_activate_defaults();
     test_ble_read_failure_does_not_activate_defaults();
     test_counter_read_failure_does_not_activate_defaults();

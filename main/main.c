@@ -21,6 +21,7 @@
 #include "bsp_pins.h"
 #include "buddy_app_logic.h"
 #include "buddy_ble.h"
+#include "buddy_orchestrator.h"
 #include "buddy_protocol.h"
 #include "buddy_settings.h"
 #include "buddy_state.h"
@@ -116,7 +117,6 @@ static atomic_uint s_button_dropped;
 static atomic_uint s_rx_normal_coalesced;
 static atomic_uint s_rx_priority_evicted;
 static atomic_uint s_rx_dropped;
-static char s_tx_buffer[BUDDY_PROTOCOL_TX_MAX];
 
 static uint64_t buddy_now_ms(void)
 {
@@ -513,18 +513,6 @@ static bool buddy_control_to_event(const buddy_control_event_t *control,
     return true;
 }
 
-static esp_err_t buddy_send_command_ack(const char *command, bool ok, const char *error,
-                                        uint32_t connection_generation)
-{
-    int length = buddy_protocol_command_ack_json(s_tx_buffer, sizeof(s_tx_buffer),
-                                                 command, ok, error);
-
-    return length > 0
-               ? buddy_ble_send_for_generation(s_tx_buffer, (size_t)length,
-                                               connection_generation)
-               : ESP_ERR_INVALID_SIZE;
-}
-
 static void buddy_sample_battery(buddy_state_t *state)
 {
     int percent;
@@ -594,36 +582,6 @@ static uint64_t buddy_queue_overflow_total(void)
            (uint64_t)atomic_load_explicit(&s_rx_dropped, memory_order_relaxed);
 }
 
-static void buddy_send_status(const buddy_state_t *state, uint32_t connection_generation)
-{
-    buddy_settings_snapshot_t settings;
-    buddy_status_report_t status;
-    buddy_app_status_runtime_t runtime = {
-        .encrypted = atomic_load(&s_ble_initialized) && buddy_ble_is_encrypted(),
-        .battery_available = state->battery_available,
-        .battery_percent = state->battery_percent,
-        .battery_mv = state->battery_mv,
-        .uptime_ms = buddy_now_ms(),
-        .free_heap = esp_get_free_heap_size(),
-        .queue_overflow_count = buddy_queue_overflow_total(),
-    };
-    int length;
-
-    if (buddy_settings_load(&settings) != ESP_OK) {
-        ESP_LOGW(TAG, "status settings snapshot failed");
-        return;
-    }
-    if (!buddy_app_build_status(&status, &settings, &runtime)) {
-        ESP_LOGW(TAG, "status snapshot invalid");
-        return;
-    }
-    length = buddy_protocol_device_status_json(s_tx_buffer, sizeof(s_tx_buffer), &status);
-    if (length == 0 || buddy_ble_send_for_generation(s_tx_buffer, (size_t)length,
-                                                     connection_generation) != ESP_OK) {
-        ESP_LOGW(TAG, "status response failed");
-    }
-}
-
 static esp_err_t buddy_transport_start(void *context)
 {
     (void)context;
@@ -636,7 +594,7 @@ static esp_err_t buddy_transport_stop(void *context)
     return buddy_ble_stop();
 }
 
-static void buddy_set_ble_enabled(buddy_state_t *state, bool enabled)
+static esp_err_t buddy_set_ble_enabled(buddy_state_t *state, bool enabled)
 {
     const buddy_app_ble_transport_ops_t ops = {
         .context = NULL,
@@ -651,7 +609,7 @@ static void buddy_set_ble_enabled(buddy_state_t *state, bool enabled)
     if (buddy_settings_set_ble_enabled(enabled) != ESP_OK) {
         state->settings.ble_enabled = !enabled;
         buddy_copy_text(state->message, sizeof(state->message), "BLE setting failed");
-        return;
+        return ESP_FAIL;
     }
     if (enabled) {
         result.request_status = buddy_ble_ensure_initialized();
@@ -675,19 +633,20 @@ static void buddy_set_ble_enabled(buddy_state_t *state, bool enabled)
                                 : "BLE update failed");
         }
         state->settings.ble_enabled = result.effective_enabled;
-        return;
+        return result.request_status;
     }
     state->settings.ble_enabled = enabled;
     (void)buddy_settings_flush(true);
+    return ESP_OK;
 }
 
-static void buddy_factory_reset(buddy_state_t *state)
+static esp_err_t buddy_factory_reset(buddy_state_t *state)
 {
     buddy_settings_snapshot_t defaults = {0};
 
     if (buddy_settings_factory_reset() != ESP_OK) {
         buddy_copy_text(state->message, sizeof(state->message), "Factory reset failed");
-        return;
+        return ESP_FAIL;
     }
     defaults.ble_enabled = true;
     buddy_default_name(defaults.name);
@@ -695,7 +654,7 @@ static void buddy_factory_reset(buddy_state_t *state)
         buddy_settings_flush(true) != ESP_OK) {
         buddy_copy_text(state->message, sizeof(state->message),
                         "Factory defaults save failed");
-        return;
+        return ESP_FAIL;
     }
     buddy_state_init(state, &defaults);
     buddy_sample_battery(state);
@@ -704,70 +663,122 @@ static void buddy_factory_reset(buddy_state_t *state)
         buddy_set_ble_enabled(state, true);
     } else if (buddy_ble_start() != ESP_OK) {
         buddy_copy_text(state->message, sizeof(state->message), "BLE restart failed");
+        return ESP_FAIL;
     }
+    return ESP_OK;
+}
+
+static bool buddy_orchestrator_generation_secure(void *context, uint32_t generation)
+{
+    (void)context;
+    return buddy_ble_is_generation_secure(generation);
+}
+
+static esp_err_t buddy_orchestrator_send(void *context, const char *data, size_t length,
+                                         uint32_t generation)
+{
+    (void)context;
+    return buddy_ble_send_for_generation(data, length, generation);
+}
+
+static esp_err_t buddy_orchestrator_commit_name(void *context, const char *name)
+{
+    (void)context;
+    return buddy_settings_set_name_committed(name);
+}
+
+static esp_err_t buddy_orchestrator_commit_owner(void *context, const char *owner)
+{
+    (void)context;
+    return buddy_settings_set_owner_committed(owner);
+}
+
+static esp_err_t buddy_orchestrator_status(void *context, const buddy_state_t *state,
+                                           buddy_status_report_t *report)
+{
+    buddy_settings_snapshot_t settings;
+    buddy_app_status_runtime_t runtime = {
+        .encrypted = atomic_load(&s_ble_initialized) && buddy_ble_is_encrypted(),
+        .battery_available = state->battery_available,
+        .battery_percent = state->battery_percent,
+        .battery_mv = state->battery_mv,
+        .uptime_ms = buddy_now_ms(),
+        .free_heap = esp_get_free_heap_size(),
+        .queue_overflow_count = buddy_queue_overflow_total(),
+    };
+
+    (void)context;
+    if (buddy_settings_load(&settings) != ESP_OK ||
+        !buddy_app_build_status(report, &settings, &runtime)) {
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
+
+static void buddy_orchestrator_record_permission(void *context,
+                                                 buddy_permission_decision_t decision)
+{
+    (void)context;
+    buddy_settings_record_permission(decision);
+}
+
+static esp_err_t buddy_orchestrator_unpair(void *context)
+{
+    buddy_state_t *state = context;
+
+    if (buddy_ble_ensure_initialized() != ESP_OK || buddy_ble_delete_bonds() != ESP_OK) {
+        buddy_copy_text(state->message, sizeof(state->message), "Unpair failed");
+        return ESP_FAIL;
+    }
+    buddy_reset_transient_state(state, "Unpairing");
+    return ESP_OK;
+}
+
+static esp_err_t buddy_orchestrator_factory_reset(void *context)
+{
+    return buddy_factory_reset(context);
+}
+
+static esp_err_t buddy_orchestrator_set_ble(void *context, bool enabled)
+{
+    return buddy_set_ble_enabled(context, enabled);
+}
+
+static esp_err_t buddy_orchestrator_persist_level(void *context, uint64_t level)
+{
+    (void)context;
+    return buddy_settings_set_highest_celebrated_level(level);
+}
+
+static buddy_orchestrator_ops_t buddy_orchestrator_ops(buddy_state_t *state)
+{
+    const buddy_orchestrator_ops_t ops = {
+        .context = state,
+        .generation_secure = buddy_orchestrator_generation_secure,
+        .send = buddy_orchestrator_send,
+        .commit_name = buddy_orchestrator_commit_name,
+        .commit_owner = buddy_orchestrator_commit_owner,
+        .status_report = buddy_orchestrator_status,
+        .record_permission = buddy_orchestrator_record_permission,
+        .unpair = buddy_orchestrator_unpair,
+        .factory_reset = buddy_orchestrator_factory_reset,
+        .set_ble_enabled = buddy_orchestrator_set_ble,
+        .persist_level = buddy_orchestrator_persist_level,
+    };
+    return ops;
 }
 
 static bool buddy_execute_action(buddy_state_t *state, const buddy_action_t *action,
                                  buddy_event_t *result_event)
 {
-    int length;
+    buddy_orchestrator_ops_t ops = buddy_orchestrator_ops(state);
 
-    switch (action->type) {
-    case BUDDY_ACTION_PERMISSION:
-        memset(result_event, 0, sizeof(*result_event));
-        result_event->type = BUDDY_EVENT_PERMISSION_SEND_RESULT;
-        buddy_copy_text(result_event->permission_result.id,
-                        sizeof(result_event->permission_result.id),
-                        action->permission.id);
-        result_event->permission_result.id_length =
-            strlen(result_event->permission_result.id);
-        result_event->permission_result.decision = action->permission.decision;
-        length = buddy_protocol_permission_json(s_tx_buffer, sizeof(s_tx_buffer),
-                                                action->permission.id,
-                                                action->permission.decision);
-        result_event->permission_result.success =
-            length > 0 &&
-            buddy_ble_send_for_generation(s_tx_buffer, (size_t)length,
-                                          action->permission.connection_generation) == ESP_OK;
-        if (!result_event->permission_result.success) {
-            ESP_LOGW(TAG, "permission response failed");
-        } else {
-            buddy_settings_record_permission(action->permission.decision);
-        }
-        return true;
-    case BUDDY_ACTION_SETTINGS:
-        (void)buddy_settings_set_highest_celebrated_level(
-            action->settings.highest_celebrated_level);
-        break;
-    case BUDDY_ACTION_STATUS:
-        buddy_send_status(state, action->connection_generation);
-        break;
-    case BUDDY_ACTION_UNPAIR_CONFIRMED:
-        if (action->confirmation_acknowledge &&
-            buddy_send_command_ack("unpair", true, NULL,
-                                   action->connection_generation) != ESP_OK) {
-            buddy_copy_text(state->message, sizeof(state->message),
-                            "Unpair confirmation expired");
-            break;
-        }
-        if (buddy_ble_ensure_initialized() != ESP_OK || buddy_ble_delete_bonds() != ESP_OK) {
-            buddy_copy_text(state->message, sizeof(state->message), "Unpair failed");
-        } else {
-            buddy_reset_transient_state(state, "Unpairing");
-        }
-        break;
-    case BUDDY_ACTION_FACTORY_RESET_CONFIRMED:
-        buddy_factory_reset(state);
-        break;
-    case BUDDY_ACTION_BLE_TOGGLE:
-        buddy_set_ble_enabled(state, action->ble_enabled);
-        break;
-    case BUDDY_ACTION_NONE:
-    case BUDDY_ACTION_UI_REFRESH:
-    case BUDDY_ACTION_UI_SCROLL:
-        break;
+    (void)buddy_orchestrator_execute_action(state, &ops, action, result_event);
+    if (result_event->type == BUDDY_EVENT_PERMISSION_SEND_RESULT &&
+        !result_event->permission_result.success) {
+        ESP_LOGW(TAG, "permission response failed");
     }
-    return false;
+    return result_event->type == BUDDY_EVENT_PERMISSION_SEND_RESULT;
 }
 
 static bool buddy_rendered_view_same(const buddy_rendered_view_t *left,
@@ -835,71 +846,15 @@ static void buddy_render(buddy_state_t *state, const buddy_action_t *action, uin
     buddy_publish_rendered_view(&snapshot);
 }
 
-static bool buddy_handle_parsed_event(buddy_state_t *state, buddy_event_t *event,
-                                      uint32_t connection_generation, uint64_t now_ms,
-                                      buddy_action_t *action)
-{
-    esp_err_t err = ESP_OK;
-    bool acknowledge = false;
-
-    event->ble.connection_generation = connection_generation;
-
-    if (event->type == BUDDY_EVENT_NAME) {
-        acknowledge = true;
-        err = event->command.value_truncated ? ESP_ERR_INVALID_ARG
-                                             : buddy_settings_set_name(event->command.value);
-    } else if (event->type == BUDDY_EVENT_OWNER) {
-        acknowledge = true;
-        err = event->command.value_truncated ? ESP_ERR_INVALID_ARG
-                                             : buddy_settings_set_owner(event->command.value);
-    } else if (event->type == BUDDY_EVENT_TIME) {
-        acknowledge = true;
-        err = event->command.value_truncated ? ESP_ERR_INVALID_ARG : ESP_OK;
-    }
-
-    if (err == ESP_OK) {
-        buddy_state_reduce(state, event, now_ms, action);
-        if (event->type == BUDDY_EVENT_NAME) {
-            buddy_copy_text(state->settings.name, sizeof(state->settings.name),
-                            event->command.value);
-        } else if (event->type == BUDDY_EVENT_OWNER) {
-            buddy_copy_text(state->settings.owner, sizeof(state->settings.owner),
-                            event->command.value);
-        }
-    }
-    if (acknowledge) {
-        (void)buddy_send_command_ack(event->command.name, err == ESP_OK,
-                                     err == ESP_OK ? NULL : "invalid value",
-                                     connection_generation);
-    }
-    return err == ESP_OK;
-}
-
 static bool buddy_handle_rx(buddy_state_t *state, buddy_rx_slot_t *slot,
                             buddy_event_t *event, uint64_t now_ms,
                             buddy_action_t *action)
 {
-    int result;
+    buddy_orchestrator_ops_t ops = buddy_orchestrator_ops(state);
 
-    if (!buddy_ble_is_generation_secure(slot->connection_generation)) {
-        return false;
-    }
-    result = buddy_protocol_parse(slot->data, slot->length, event);
-
-    if (result >= BUDDY_EVENT_NONE) {
-        return buddy_handle_parsed_event(state, event, slot->connection_generation,
-                                         now_ms, action);
-    } else if (event->command.name[0] != '\0') {
-        const char *error = result == BUDDY_EVENT_UNSUPPORTED_COMMAND
-                                ? "unsupported in phase 1"
-                                : (result == BUDDY_EVENT_UNKNOWN_COMMAND ? "unknown command"
-                                                                          : "invalid request");
-        (void)buddy_send_command_ack(event->command.name, false, error,
-                                     slot->connection_generation);
-    } else {
-        ESP_LOGW(TAG, "malformed BLE JSON line (%u bytes)", (unsigned)slot->length);
-    }
-    return false;
+    (void)event;
+    return buddy_orchestrator_process_rx(state, &ops, slot->data, slot->length,
+                                         slot->connection_generation, now_ms, action);
 }
 
 static QueueHandle_t buddy_next_ready_queue(void)

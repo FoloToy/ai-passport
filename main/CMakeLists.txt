@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "main.c"
+    SRCS "buddy_orchestrator.c" "main.c"
          "buddy_line.c"
          "buddy_ble.c"
          "buddy_ble_store.c"

@@ -3,12 +3,20 @@
 #include <string.h>
 
 #define BUDDY_APP_CLASSIFIER_DEPTH_MAX 16U
+#define BUDDY_APP_HEARTBEAT_TOTAL (1U << 0)
+#define BUDDY_APP_HEARTBEAT_RUNNING (1U << 1)
+#define BUDDY_APP_HEARTBEAT_WAITING (1U << 2)
+#define BUDDY_APP_HEARTBEAT_MSG (1U << 3)
+#define BUDDY_APP_HEARTBEAT_ENTRIES (1U << 4)
+#define BUDDY_APP_HEARTBEAT_TOKENS (1U << 5)
+#define BUDDY_APP_HEARTBEAT_TOKENS_TODAY (1U << 6)
+#define BUDDY_APP_HEARTBEAT_REQUIRED ((1U << 7) - 1U)
 
 typedef struct {
     const char *cursor;
     const char *end;
     unsigned command_keys;
-    bool command_is_heartbeat;
+    unsigned heartbeat_keys;
     bool prompt_key_seen;
 } buddy_app_json_scan_t;
 
@@ -116,6 +124,31 @@ static bool buddy_app_key_equals(const char *key, size_t key_length,
 static bool buddy_app_scan_value(buddy_app_json_scan_t *scan, unsigned depth,
                                  bool root_command_value);
 
+static void buddy_app_record_heartbeat_key(buddy_app_json_scan_t *scan,
+                                           const char *key, size_t key_length)
+{
+    static const struct {
+        const char *name;
+        unsigned bit;
+    } fields[] = {
+        {"total", BUDDY_APP_HEARTBEAT_TOTAL},
+        {"running", BUDDY_APP_HEARTBEAT_RUNNING},
+        {"waiting", BUDDY_APP_HEARTBEAT_WAITING},
+        {"msg", BUDDY_APP_HEARTBEAT_MSG},
+        {"entries", BUDDY_APP_HEARTBEAT_ENTRIES},
+        {"tokens", BUDDY_APP_HEARTBEAT_TOKENS},
+        {"tokens_today", BUDDY_APP_HEARTBEAT_TOKENS_TODAY},
+    };
+    size_t index;
+
+    for (index = 0; index < sizeof(fields) / sizeof(fields[0]); ++index) {
+        if (buddy_app_key_equals(key, key_length, fields[index].name)) {
+            scan->heartbeat_keys |= fields[index].bit;
+            return;
+        }
+    }
+}
+
 static bool buddy_app_scan_object(buddy_app_json_scan_t *scan, unsigned depth,
                                   bool root_object)
 {
@@ -144,7 +177,10 @@ static bool buddy_app_scan_object(buddy_app_json_scan_t *scan, unsigned depth,
                 return false;
             }
         }
-        if (buddy_app_key_equals(key, key_length, "prompt")) {
+        if (root_object) {
+            buddy_app_record_heartbeat_key(scan, key, key_length);
+        }
+        if (root_object && buddy_app_key_equals(key, key_length, "prompt")) {
             scan->prompt_key_seen = true;
         }
         buddy_app_skip_space(scan);
@@ -273,8 +309,7 @@ static bool buddy_app_scan_value(buddy_app_json_scan_t *scan, unsigned depth,
         if (!buddy_app_scan_string(scan, &value, &length)) {
             return false;
         }
-        scan->command_is_heartbeat = buddy_app_key_equals(value, length, "heartbeat");
-        return scan->command_is_heartbeat;
+        return true;
     }
     switch (*scan->cursor) {
     case '{':
@@ -313,8 +348,9 @@ buddy_app_rx_class_t buddy_app_classify_rx(const char *data, size_t length)
         return BUDDY_APP_RX_PRIORITY;
     }
     buddy_app_skip_space(&scan);
-    return scan.cursor == scan.end && scan.command_keys == 1U &&
-                   scan.command_is_heartbeat && !scan.prompt_key_seen
+    return scan.cursor == scan.end && scan.command_keys == 0U &&
+                   scan.heartbeat_keys == BUDDY_APP_HEARTBEAT_REQUIRED &&
+                   !scan.prompt_key_seen
                ? BUDDY_APP_RX_NORMAL_HEARTBEAT
                : BUDDY_APP_RX_PRIORITY;
 }
@@ -431,9 +467,7 @@ bool buddy_app_build_status(buddy_status_report_t *report,
     }
     memset(report, 0, sizeof(*report));
     if (!buddy_app_copy_bounded(report->name, sizeof(report->name),
-                                settings->name, sizeof(settings->name)) ||
-        !buddy_app_copy_bounded(report->owner, sizeof(report->owner),
-                                settings->owner, sizeof(settings->owner))) {
+                                settings->name, sizeof(settings->name))) {
         return false;
     }
     report->approval_count = settings->approval_count;
@@ -445,6 +479,7 @@ bool buddy_app_build_status(buddy_status_report_t *report,
     report->uptime_ms = runtime->uptime_ms;
     report->free_heap = runtime->free_heap;
     report->queue_overflow_count = runtime->queue_overflow_count;
+    report->highest_celebrated_level = settings->highest_celebrated_level;
     return true;
 }
 

@@ -31,6 +31,7 @@ static lv_obj_t *s_confirmation_page;
 static lv_obj_t *s_confirmation_label;
 static lv_obj_t *s_scroll_target;
 static buddy_character_t s_character = BUDDY_CHARACTER_SLEEP;
+static buddy_character_t s_approval_character = BUDDY_CHARACTER_SLEEP;
 
 static void buddy_ui_label_style(lv_obj_t *label, const lv_font_t *font)
 {
@@ -172,7 +173,7 @@ static void buddy_ui_create_passkey(void)
     s_passkey_label = buddy_ui_text(s_passkey_page, 12, 100, 216,
                                      &lv_font_montserrat_20, "000000");
     (void)buddy_ui_text(s_passkey_page, 12, 188, 216, &lv_font_montserrat_14,
-                        "Confirm this code on Claude Desktop.");
+                        "Enter this six-digit passkey in the OS prompt.");
 }
 
 static void buddy_ui_create_confirmation(void)
@@ -301,12 +302,10 @@ void buddy_ui_render(const buddy_ui_snapshot_t *snapshot)
         lv_label_set_text_fmt(s_approval_tool_label, "Tool: %s", snapshot->prompt_tool);
         lv_label_set_text(s_approval_hint_label, snapshot->prompt_hint);
         if (snapshot->approval_locked) {
+            s_approval_character = buddy_character_for_approval(
+                snapshot->character, snapshot->permission_delivery);
             lv_label_set_text(s_approval_character_label,
-                              buddy_character_frame(
-                                  snapshot->permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED
-                                      ? BUDDY_CHARACTER_DIZZY
-                                      : snapshot->character,
-                                  0));
+                              buddy_character_frame(s_approval_character, 0));
             lv_obj_remove_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN);
             lv_obj_set_y(s_approval_tool_label, 134);
             lv_obj_set_pos(s_approval_hint_box, 12, 166);
@@ -367,7 +366,7 @@ void buddy_ui_tick(uint64_t elapsed_ms)
     if (s_approval_character_label != NULL &&
         !lv_obj_has_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN)) {
         lv_label_set_text(s_approval_character_label,
-                          buddy_character_frame(BUDDY_CHARACTER_HEART, elapsed_ms));
+                          buddy_character_frame(s_approval_character, elapsed_ms));
     }
 }
 

@@ -53,9 +53,13 @@ static buddy_event_t test_heartbeat_event(uint64_t tokens, unsigned running)
 
     event.type = BUDDY_EVENT_HEARTBEAT;
     event.heartbeat.connected = true;
+    event.heartbeat.total = running + 2U;
     event.heartbeat.running = running;
+    event.heartbeat.waiting = 1U;
     event.heartbeat.tokens = tokens;
-    snprintf(event.heartbeat.owner, sizeof(event.heartbeat.owner), "%s", "Claude");
+    event.heartbeat.tokens_today = tokens / 2U;
+    snprintf(event.heartbeat.message, sizeof(event.heartbeat.message), "%s", "Working");
+    snprintf(event.heartbeat.entries[0], sizeof(event.heartbeat.entries[0]), "%s", "entry");
     return event;
 }
 
@@ -87,7 +91,8 @@ static void test_heartbeat_mapping(void)
     assert(state.connection == BUDDY_CONNECTION_CONNECTED);
     assert(state.tokens == 1234);
     assert(state.running == 2);
-    assert(strcmp(snapshot.owner, "Claude") == 0);
+    assert(snapshot.total == 4);
+    assert(snapshot.waiting == 1);
     assert(snapshot.character == BUDDY_CHARACTER_BUSY);
 }
 
@@ -138,7 +143,7 @@ static void test_timeout_clears_prompt(void)
 {
     buddy_state_t state;
     buddy_action_t action = {0};
-    buddy_event_t heartbeat = test_heartbeat_event(0, 0);
+    buddy_event_t heartbeat = test_heartbeat_event(1200, 0);
     buddy_event_t tick = {.type = BUDDY_EVENT_TICK};
 
     buddy_state_init(&state, NULL);
@@ -151,7 +156,32 @@ static void test_timeout_clears_prompt(void)
     assert(action.type == BUDDY_ACTION_UI_REFRESH);
     assert(state.heartbeat_stale);
     assert(state.prompt.id[0] == '\0');
+    assert(!state.connected);
+    assert(state.connection == BUDDY_CONNECTION_OFFLINE);
+    assert(state.total == 0);
+    assert(state.running == 0);
+    assert(state.waiting == 0);
+    assert(state.tokens == 0);
+    assert(state.tokens_today == 0);
+    assert(state.message[0] == '\0');
+    assert(state.entries[0][0] == '\0');
     assert(state.character == BUDDY_CHARACTER_SLEEP);
+}
+
+static void test_heartbeat_does_not_overwrite_persisted_identity(void)
+{
+    buddy_settings_snapshot_t settings = {0};
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t heartbeat = test_heartbeat_event(1, 0);
+
+    snprintf(settings.name, sizeof(settings.name), "%s", "Clawd");
+    snprintf(settings.owner, sizeof(settings.owner), "%s", "Felix");
+    buddy_state_init(&state, &settings);
+    buddy_state_reduce(&state, &heartbeat, 1000, &action);
+
+    assert(strcmp(state.name, "Clawd") == 0);
+    assert(strcmp(state.owner, "Felix") == 0);
 }
 
 static void test_token_boundaries_celebrate_once(void)
@@ -320,6 +350,47 @@ static void test_permission_failure_is_visible_and_same_id_replay_stays_locked(v
     buddy_state_reduce(&state, &approve, 1004, &action);
     assert(action.type == BUDDY_ACTION_NONE);
     assert(state.permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED);
+}
+
+static void test_denial_success_and_ticks_never_show_heart(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-denied", "Bash", "rm guarded", 1, 1);
+    buddy_event_t deny = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
+    buddy_event_t result = test_permission_result_event(
+        "req-denied", BUDDY_PERMISSION_DENY, true);
+    buddy_event_t tick = {.type = BUDDY_EVENT_TICK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &deny, 1001, &action);
+    assert(state.permission_delivery == BUDDY_PERMISSION_DELIVERY_SENDING);
+    assert(state.character != BUDDY_CHARACTER_HEART);
+    buddy_state_reduce(&state, &result, 1002, &action);
+    buddy_state_reduce(&state, &tick, 4000, &action);
+    assert(state.permission_delivery == BUDDY_PERMISSION_DELIVERY_SENT);
+    assert(state.character == BUDDY_CHARACTER_BUSY);
+}
+
+static void test_successful_approval_heart_expires_at_five_seconds(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-heart", "Read", "README", 1, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+    buddy_event_t result = test_permission_result_event(
+        "req-heart", BUDDY_PERMISSION_ONCE, true);
+    buddy_event_t tick = {.type = BUDDY_EVENT_TICK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+    buddy_state_reduce(&state, &result, 1002, &action);
+    buddy_state_reduce(&state, &tick, 6001, &action);
+    assert(state.character == BUDDY_CHARACTER_HEART);
+    buddy_state_reduce(&state, &tick, 6002, &action);
+    assert(state.character == BUDDY_CHARACTER_BUSY);
 }
 
 static void test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock(void)
@@ -534,9 +605,11 @@ static void test_protocol_command_events_refresh_the_display(void)
     assert(strcmp(state.message, "Ready") == 0);
 
     event.type = BUDDY_EVENT_TIME;
-    snprintf(event.command.value, sizeof(event.command.value), "%s", "12:34");
+    event.time.epoch_seconds = 1775731234;
+    event.time.timezone_offset_seconds = -25200;
     buddy_state_reduce(&state, &event, 1003, &action);
-    assert(strcmp(state.time, "12:34") == 0);
+    assert(state.epoch_seconds == 1775731234);
+    assert(state.timezone_offset_seconds == -25200);
 
     event.type = BUDDY_EVENT_UNPAIR_CONFIRMATION;
     buddy_state_reduce(&state, &event, 1004, &action);
@@ -611,7 +684,8 @@ static void test_unpair_confirmation_down_cancels_without_action(void)
 static void test_parsed_heartbeat_approval_serializes_permission(void)
 {
     const char *json =
-        "{\"cmd\":\"heartbeat\",\"running\":1,\"prompt\":{"
+        "{\"total\":1,\"running\":1,\"waiting\":1,\"msg\":\"approve\","
+        "\"entries\":[],\"tokens\":0,\"tokens_today\":0,\"prompt\":{"
         "\"id\":\"req-e2e\",\"tool\":\"Bash\",\"hint\":\"git status\"}}";
     buddy_state_t state;
     buddy_event_t heartbeat = {0};
@@ -814,6 +888,7 @@ int main(void)
     test_heartbeat_mapping();
     test_character_priority();
     test_timeout_clears_prompt();
+    test_heartbeat_does_not_overwrite_persisted_identity();
     test_token_boundaries_celebrate_once();
     test_persisted_celebration_level_is_not_replayed();
     test_approval_locks_until_a_new_prompt();
@@ -821,6 +896,8 @@ int main(void)
     test_permission_action_is_bound_to_the_prompt_connection();
     test_permission_success_moves_from_attempted_to_successful_state();
     test_permission_failure_is_visible_and_same_id_replay_stays_locked();
+    test_denial_success_and_ticks_never_show_heart();
+    test_successful_approval_heart_expires_at_five_seconds();
     test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock();
     test_ui_snapshot_runtime_indicators_default_off();
     test_absent_prompt_is_ignored();

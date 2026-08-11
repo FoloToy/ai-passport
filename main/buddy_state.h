@@ -16,8 +16,13 @@ typedef struct {
     char time[BUDDY_MESSAGE_MAX];
     char message[BUDDY_MESSAGE_MAX];
     char entries[BUDDY_ENTRY_COUNT][BUDDY_ENTRY_MAX];
+    unsigned total;
     unsigned running;
+    unsigned waiting;
     uint64_t tokens;
+    uint64_t tokens_today;
+    int64_t epoch_seconds;
+    int32_t timezone_offset_seconds;
     uint64_t highest_celebrated_level;
     uint64_t last_heartbeat_ms;
     uint64_t temporary_until_ms;

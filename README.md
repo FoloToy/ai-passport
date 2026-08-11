@@ -34,7 +34,8 @@ RX、TX 和 TX CCCD 需要加密访问。收发数据是以换行分隔的 UTF-8
 1. 在 Claude Desktop 打开 **Help → Troubleshooting → Enable Developer Mode**。
 2. 打开 **Developer → Open Hardware Buddy…**，点击 **Connect**。
 3. 从设备列表选择 `Claude-*`。首次连接若系统请求蓝牙权限，请允许。
-4. 设备会显示六位 Secure Connections 配对码；核对两端数字后确认配对。
+4. 设备会显示六位 Secure Connections passkey；在操作系统的蓝牙提示框中输入设备
+   显示的六位数字。
 5. 加密完成后设备自动回到 Buddy 页面。已绑定主机在双方唤醒且 BLE 开关开启时
    会自动重连，不需要再次输入配对码。
 

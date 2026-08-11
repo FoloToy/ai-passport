@@ -49,12 +49,14 @@ bool buddy_ble_link_is_secure(bool encrypted, bool authenticated, bool bonded, u
     return encrypted && authenticated && bonded && key_size == 16U;
 }
 
-bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool has_connection,
-                                     uint32_t expected_generation,
-                                     uint32_t current_generation)
+bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool notify_subscribed,
+                                     bool has_connection, uint32_t expected_generation,
+                                     uint32_t current_generation,
+                                     uint32_t subscription_generation)
 {
-    return start_requested && secure && has_connection &&
-           expected_generation == current_generation;
+    return start_requested && secure && notify_subscribed && has_connection &&
+           expected_generation == current_generation &&
+           subscription_generation == current_generation;
 }
 
 bool buddy_ble_transport_available(bool start_requested, bool stop_pending)
@@ -136,6 +138,8 @@ typedef struct {
     bool stop_pending;
     bool encrypted;
     bool secure;
+    bool notify_subscribed;
+    uint32_t subscription_generation;
     bool delete_bonds_pending;
     bool reset_scheduled;
     bool delete_final_reported;
@@ -964,6 +968,8 @@ static void buddy_on_disconnect(uint16_t conn_handle, int reason)
         event.data.disconnected.connection_generation = s_ble.connection_generation;
         s_ble.encrypted = false;
         s_ble.secure = false;
+        s_ble.notify_subscribed = false;
+        s_ble.subscription_generation = 0;
         buddy_line_init(&s_ble.rx);
         emit_disconnect = true;
         ++s_ble.advertising_epoch;
@@ -1030,6 +1036,8 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
         connection_generation = s_ble.connection_generation;
         s_ble.encrypted = false;
         s_ble.secure = false;
+        s_ble.notify_subscribed = false;
+        s_ble.subscription_generation = 0;
         buddy_line_init(&s_ble.rx);
         xSemaphoreGive(s_ble.mutex);
 
@@ -1117,9 +1125,15 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
                 encryption_event.data.encryption.authenticated,
                 encryption_event.data.encryption.bonded,
                 description.sec_state.key_size);
+            if (!s_ble.secure) {
+                s_ble.notify_subscribed = false;
+                s_ble.subscription_generation = 0;
+            }
         } else if (link_matches) {
             s_ble.encrypted = false;
             s_ble.secure = false;
+            s_ble.notify_subscribed = false;
+            s_ble.subscription_generation = 0;
         }
         xSemaphoreGive(s_ble.mutex);
         if (publish_event) {
@@ -1127,6 +1141,18 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
         }
         return 0;
     }
+
+    case BLE_GAP_EVENT_SUBSCRIBE:
+        xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+        if (s_ble.conn_handle == event->subscribe.conn_handle &&
+            event->subscribe.attr_handle == s_tx_value_handle) {
+            s_ble.notify_subscribed = event->subscribe.cur_notify != 0;
+            s_ble.subscription_generation = s_ble.notify_subscribed
+                                                ? s_ble.connection_generation
+                                                : 0;
+        }
+        xSemaphoreGive(s_ble.mutex);
+        return 0;
 
     case BLE_GAP_EVENT_PASSKEY_ACTION: {
         bool publish_event;
@@ -1226,6 +1252,8 @@ static void buddy_on_reset(int reason)
     s_ble.stopping_conn_handle = BLE_HS_CONN_HANDLE_NONE;
     s_ble.encrypted = false;
     s_ble.secure = false;
+    s_ble.notify_subscribed = false;
+    s_ble.subscription_generation = 0;
     s_ble.host_synced = false;
     ++s_ble.advertising_epoch;
     s_ble.reset_scheduled = false;
@@ -1502,6 +1530,8 @@ esp_err_t buddy_ble_stop(void)
         ++s_ble.connection_generation;
         s_ble.encrypted = false;
         s_ble.secure = false;
+        s_ble.notify_subscribed = false;
+        s_ble.subscription_generation = 0;
     } else if (s_ble.stopping_conn_handle == conn_handle) {
         s_ble.stopping_conn_handle = BLE_HS_CONN_HANDLE_NONE;
     }
@@ -1535,11 +1565,15 @@ static esp_err_t buddy_ble_send_internal(const char *data, size_t length,
                   buddy_ble_transport_available(s_ble.start_requested,
                                                 s_ble.stop_pending),
                   s_ble.secure,
+                  s_ble.notify_subscribed,
                   conn_handle != BLE_HS_CONN_HANDLE_NONE,
-                  expected_generation, s_ble.connection_generation)
+                  expected_generation, s_ble.connection_generation,
+                  s_ble.subscription_generation)
             : (!buddy_ble_transport_available(s_ble.start_requested,
                                               s_ble.stop_pending) ||
-               conn_handle == BLE_HS_CONN_HANDLE_NONE || !s_ble.secure)) {
+               conn_handle == BLE_HS_CONN_HANDLE_NONE || !s_ble.secure ||
+               !s_ble.notify_subscribed ||
+               s_ble.subscription_generation != s_ble.connection_generation)) {
         xSemaphoreGive(s_ble.mutex);
         return ESP_ERR_INVALID_STATE;
     }
@@ -1595,11 +1629,9 @@ bool buddy_ble_is_generation_secure(uint32_t expected_generation)
         return false;
     }
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-    matches = buddy_ble_tx_generation_matches(
-        buddy_ble_transport_available(s_ble.start_requested, s_ble.stop_pending),
-        s_ble.secure,
-        s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE,
-        expected_generation, s_ble.connection_generation);
+    matches = buddy_ble_transport_available(s_ble.start_requested, s_ble.stop_pending) &&
+              s_ble.secure && s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE &&
+              expected_generation == s_ble.connection_generation;
     xSemaphoreGive(s_ble.mutex);
     return matches;
 }
@@ -1655,6 +1687,8 @@ esp_err_t buddy_ble_delete_bonds(void)
     ++s_ble.connection_generation;
     s_ble.encrypted = false;
     s_ble.secure = false;
+    s_ble.notify_subscribed = false;
+    s_ble.subscription_generation = 0;
     if (reset_attempts) {
         s_ble.delete_bonds_result = 0;
         s_ble.delete_attempts = 0;

@@ -49,3 +49,11 @@ add_executable(test_buddy_app_logic test_buddy_app_logic.c ../main/buddy_app_log
 target_include_directories(test_buddy_app_logic PRIVATE test_shims ../main)
 target_compile_options(test_buddy_app_logic PRIVATE -Wall -Wextra -Werror)
 add_test(NAME buddy_app_logic COMMAND test_buddy_app_logic)
+
+add_executable(test_buddy_orchestrator test_buddy_orchestrator.c
+               ../main/buddy_orchestrator.c ../main/buddy_state.c
+               ../main/buddy_protocol.c ${BUDDY_CJSON_SOURCE})
+target_include_directories(test_buddy_orchestrator PRIVATE test_shims ../main
+                           ${BUDDY_CJSON_DIR})
+target_compile_options(test_buddy_orchestrator PRIVATE -Wall -Wextra -Werror)
+add_test(NAME buddy_orchestrator COMMAND test_buddy_orchestrator)

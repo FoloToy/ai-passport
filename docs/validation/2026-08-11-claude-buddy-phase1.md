@@ -13,7 +13,7 @@ not available. Hardware, pairing, live-state, and soak checks are NOT RUN.
 
 | Area | Result | Evidence |
 | --- | --- | --- |
-| Host build and tests | **PASS** | Clean-first CMake build; 7/7 CTest tests passed |
+| Host build and tests | **PASS** | Fresh CMake configure/build; 8/8 CTest tests passed |
 | ESP-IDF clean ESP32-C3 build | **PASS** | fullclean, set-target esp32c3, and build exited 0 |
 | Flash/partition/resource audit | **PASS** | Image, partition, DIRAM, LVGL, and PSRAM settings recorded below |
 | Hardware startup and display/BLE acceptance | **NOT RUN** | No serial board detected |
@@ -42,17 +42,28 @@ bash -lc '. /home/cjiio/.espressif/v5.5.3/esp-idf/export.sh && cmake -S tests -B
 
 Result: **PASS** (exit 0).
 
+The final-fix wave was re-verified after all source changes with a fresh host
+configure and a new clean firmware build:
+
+~~~
+bash -lc '. /home/cjiio/.espressif/v5.5.3/esp-idf/export.sh >/dev/null && cmake --fresh -S tests -B build-host && cmake --build build-host -j2 && ctest --test-dir build-host --output-on-failure'
+bash -lc '. /home/cjiio/.espressif/v5.5.3/esp-idf/export.sh >/dev/null && idf.py fullclean && idf.py set-target esp32c3 && idf.py build'
+~~~
+
+Both final commands exited 0.
+
 Host test evidence:
 
 ~~~
-7/7 Test #1: buddy_state      Passed
-7/7 Test #2: buddy_line       Passed
-7/7 Test #3: buddy_ble        Passed
-7/7 Test #4: buddy_protocol   Passed
-7/7 Test #5: buddy_settings   Passed
-7/7 Test #6: buddy_character  Passed
-7/7 Test #7: buddy_app_logic  Passed
-100% tests passed, 0 tests failed out of 7
+8/8 Test #1: buddy_state         Passed
+8/8 Test #2: buddy_line          Passed
+8/8 Test #3: buddy_ble           Passed
+8/8 Test #4: buddy_protocol      Passed
+8/8 Test #5: buddy_settings      Passed
+8/8 Test #6: buddy_character     Passed
+8/8 Test #7: buddy_app_logic     Passed
+8/8 Test #8: buddy_orchestrator  Passed
+100% tests passed, 0 tests failed out of 8
 ~~~
 
 Firmware evidence:
@@ -60,9 +71,9 @@ Firmware evidence:
 ~~~
 Set Target to: esp32c3
 Project build complete.
-FoloToy-Card.bin binary size 0xfeac0 bytes.
+FoloToy-Card.bin binary size 0xfefd0 bytes.
 Smallest app partition is 0x177000 bytes.
-0x78540 bytes (32%) free.
+0x78030 bytes (32%) free.
 ~~~
 
 The build output contained no project-source compiler warnings. ESP-IDF emitted
@@ -82,17 +93,17 @@ Both exited 0. idf.py size reported:
 
 | Region/metric | Used | Total | Remaining |
 | --- | ---: | ---: | ---: |
-| Flash code | 784,978 B | — | — |
-| Flash data (.rodata + appdesc) | 147,616 B | — | — |
-| DIRAM (.data + .bss + text) | 175,056 B | 321,296 B | 146,240 B |
-| DIRAM utilization | 54.48% | 100% | 45.52% |
+| Flash code | 786,424 B | — | — |
+| Flash data (.rodata + appdesc) | 147,456 B | — | — |
+| DIRAM (.data + .bss + text) | 173,960 B | 321,296 B | 147,336 B |
+| DIRAM utilization | 54.14% | 100% | 45.86% |
 | RTC SLOW | 56 B | 8,192 B | 8,136 B |
-| Total image size (size tool) | 1,042,986 B | — | — |
+| Total image size (size tool) | 1,044,312 B | — | — |
 
 Generated artifact sizes:
 
 ~~~
-build/FoloToy-Card.bin                    1,043,136 bytes (0xfeac0)
+build/FoloToy-Card.bin                    1,044,432 bytes (0xfefd0)
 build/bootloader/bootloader.bin             21,024 bytes (0x5220)
 build/partition_table/partition-table.bin   3,072 bytes
 ~~~
@@ -104,7 +115,7 @@ Largest archive contributions from idf.py size-components --format json:
 | liblvgl__lvgl.a | 355,024 B | 25,164 B |
 | libbt.a | 114,008 B | 1,207 B |
 | libbtdm_app.a | 98,122 B | 20,811 B |
-| libmain.a | 74,396 B | 38,599 B |
+| libmain.a | 74,778 B | 37,499 B |
 | libesp_app_format.a | 73,749 B | 10 B |
 | libmbedcrypto.a | 57,068 B | 370 B |
 | libc.a | 42,773 B | 584 B |
@@ -133,6 +144,9 @@ CONFIG_SPIRAM / CONFIG_SPIRAM_*: no enabled setting found
 
 Result: **PASS** for the reproducible build/resource audit. The ESP32-C3 has no
 PSRAM and the LVGL pool remains 24 KiB (CONFIG_LV_MEM_SIZE_KILOBYTES=24).
+Compared with the preceding phase-one image, the final-fix binary grew by 1,296
+bytes (about 0.12% of the prior binary), while static DIRAM use decreased by
+1,096 bytes. The application partition still has 0x78030 bytes (32%) free.
 
 ## Step 3 — flash and startup
 

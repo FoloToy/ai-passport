@@ -123,20 +123,23 @@ typedef struct {
 } buddy_prompt_t;
 
 typedef struct {
-    char name[BUDDY_NAME_MAX];
-    char owner[BUDDY_OWNER_MAX];
-    char time[BUDDY_MESSAGE_MAX];
     char message[BUDDY_MESSAGE_MAX];
     char entries[BUDDY_ENTRY_COUNT][BUDDY_ENTRY_MAX];
+    unsigned total;
     unsigned running;
+    unsigned waiting;
     uint64_t tokens;
+    uint64_t tokens_today;
     bool connected;
-    bool name_truncated;
-    bool owner_truncated;
     bool message_truncated;
     bool entries_truncated[BUDDY_ENTRY_COUNT];
     buddy_prompt_t prompt;
 } buddy_heartbeat_t;
+
+typedef struct {
+    int64_t epoch_seconds;
+    int32_t timezone_offset_seconds;
+} buddy_time_sync_t;
 
 typedef struct {
     char name[BUDDY_COMMAND_MAX];
@@ -173,6 +176,7 @@ typedef struct {
     buddy_key_t key;
     buddy_heartbeat_t heartbeat;
     buddy_prompt_t prompt;
+    buddy_time_sync_t time;
     buddy_command_t command;
     buddy_ble_state_event_t ble;
     buddy_permission_result_event_t permission_result;
@@ -213,8 +217,13 @@ typedef struct {
     char prompt_id[BUDDY_PROMPT_ID_MAX];
     char prompt_tool[BUDDY_TOOL_MAX];
     char prompt_hint[BUDDY_HINT_MAX];
+    unsigned total;
     unsigned running;
+    unsigned waiting;
     uint64_t tokens;
+    uint64_t tokens_today;
+    int64_t epoch_seconds;
+    int32_t timezone_offset_seconds;
     bool heartbeat_stale;
     bool confirmation_pending;
     buddy_confirmation_t confirmation;

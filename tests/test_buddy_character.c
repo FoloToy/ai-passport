@@ -47,10 +47,27 @@ static void test_attention_alternates_and_sleep_moves_slowly(void)
     assert(strcmp(sleep_first, sleep_late) != 0);
 }
 
+static void test_locked_approval_keeps_the_reducer_selected_character(void)
+{
+    assert(buddy_character_for_approval(BUDDY_CHARACTER_BUSY,
+                                        BUDDY_PERMISSION_DELIVERY_SENDING) ==
+           BUDDY_CHARACTER_BUSY);
+    assert(buddy_character_for_approval(BUDDY_CHARACTER_BUSY,
+                                        BUDDY_PERMISSION_DELIVERY_SENT) ==
+           BUDDY_CHARACTER_BUSY);
+    assert(buddy_character_for_approval(BUDDY_CHARACTER_HEART,
+                                        BUDDY_PERMISSION_DELIVERY_SENT) ==
+           BUDDY_CHARACTER_HEART);
+    assert(buddy_character_for_approval(BUDDY_CHARACTER_BUSY,
+                                        BUDDY_PERMISSION_DELIVERY_FAILED) ==
+           BUDDY_CHARACTER_DIZZY);
+}
+
 int main(void)
 {
     test_every_state_has_a_repeatable_nonempty_frame();
     test_attention_alternates_and_sleep_moves_slowly();
+    test_locked_approval_keeps_the_reducer_selected_character();
     puts("buddy_character tests passed");
     return 0;
 }

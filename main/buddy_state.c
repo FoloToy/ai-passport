@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#define BUDDY_HEART_ANIMATION_MS 500
+#define BUDDY_HEART_ANIMATION_MS 5000
 #define BUDDY_CELEBRATION_ANIMATION_MS 1500
 #define BUDDY_HEARTBEAT_TIMEOUT_MS 30000
 #define BUDDY_TOKEN_CELEBRATION_STEP 50000
@@ -62,6 +62,27 @@ static void buddy_invalidate_prompt(buddy_state_t *state)
     state->approval_locked = false;
 }
 
+static void buddy_clear_logical_session(buddy_state_t *state)
+{
+    state->connected = false;
+    state->connection = BUDDY_CONNECTION_OFFLINE;
+    state->total = 0;
+    state->running = 0;
+    state->waiting = 0;
+    state->tokens = 0;
+    state->tokens_today = 0;
+    state->message[0] = '\0';
+    memset(state->entries, 0, sizeof(state->entries));
+    state->heartbeat.total = 0;
+    state->heartbeat.running = 0;
+    state->heartbeat.waiting = 0;
+    state->heartbeat.tokens = 0;
+    state->heartbeat.tokens_today = 0;
+    state->heartbeat.message[0] = '\0';
+    memset(state->heartbeat.entries, 0, sizeof(state->heartbeat.entries));
+    buddy_invalidate_prompt(state);
+}
+
 static buddy_character_t buddy_character_for(const buddy_state_t *state, uint64_t now_ms)
 {
     bool has_prompt = state->prompt.id[0] != '\0' && !state->heartbeat_stale &&
@@ -97,7 +118,7 @@ static void buddy_clear_stale_prompt(buddy_state_t *state, uint64_t now_ms)
 {
     if (!state->heartbeat_stale && now_ms - state->last_heartbeat_ms >= BUDDY_HEARTBEAT_TIMEOUT_MS) {
         state->heartbeat_stale = true;
-        buddy_invalidate_prompt(state);
+        buddy_clear_logical_session(state);
     }
 }
 
@@ -242,9 +263,10 @@ static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t 
     }
     state->last_heartbeat_ms = now_ms;
     state->running = heartbeat->running;
+    state->total = heartbeat->total;
+    state->waiting = heartbeat->waiting;
     state->tokens = heartbeat->tokens;
-    buddy_copy(state->name, sizeof(state->name), heartbeat->name);
-    buddy_copy(state->owner, sizeof(state->owner), heartbeat->owner);
+    state->tokens_today = heartbeat->tokens_today;
     buddy_copy(state->message, sizeof(state->message), heartbeat->message);
     buddy_copy_entries(state->entries, heartbeat->entries);
 
@@ -389,7 +411,8 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
                            now_ms, action);
         break;
     case BUDDY_EVENT_TIME:
-        buddy_copy(state->time, sizeof(state->time), event->command.value);
+        state->epoch_seconds = event->time.epoch_seconds;
+        state->timezone_offset_seconds = event->time.timezone_offset_seconds;
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_NAME:
@@ -441,7 +464,7 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         state->passkey_visible = false;
         state->connected = false;
         state->heartbeat_stale = true;
-        buddy_invalidate_prompt(state);
+        buddy_clear_logical_session(state);
         if (state->confirmation_acknowledge) {
             buddy_close_confirmation(state);
         } else if (state->confirmation == BUDDY_CONFIRM_NONE) {
@@ -549,7 +572,12 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->character = state->character;
     snapshot->page = state->page;
     snapshot->running = state->running;
+    snapshot->total = state->total;
+    snapshot->waiting = state->waiting;
     snapshot->tokens = state->tokens;
+    snapshot->tokens_today = state->tokens_today;
+    snapshot->epoch_seconds = state->epoch_seconds;
+    snapshot->timezone_offset_seconds = state->timezone_offset_seconds;
     snapshot->heartbeat_stale = state->heartbeat_stale;
     snapshot->confirmation_pending = state->confirmation_pending;
     snapshot->confirmation = state->confirmation;

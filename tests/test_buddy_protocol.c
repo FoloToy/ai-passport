@@ -3,38 +3,36 @@
 #include <string.h>
 
 #include "buddy_protocol.h"
+#include "official_reference_fixtures.h"
 
 static int parse(const char *json, buddy_event_t *event)
 {
     return buddy_protocol_parse(json, strlen(json), event);
 }
 
-static void test_heartbeat_maps_documented_fields(void)
+static void test_official_heartbeat_maps_documented_fields(void)
 {
     buddy_event_t event = {0};
-    const char *json =
-        "{\"cmd\":\"heartbeat\",\"time\":1234,\"owner\":\"Claude\","
-        "\"name\":\"Buddy\",\"status\":\"Working\",\"running\":2,"
-        "\"tokens\":50001,\"entries\":[\"one\",\"two\"]}";
+    const char *json = OFFICIAL_HEARTBEAT_JSON;
 
     assert(parse(json, &event) == BUDDY_EVENT_HEARTBEAT);
     assert(event.type == BUDDY_EVENT_HEARTBEAT);
     assert(event.heartbeat.connected);
-    assert(strcmp(event.heartbeat.owner, "Claude") == 0);
-    assert(strcmp(event.heartbeat.name, "Buddy") == 0);
-    assert(strcmp(event.heartbeat.message, "Working") == 0);
-    assert(event.heartbeat.running == 2);
-    assert(event.heartbeat.tokens == 50001);
-    assert(strcmp(event.heartbeat.entries[0], "one") == 0);
-    assert(strcmp(event.heartbeat.entries[1], "two") == 0);
+    assert(event.heartbeat.total == 3);
+    assert(event.heartbeat.running == 1);
+    assert(event.heartbeat.waiting == 1);
+    assert(strcmp(event.heartbeat.message, "approve: Bash") == 0);
+    assert(event.heartbeat.tokens == 184502);
+    assert(event.heartbeat.tokens_today == 31200);
+    assert(strcmp(event.heartbeat.entries[0], "10:42 git push") == 0);
+    assert(strcmp(event.heartbeat.entries[1], "10:41 yarn test") == 0);
+    assert(strcmp(event.heartbeat.prompt.id, "req_abc123") == 0);
 }
 
 static void test_heartbeat_optional_prompt_stays_in_heartbeat_snapshot(void)
 {
     buddy_event_t event = {0};
-    const char *json =
-        "{\"cmd\":\"heartbeat\",\"running\":1,\"prompt\":{\"id\":\"req_abc123\","
-        "\"tool\":\"Bash\",\"hint\":\"git status\"}}";
+    const char *json = OFFICIAL_HEARTBEAT_JSON;
 
     assert(parse(json, &event) == BUDDY_EVENT_HEARTBEAT);
     assert(event.type == BUDDY_EVENT_HEARTBEAT);
@@ -44,7 +42,7 @@ static void test_heartbeat_optional_prompt_stays_in_heartbeat_snapshot(void)
     assert(!event.heartbeat.prompt.id_truncated);
     assert(strcmp(event.heartbeat.prompt.id, "req_abc123") == 0);
     assert(strcmp(event.heartbeat.prompt.tool, "Bash") == 0);
-    assert(strcmp(event.heartbeat.prompt.hint, "git status") == 0);
+    assert(strcmp(event.heartbeat.prompt.hint, "rm -rf /tmp/foo") == 0);
 }
 
 static void test_unpair_maps_confirmation_event(void)
@@ -92,11 +90,14 @@ static void test_oversized_prompt_id_is_rejected(void)
 {
     buddy_event_t event = {0};
     char id[BUDDY_PROMPT_ID_MAX + 1];
-    char json[BUDDY_PROMPT_ID_MAX + 64];
+    char json[BUDDY_JSON_LINE_MAX];
 
     memset(id, 'x', sizeof(id) - 1);
     id[sizeof(id) - 1] = '\0';
-    snprintf(json, sizeof(json), "{\"cmd\":\"prompt\",\"id\":\"%s\"}", id);
+    snprintf(json, sizeof(json),
+             "{\"total\":1,\"running\":0,\"waiting\":1,\"msg\":\"approve\","
+             "\"entries\":[],\"tokens\":0,\"tokens_today\":0,"
+             "\"prompt\":{\"id\":\"%s\"}}", id);
 
     assert(parse(json, &event) == BUDDY_EVENT_MALFORMED);
     assert(event.type == BUDDY_EVENT_NONE);
@@ -106,11 +107,14 @@ static void test_oversized_nested_prompt_id_is_rejected(void)
 {
     buddy_event_t event = {0};
     char id[BUDDY_PROMPT_ID_MAX + 1];
-    char json[BUDDY_PROMPT_ID_MAX + 96];
+    char json[BUDDY_JSON_LINE_MAX];
 
     memset(id, 'x', sizeof(id) - 1);
     id[sizeof(id) - 1] = '\0';
-    snprintf(json, sizeof(json), "{\"cmd\":\"heartbeat\",\"prompt\":{\"id\":\"%s\"}}", id);
+    snprintf(json, sizeof(json),
+             "{\"total\":1,\"running\":0,\"waiting\":1,\"msg\":\"approve\","
+             "\"entries\":[],\"tokens\":0,\"tokens_today\":0,"
+             "\"prompt\":{\"id\":\"%s\"}}", id);
 
     assert(parse(json, &event) == BUDDY_EVENT_MALFORMED);
     assert(event.type == BUDDY_EVENT_NONE);
@@ -120,16 +124,24 @@ static void test_prompt_id_must_be_a_nonempty_string(void)
 {
     buddy_event_t event = {0};
 
-    assert(parse("{\"cmd\":\"prompt\"}", &event) == BUDDY_EVENT_MALFORMED);
-    assert(parse("{\"cmd\":\"prompt\",\"id\":\"\"}", &event) == BUDDY_EVENT_MALFORMED);
-    assert(parse("{\"cmd\":\"prompt\",\"id\":7}", &event) == BUDDY_EVENT_MALFORMED);
+    assert(parse("{\"total\":1,\"running\":0,\"waiting\":1,\"msg\":\"x\","
+                 "\"entries\":[],\"tokens\":0,\"tokens_today\":0,\"prompt\":{}}",
+                 &event) == BUDDY_EVENT_MALFORMED);
+    assert(parse("{\"total\":1,\"running\":0,\"waiting\":1,\"msg\":\"x\","
+                 "\"entries\":[],\"tokens\":0,\"tokens_today\":0,"
+                 "\"prompt\":{\"id\":\"\"}}", &event) == BUDDY_EVENT_MALFORMED);
+    assert(parse("{\"total\":1,\"running\":0,\"waiting\":1,\"msg\":\"x\","
+                 "\"entries\":[],\"tokens\":0,\"tokens_today\":0,"
+                 "\"prompt\":{\"id\":7}}", &event) == BUDDY_EVENT_MALFORMED);
 }
 
 static void test_prompt_id_rejects_an_embedded_nul(void)
 {
     buddy_event_t event = {0};
 
-    assert(parse("{\"cmd\":\"prompt\",\"id\":\"req\\u0000other\"}", &event) ==
+    assert(parse("{\"total\":1,\"running\":0,\"waiting\":1,\"msg\":\"x\","
+                 "\"entries\":[],\"tokens\":0,\"tokens_today\":0,"
+                 "\"prompt\":{\"id\":\"req\\u0000other\"}}", &event) ==
            BUDDY_EVENT_MALFORMED);
 }
 
@@ -144,9 +156,11 @@ static void test_heartbeat_rejects_nonintegral_counters(void)
 {
     buddy_event_t event = {0};
 
-    assert(parse("{\"cmd\":\"heartbeat\",\"running\":1.5}", &event) ==
+    assert(parse("{\"total\":1,\"running\":1.5,\"waiting\":0,\"msg\":\"x\","
+                 "\"entries\":[],\"tokens\":0,\"tokens_today\":0}", &event) ==
            BUDDY_EVENT_MALFORMED);
-    assert(parse("{\"cmd\":\"heartbeat\",\"tokens\":1.5}", &event) ==
+    assert(parse("{\"total\":1,\"running\":0,\"waiting\":0,\"msg\":\"x\","
+                 "\"entries\":[],\"tokens\":1.5,\"tokens_today\":0}", &event) ==
            BUDDY_EVENT_MALFORMED);
 }
 
@@ -154,12 +168,14 @@ static void test_display_strings_are_bounded(void)
 {
     buddy_event_t event = {0};
     char status[BUDDY_MESSAGE_MAX + 4];
-    char json[BUDDY_MESSAGE_MAX + 80];
+    char json[BUDDY_JSON_LINE_MAX];
 
     memset(status, 's', BUDDY_MESSAGE_MAX - 2);
     memcpy(status + BUDDY_MESSAGE_MAX - 2, "\xe4\xb8\xad", 3);
     status[BUDDY_MESSAGE_MAX + 1] = '\0';
-    snprintf(json, sizeof(json), "{\"cmd\":\"heartbeat\",\"status\":\"%s\"}", status);
+    snprintf(json, sizeof(json),
+             "{\"total\":0,\"running\":0,\"waiting\":0,\"msg\":\"%s\","
+             "\"entries\":[],\"tokens\":0,\"tokens_today\":0}", status);
 
     assert(parse(json, &event) == BUDDY_EVENT_HEARTBEAT);
     assert(event.heartbeat.message[sizeof(event.heartbeat.message) - 1] == '\0');
@@ -168,16 +184,15 @@ static void test_display_strings_are_bounded(void)
     assert(event.heartbeat.message[BUDDY_MESSAGE_MAX - 2] == '\0');
 }
 
-static void test_documented_command_events_have_bounded_payloads(void)
+static void test_official_time_owner_and_name_payloads(void)
 {
     struct command_case {
         const char *json;
         buddy_event_type_t type;
         const char *value;
     } cases[] = {
-        {"{\"cmd\":\"time\",\"time\":\"12:34\"}", BUDDY_EVENT_TIME, "12:34"},
-        {"{\"cmd\":\"name\",\"name\":\"Buddy\"}", BUDDY_EVENT_NAME, "Buddy"},
-        {"{\"cmd\":\"owner\",\"owner\":\"Claude\"}", BUDDY_EVENT_OWNER, "Claude"},
+        {OFFICIAL_NAME_JSON, BUDDY_EVENT_NAME, "Clawd"},
+        {OFFICIAL_OWNER_JSON, BUDDY_EVENT_OWNER, "Felix"},
     };
     size_t index;
 
@@ -189,6 +204,11 @@ static void test_documented_command_events_have_bounded_payloads(void)
         assert(strcmp(event.command.value, cases[index].value) == 0);
         assert(!event.command.value_truncated);
     }
+    buddy_event_t time_event = {0};
+    assert(parse(OFFICIAL_TIME_JSON, &time_event) == BUDDY_EVENT_TIME);
+    assert(time_event.time.epoch_seconds == 1775731234);
+    assert(time_event.time.timezone_offset_seconds == -25200);
+    assert(time_event.command.name[0] == '\0');
 }
 
 static void test_status_is_a_no_payload_request(void)
@@ -286,26 +306,12 @@ static void test_preflight_failure_clears_a_reused_event(void)
 static void test_serializers_write_documented_json(void)
 {
     char json[192];
-    buddy_heartbeat_t heartbeat = {
-        .connected = true,
-        .running = 3,
-        .tokens = 42,
-    };
 
-    snprintf(heartbeat.name, sizeof(heartbeat.name), "%s", "Buddy");
-    snprintf(heartbeat.owner, sizeof(heartbeat.owner), "%s", "Claude");
-    snprintf(heartbeat.message, sizeof(heartbeat.message), "%s", "Ready");
     assert(buddy_protocol_permission_json(json, sizeof(json), "req_abc123",
                                           BUDDY_PERMISSION_ONCE) > 0);
     assert(strcmp(json,
                   "{\"cmd\":\"permission\",\"id\":\"req_abc123\",\"decision\":\"once\"}\n") ==
            0);
-    assert(buddy_protocol_ack_json(json, sizeof(json), false) > 0);
-    assert(strcmp(json, "{\"cmd\":\"ack\",\"ok\":false}\n") == 0);
-    assert(buddy_protocol_status_json(json, sizeof(json), &heartbeat) > 0);
-    assert(strcmp(json,
-                  "{\"cmd\":\"status\",\"name\":\"Buddy\",\"owner\":\"Claude\","
-                  "\"status\":\"Ready\",\"running\":3,\"tokens\":42}\n") == 0);
 }
 
 static void test_serializers_fail_without_writing_past_the_output_bound(void)
@@ -327,13 +333,10 @@ static void test_serializers_reject_invalid_or_unterminated_inputs(void)
 {
     char json[192];
     char id[BUDDY_PROMPT_ID_MAX];
-    buddy_heartbeat_t heartbeat = {0};
 
     memset(id, 'x', sizeof(id));
     assert(buddy_protocol_permission_json(json, sizeof(json), id, BUDDY_PERMISSION_ONCE) == 0);
     assert(buddy_protocol_permission_json(json, sizeof(json), "\xc0\xaf", BUDDY_PERMISSION_ONCE) == 0);
-    memset(heartbeat.name, 'x', sizeof(heartbeat.name));
-    assert(buddy_protocol_status_json(json, sizeof(json), &heartbeat) == 0);
 }
 
 static void test_command_ack_names_the_request_and_error(void)
@@ -364,21 +367,20 @@ static void test_device_status_omits_unavailable_battery_fields(void)
     char json[320];
 
     snprintf(status.name, sizeof(status.name), "%s", "Buddy");
-    snprintf(status.owner, sizeof(status.owner), "%s", "Claude");
     assert(buddy_protocol_device_status_json(json, sizeof(json), &status) > 0);
     assert(strcmp(json,
-                  "{\"cmd\":\"status\",\"name\":\"Buddy\",\"owner\":\"Claude\","
-                  "\"sec\":true,\"uptime_ms\":123456,\"free_heap\":32000,"
-                  "\"approval_count\":7,\"denial_count\":2,"
-                  "\"queue_overflow_count\":4}\n") == 0);
-    assert(strstr(json, "battery") == NULL);
+                  "{\"ack\":\"status\",\"ok\":true,\"data\":{"
+                  "\"name\":\"Buddy\",\"sec\":true,"
+                  "\"sys\":{\"up\":123,\"heap\":32000},"
+                  "\"stats\":{\"appr\":7,\"deny\":2,\"lvl\":0}}}\n") == 0);
+    assert(strstr(json, "\"bat\"") == NULL);
 
     status.battery_available = true;
     status.battery_percent = 73;
     status.battery_mv = 3875;
     assert(buddy_protocol_device_status_json(json, sizeof(json), &status) > 0);
-    assert(strstr(json, "\"battery_percent\":73") != NULL);
-    assert(strstr(json, "\"battery_mv\":3875") != NULL);
+    assert(strstr(json, "\"bat\":{\"pct\":73,\"mV\":3875}") != NULL);
+    assert(strstr(json, "\"sys\":{\"up\":123,\"heap\":32000}") != NULL);
 }
 
 static void test_task_tx_capacity_handles_worst_case_escaping(void)
@@ -393,7 +395,6 @@ static void test_task_tx_capacity_handles_worst_case_escaping(void)
     }
     id[sizeof(id) - 1U] = '\0';
     memset(status.name, '\x01', sizeof(status.name) - 1U);
-    memset(status.owner, '\x01', sizeof(status.owner) - 1U);
     status.encrypted = true;
     status.battery_available = true;
     status.battery_percent = 100;
@@ -410,7 +411,7 @@ static void test_task_tx_capacity_handles_worst_case_escaping(void)
 
 int main(void)
 {
-    test_heartbeat_maps_documented_fields();
+    test_official_heartbeat_maps_documented_fields();
     test_heartbeat_optional_prompt_stays_in_heartbeat_snapshot();
     test_unpair_maps_confirmation_event();
     test_file_transfer_commands_are_unsupported();
@@ -423,7 +424,7 @@ int main(void)
     test_parser_rejects_trailing_bytes();
     test_heartbeat_rejects_nonintegral_counters();
     test_display_strings_are_bounded();
-    test_documented_command_events_have_bounded_payloads();
+    test_official_time_owner_and_name_payloads();
     test_status_is_a_no_payload_request();
     test_name_command_truncates_at_a_utf8_codepoint_boundary();
     test_parser_rejects_oversized_or_invalid_utf8_lines();

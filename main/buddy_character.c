@@ -116,3 +116,9 @@ const char *buddy_character_frame(buddy_character_t state, uint64_t elapsed_ms)
         return idle;
     }
 }
+
+buddy_character_t buddy_character_for_approval(buddy_character_t state,
+                                                buddy_permission_delivery_t delivery)
+{
+    return delivery == BUDDY_PERMISSION_DELIVERY_FAILED ? BUDDY_CHARACTER_DIZZY : state;
+}

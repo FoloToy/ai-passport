@@ -206,40 +206,85 @@ static esp_err_t buddy_settings_ensure_loaded(void)
     return s_loaded ? ESP_OK : buddy_settings_load(&snapshot);
 }
 
-static esp_err_t buddy_settings_store_dirty(void)
+static esp_err_t buddy_settings_stage(const buddy_settings_snapshot_t *settings,
+                                      uint32_t dirty)
 {
     esp_err_t err;
 
-    if ((s_dirty & BUDDY_SETTINGS_DIRTY_NAME) != 0U) {
-        err = s_backend->set_str(s_backend_context, "name", s_settings.name);
+    if ((dirty & BUDDY_SETTINGS_DIRTY_NAME) != 0U) {
+        err = s_backend->set_str(s_backend_context, "name", settings->name);
         if (err != ESP_OK) return err;
     }
-    if ((s_dirty & BUDDY_SETTINGS_DIRTY_OWNER) != 0U) {
-        err = s_backend->set_str(s_backend_context, "owner", s_settings.owner);
+    if ((dirty & BUDDY_SETTINGS_DIRTY_OWNER) != 0U) {
+        err = s_backend->set_str(s_backend_context, "owner", settings->owner);
         if (err != ESP_OK) return err;
     }
-    if ((s_dirty & BUDDY_SETTINGS_DIRTY_BLE) != 0U) {
-        err = s_backend->set_u8(s_backend_context, "ble", s_settings.ble_enabled ? 1U : 0U);
+    if ((dirty & BUDDY_SETTINGS_DIRTY_BLE) != 0U) {
+        err = s_backend->set_u8(s_backend_context, "ble", settings->ble_enabled ? 1U : 0U);
         if (err != ESP_OK) return err;
     }
-    if ((s_dirty & BUDDY_SETTINGS_DIRTY_APPROVE) != 0U) {
-        err = s_backend->set_u64(s_backend_context, "approve", s_settings.approval_count);
+    if ((dirty & BUDDY_SETTINGS_DIRTY_APPROVE) != 0U) {
+        err = s_backend->set_u64(s_backend_context, "approve", settings->approval_count);
         if (err != ESP_OK) return err;
     }
-    if ((s_dirty & BUDDY_SETTINGS_DIRTY_DENY) != 0U) {
-        err = s_backend->set_u64(s_backend_context, "deny", s_settings.denial_count);
+    if ((dirty & BUDDY_SETTINGS_DIRTY_DENY) != 0U) {
+        err = s_backend->set_u64(s_backend_context, "deny", settings->denial_count);
         if (err != ESP_OK) return err;
     }
-    if ((s_dirty & BUDDY_SETTINGS_DIRTY_LEVEL) != 0U) {
+    if ((dirty & BUDDY_SETTINGS_DIRTY_LEVEL) != 0U) {
         err = s_backend->set_u64(s_backend_context, "level",
-                                 s_settings.highest_celebrated_level);
+                                 settings->highest_celebrated_level);
         if (err != ESP_OK) return err;
+    }
+    return ESP_OK;
+}
+
+static esp_err_t buddy_settings_store_dirty(void)
+{
+    esp_err_t err = buddy_settings_stage(&s_settings, s_dirty);
+
+    if (err != ESP_OK) {
+        return err;
     }
     err = s_backend->commit(s_backend_context);
     if (err == ESP_OK) {
         s_dirty = 0;
     }
     return err;
+}
+
+static esp_err_t buddy_settings_set_string_committed(const char *value, size_t capacity,
+                                                     char *target, uint32_t dirty_bit,
+                                                     bool required)
+{
+    buddy_settings_snapshot_t previous;
+    uint32_t previous_dirty;
+    uint32_t attempted_dirty;
+    esp_err_t err;
+    esp_err_t rollback_err;
+
+    if (!s_initialized || !buddy_value_is_valid(value, capacity, required)) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (buddy_settings_ensure_loaded() != ESP_OK) {
+        return ESP_ERR_INVALID_STATE;
+    }
+    previous = s_settings;
+    previous_dirty = s_dirty;
+    memcpy(target, value, strlen(value) + 1U);
+    s_dirty |= dirty_bit;
+    attempted_dirty = s_dirty;
+    err = buddy_settings_store_dirty();
+    if (err == ESP_OK) {
+        s_last_flush_ms = buddy_settings_now_ms();
+        s_has_flushed = true;
+        return ESP_OK;
+    }
+
+    s_settings = previous;
+    s_dirty = previous_dirty;
+    rollback_err = buddy_settings_stage(&previous, attempted_dirty);
+    return rollback_err == ESP_OK ? err : rollback_err;
 }
 
 esp_err_t buddy_settings_init(void)
@@ -362,6 +407,20 @@ esp_err_t buddy_settings_set_owner(const char *owner)
     memcpy(s_settings.owner, owner, strlen(owner) + 1U);
     s_dirty |= BUDDY_SETTINGS_DIRTY_OWNER;
     return ESP_OK;
+}
+
+esp_err_t buddy_settings_set_name_committed(const char *name)
+{
+    return buddy_settings_set_string_committed(name, sizeof(s_settings.name),
+                                               s_settings.name,
+                                               BUDDY_SETTINGS_DIRTY_NAME, true);
+}
+
+esp_err_t buddy_settings_set_owner_committed(const char *owner)
+{
+    return buddy_settings_set_string_committed(owner, sizeof(s_settings.owner),
+                                               s_settings.owner,
+                                               BUDDY_SETTINGS_DIRTY_OWNER, false);
 }
 
 esp_err_t buddy_settings_set_ble_enabled(bool enabled)

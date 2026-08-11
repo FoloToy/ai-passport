@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "buddy_app_logic.h"
+#include "official_reference_fixtures.h"
 
 typedef struct {
     esp_err_t start_result;
@@ -26,24 +27,27 @@ static esp_err_t fake_stop(void *context)
     return fake->stop_result;
 }
 
-static void test_only_proven_plain_heartbeat_is_normal(void)
+static void test_only_official_plain_heartbeat_is_normal(void)
 {
-    static const char invalid_utf8[] =
-        "{\"cmd\":\"heartbeat\",\"message\":\"\xc0\xaf\"}";
+    static const char invalid_utf8[] = {
+        '{', '"', 't', 'o', 't', 'a', 'l', '"', ':', '0', ',',
+        '"', 'm', 's', 'g', '"', ':', '"', (char)0xc0, (char)0xaf, '"', '}',
+    };
     static const char *const normal[] = {
-        "{\"cmd\":\"heartbeat\"}",
-        " { \"cmd\" : \"heartbeat\", \"status\" : \"prompt\" } ",
-        "{\"cmd\":\"heartbeat\",\"entries\":[\"one\"],\"meta\":{\"x\":1}}",
-        "{\"cmd\":\"heartbeat\",\"message\":\"\xe5\xae\x89\xe5\x85\xa8\"}",
+        OFFICIAL_HEARTBEAT_NO_PROMPT_JSON,
+        " { \"total\" : 0, \"running\" : 0, \"waiting\" : 0, "
+        "\"msg\" : \"idle\", \"entries\" : [], \"tokens\" : 0, "
+        "\"tokens_today\" : 0 } ",
     };
     static const char *const priority[] = {
-        "{\"cmd\":\"heartbeat\",\"prompt\":{\"id\":\"req-1\"}}",
-        "{\"cmd\":\"prompt\",\"id\":\"req-1\"}",
-        "{\"cmd\":\"status\"}",
-        "{\"c\\u006dd\":\"heartbeat\"}",
-        "{\"cmd\":\"heartbeat\",\"pr\\u006fmpt\":{}}",
-        "{\"cmd\":\"heartbeat\",}",
-        "{\"cmd\":\"heartbeat\"} trailing",
+        OFFICIAL_HEARTBEAT_JSON,
+        OFFICIAL_TIME_JSON,
+        OFFICIAL_OWNER_JSON,
+        OFFICIAL_STATUS_REQUEST_JSON,
+        "{\"total\":0,\"running\":0,\"waiting\":0,\"msg\":\"idle\","
+        "\"entries\":[],\"tokens\":0,\"tokens_today\":0,\"pr\\u006fmpt\":{}}",
+        "{\"total\":0,}",
+        "{\"total\":0} trailing",
         "not json",
     };
     size_t index;
@@ -56,31 +60,27 @@ static void test_only_proven_plain_heartbeat_is_normal(void)
         assert(buddy_app_classify_rx(priority[index], strlen(priority[index])) ==
                BUDDY_APP_RX_PRIORITY);
     }
-    assert(buddy_app_classify_rx(invalid_utf8, sizeof(invalid_utf8) - 1U) ==
+    assert(buddy_app_classify_rx(invalid_utf8, sizeof(invalid_utf8)) ==
            BUDDY_APP_RX_PRIORITY);
 }
 
 static void test_priority_evicts_stale_normal_before_queued_priority(void)
 {
-    assert(buddy_app_rx_overflow_policy(BUDDY_APP_RX_PRIORITY, false, true,
-                                        true, false) ==
+    assert(buddy_app_rx_overflow_policy(BUDDY_APP_RX_PRIORITY, false, true, true, false) ==
            BUDDY_APP_RX_REPLACE_NORMAL);
-    assert(buddy_app_rx_overflow_policy(BUDDY_APP_RX_PRIORITY, false, false,
-                                        true, true) ==
+    assert(buddy_app_rx_overflow_policy(BUDDY_APP_RX_PRIORITY, false, false, true, true) ==
            BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY);
 }
 
-static void test_normal_heartbeat_coalesces_or_drops_without_using_priority_capacity(void)
+static void test_normal_heartbeat_coalesces_or_drops_without_priority_capacity(void)
 {
     assert(buddy_app_rx_overflow_policy(BUDDY_APP_RX_NORMAL_HEARTBEAT, false, true,
-                                        true, true) ==
-           BUDDY_APP_RX_REPLACE_NORMAL);
+                                        true, true) == BUDDY_APP_RX_REPLACE_NORMAL);
     assert(buddy_app_rx_overflow_policy(BUDDY_APP_RX_NORMAL_HEARTBEAT, false, false,
-                                        true, true) ==
-           BUDDY_APP_RX_DROP);
+                                        true, true) == BUDDY_APP_RX_DROP);
 }
 
-static void test_priority_falls_back_when_the_normal_snapshot_races_with_the_consumer(void)
+static void test_priority_retry_falls_back_after_a_race(void)
 {
     buddy_app_rx_retry_state_t retry;
     buddy_app_rx_overflow_action_t action;
@@ -88,17 +88,12 @@ static void test_priority_falls_back_when_the_normal_snapshot_races_with_the_con
     buddy_app_rx_retry_init(&retry, BUDDY_APP_RX_PRIORITY);
     action = buddy_app_rx_retry_next(&retry, false, true, true, false);
     assert(action == BUDDY_APP_RX_REPLACE_NORMAL);
-
-    /* The app consumed normal after the producer's snapshot and still holds its slot. */
     buddy_app_rx_retry_record_eviction(&retry, action, false);
     action = buddy_app_rx_retry_next(&retry, false, false, true, false);
     assert(action == BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY);
-
     buddy_app_rx_retry_record_eviction(&retry, action, true);
-    action = buddy_app_rx_retry_next(&retry, true, false, true, false);
-    assert(action == BUDDY_APP_RX_ENQUEUE);
-    assert(retry.normal_evictions == 0U);
-    assert(retry.priority_evictions == 1U);
+    assert(buddy_app_rx_retry_next(&retry, true, false, true, false) ==
+           BUDDY_APP_RX_ENQUEUE);
     assert(buddy_app_rx_retry_overflow_count(&retry) == 1U);
 }
 
@@ -119,14 +114,12 @@ static void test_status_identity_comes_from_settings_snapshot(void)
     settings.denial_count = 3;
     assert(buddy_app_build_status(&report, &settings, &runtime));
     assert(strcmp(report.name, "Persisted Buddy") == 0);
-    assert(strcmp(report.owner, "Persisted Owner") == 0);
     assert(report.approval_count == 8);
     assert(report.denial_count == 3);
     assert(report.uptime_ms == 123);
-    assert(report.queue_overflow_count == 7);
 }
 
-static void test_failed_stop_restarts_transport_and_reports_enabled_rollback(void)
+static void test_failed_stop_restarts_transport_and_reports_rollback(void)
 {
     fake_transport_t fake = {
         .start_result = ESP_OK,
@@ -137,8 +130,7 @@ static void test_failed_stop_restarts_transport_and_reports_enabled_rollback(voi
         .start = fake_start,
         .stop = fake_stop,
     };
-    buddy_app_ble_transport_result_t result =
-        buddy_app_set_ble_transport(&ops, false);
+    buddy_app_ble_transport_result_t result = buddy_app_set_ble_transport(&ops, false);
 
     assert(result.request_status == ESP_ERR_INVALID_STATE);
     assert(result.effective_enabled);
@@ -149,11 +141,11 @@ static void test_failed_stop_restarts_transport_and_reports_enabled_rollback(voi
 
 int main(void)
 {
-    test_only_proven_plain_heartbeat_is_normal();
+    test_only_official_plain_heartbeat_is_normal();
     test_priority_evicts_stale_normal_before_queued_priority();
-    test_normal_heartbeat_coalesces_or_drops_without_using_priority_capacity();
-    test_priority_falls_back_when_the_normal_snapshot_races_with_the_consumer();
+    test_normal_heartbeat_coalesces_or_drops_without_priority_capacity();
+    test_priority_retry_falls_back_after_a_race();
     test_status_identity_comes_from_settings_snapshot();
-    test_failed_stop_restarts_transport_and_reports_enabled_rollback();
+    test_failed_stop_restarts_transport_and_reports_rollback();
     return 0;
 }
