@@ -35,6 +35,8 @@ typedef enum {
 
 typedef enum {
     BUDDY_PAGE_HOME,
+    BUDDY_PAGE_STATUS = BUDDY_PAGE_HOME,
+    BUDDY_PAGE_TRANSCRIPT,
     BUDDY_PAGE_SETTINGS,
 } buddy_page_t;
 
@@ -78,6 +80,18 @@ typedef enum {
 } buddy_permission_decision_t;
 
 typedef struct {
+    char id[BUDDY_PROMPT_ID_MAX];
+    char tool[BUDDY_TOOL_MAX];
+    char hint[BUDDY_HINT_MAX];
+    size_t id_length;
+    unsigned running;
+    bool id_truncated;
+    bool tool_truncated;
+    bool hint_truncated;
+    bool connected;
+} buddy_prompt_t;
+
+typedef struct {
     char name[BUDDY_NAME_MAX];
     char owner[BUDDY_OWNER_MAX];
     char time[BUDDY_MESSAGE_MAX];
@@ -90,19 +104,8 @@ typedef struct {
     bool owner_truncated;
     bool message_truncated;
     bool entries_truncated[BUDDY_ENTRY_COUNT];
+    buddy_prompt_t prompt;
 } buddy_heartbeat_t;
-
-typedef struct {
-    char id[BUDDY_PROMPT_ID_MAX];
-    char tool[BUDDY_TOOL_MAX];
-    char hint[BUDDY_HINT_MAX];
-    size_t id_length;
-    unsigned running;
-    bool id_truncated;
-    bool tool_truncated;
-    bool hint_truncated;
-    bool connected;
-} buddy_prompt_t;
 
 typedef struct {
     char value[BUDDY_MESSAGE_MAX];
@@ -161,4 +164,9 @@ typedef struct {
     bool heartbeat_stale;
     bool confirmation_pending;
     bool approval_locked;
+    bool ble_connected;
+    bool ble_encrypted;
+    bool battery_available;
+    uint8_t battery_percent;
+    uint16_t battery_mv;
 } buddy_ui_snapshot_t;

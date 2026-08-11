@@ -29,22 +29,22 @@ static void test_heartbeat_maps_documented_fields(void)
     assert(strcmp(event.heartbeat.entries[1], "two") == 0);
 }
 
-static void test_heartbeat_optional_prompt_maps_prompt_event(void)
+static void test_heartbeat_optional_prompt_stays_in_heartbeat_snapshot(void)
 {
     buddy_event_t event = {0};
     const char *json =
         "{\"cmd\":\"heartbeat\",\"running\":1,\"prompt\":{\"id\":\"req_abc123\","
         "\"tool\":\"Bash\",\"hint\":\"git status\"}}";
 
-    assert(parse(json, &event) == BUDDY_EVENT_PROMPT);
-    assert(event.type == BUDDY_EVENT_PROMPT);
-    assert(event.prompt.connected);
-    assert(event.prompt.running == 1);
-    assert(event.prompt.id_length == strlen("req_abc123"));
-    assert(!event.prompt.id_truncated);
-    assert(strcmp(event.prompt.id, "req_abc123") == 0);
-    assert(strcmp(event.prompt.tool, "Bash") == 0);
-    assert(strcmp(event.prompt.hint, "git status") == 0);
+    assert(parse(json, &event) == BUDDY_EVENT_HEARTBEAT);
+    assert(event.type == BUDDY_EVENT_HEARTBEAT);
+    assert(event.heartbeat.prompt.connected);
+    assert(event.heartbeat.prompt.running == 1);
+    assert(event.heartbeat.prompt.id_length == strlen("req_abc123"));
+    assert(!event.heartbeat.prompt.id_truncated);
+    assert(strcmp(event.heartbeat.prompt.id, "req_abc123") == 0);
+    assert(strcmp(event.heartbeat.prompt.tool, "Bash") == 0);
+    assert(strcmp(event.heartbeat.prompt.hint, "git status") == 0);
 }
 
 static void test_unpair_maps_confirmation_event(void)
@@ -309,7 +309,7 @@ static void test_serializers_reject_invalid_or_unterminated_inputs(void)
 int main(void)
 {
     test_heartbeat_maps_documented_fields();
-    test_heartbeat_optional_prompt_maps_prompt_event();
+    test_heartbeat_optional_prompt_stays_in_heartbeat_snapshot();
     test_unpair_maps_confirmation_event();
     test_file_transfer_commands_are_unsupported();
     test_unknown_command_is_rejected();

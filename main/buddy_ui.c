@@ -18,7 +18,9 @@ static lv_obj_t *s_transcript_page;
 static lv_obj_t *s_transcript_label;
 static lv_obj_t *s_settings_page;
 static lv_obj_t *s_approval_page;
+static lv_obj_t *s_approval_character_label;
 static lv_obj_t *s_approval_tool_label;
+static lv_obj_t *s_approval_hint_box;
 static lv_obj_t *s_approval_hint_label;
 static lv_obj_t *s_approval_action_label;
 static lv_obj_t *s_passkey_page;
@@ -145,7 +147,11 @@ static void buddy_ui_create_approval(void)
     (void)buddy_ui_text(s_approval_page, 12, 12, 216, &lv_font_montserrat_20, "Approval");
     s_approval_tool_label = buddy_ui_text(s_approval_page, 12, 52, 216,
                                            &lv_font_montserrat_14, "");
-    (void)buddy_ui_hint_box(s_approval_page, 12, 84, 216, 136, &s_approval_hint_label);
+    s_approval_character_label = buddy_ui_text(s_approval_page, 24, 42, 192,
+                                                &lv_font_montserrat_20, "");
+    lv_obj_add_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN);
+    s_approval_hint_box = buddy_ui_hint_box(s_approval_page, 12, 84, 216, 136,
+                                             &s_approval_hint_label);
     s_approval_action_label = buddy_ui_text(s_approval_page, 12, 240, 216,
                                              &lv_font_montserrat_14,
                                              "OK Approve once\nDOWN Deny");
@@ -192,12 +198,22 @@ static const char *buddy_ui_connection_text(const buddy_ui_snapshot_t *snapshot)
 
 static void buddy_ui_render_status(const buddy_ui_snapshot_t *snapshot)
 {
-    char status[BUDDY_MESSAGE_MAX + 16];
+    char battery[32];
+    char status[BUDDY_MESSAGE_MAX + 64];
     char summary[128];
     const char *hint = snapshot->message[0] != '\0' ? snapshot->message : snapshot->entries[0];
 
-    (void)snprintf(status, sizeof(status), "%s  %s", buddy_ui_connection_text(snapshot),
-                   snapshot->time);
+    if (snapshot->battery_available) {
+        (void)snprintf(battery, sizeof(battery), "%u%% %umV", snapshot->battery_percent,
+                       snapshot->battery_mv);
+    } else {
+        (void)snprintf(battery, sizeof(battery), "--");
+    }
+    (void)snprintf(status, sizeof(status), "%s %s BLE:%s SEC:%s BAT:%s",
+                   buddy_ui_connection_text(snapshot),
+                   snapshot->time,
+                   snapshot->ble_connected ? "ON" : "--",
+                   snapshot->ble_encrypted ? "OK" : "--", battery);
     (void)snprintf(summary, sizeof(summary), "%s%s%s\n%u running  %llu tokens",
                    snapshot->name[0] != '\0' ? snapshot->name : "Claude Buddy",
                    snapshot->owner[0] != '\0' ? " / " : "",
@@ -241,8 +257,23 @@ void buddy_ui_render(const buddy_ui_snapshot_t *snapshot)
         buddy_ui_create_approval();
         lv_label_set_text_fmt(s_approval_tool_label, "Tool: %s", snapshot->prompt_tool);
         lv_label_set_text(s_approval_hint_label, snapshot->prompt_hint);
-        lv_label_set_text(s_approval_action_label, snapshot->approval_locked ? "Sending..." :
-                          "OK Approve once\nDOWN Deny");
+        if (snapshot->approval_locked) {
+            lv_label_set_text(s_approval_character_label,
+                              buddy_character_frame(BUDDY_CHARACTER_HEART, 0));
+            lv_obj_remove_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_y(s_approval_tool_label, 134);
+            lv_obj_set_pos(s_approval_hint_box, 12, 166);
+            lv_obj_set_height(s_approval_hint_box, 78);
+            lv_obj_set_y(s_approval_action_label, 252);
+            lv_label_set_text(s_approval_action_label, "Sending...");
+        } else {
+            lv_obj_add_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_y(s_approval_tool_label, 52);
+            lv_obj_set_pos(s_approval_hint_box, 12, 84);
+            lv_obj_set_height(s_approval_hint_box, 136);
+            lv_obj_set_y(s_approval_action_label, 240);
+            lv_label_set_text(s_approval_action_label, "OK Approve once\nDOWN Deny");
+        }
         buddy_ui_show(s_approval_page);
         return;
     }
@@ -251,8 +282,7 @@ void buddy_ui_render(const buddy_ui_snapshot_t *snapshot)
         buddy_ui_show(s_settings_page);
         return;
     }
-    if (snapshot->entries[1][0] != '\0' || snapshot->entries[2][0] != '\0' ||
-        snapshot->entries[3][0] != '\0') {
+    if (snapshot->page == BUDDY_PAGE_TRANSCRIPT) {
         char transcript[BUDDY_ENTRY_COUNT * BUDDY_ENTRY_MAX + BUDDY_ENTRY_COUNT];
 
         buddy_ui_create_transcript();
@@ -279,5 +309,10 @@ void buddy_ui_tick(uint64_t elapsed_ms)
 {
     if (s_character_label != NULL && !lv_obj_has_flag(s_status_page, LV_OBJ_FLAG_HIDDEN)) {
         lv_label_set_text(s_character_label, buddy_character_frame(s_character, elapsed_ms));
+    }
+    if (s_approval_character_label != NULL &&
+        !lv_obj_has_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN)) {
+        lv_label_set_text(s_approval_character_label,
+                          buddy_character_frame(BUDDY_CHARACTER_HEART, elapsed_ms));
     }
 }

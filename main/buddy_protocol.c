@@ -172,7 +172,7 @@ static bool buddy_json_u64(const cJSON *object, const char *name, uint64_t *valu
     return (double)*value == item->valuedouble;
 }
 
-static bool buddy_parse_prompt(const cJSON *prompt_json, unsigned running, buddy_event_t *event)
+static bool buddy_parse_prompt(const cJSON *prompt_json, unsigned running, buddy_prompt_t *prompt)
 {
     const char *id;
     const char *tool;
@@ -182,22 +182,21 @@ static bool buddy_parse_prompt(const cJSON *prompt_json, unsigned running, buddy
     size_t hint_length;
 
     if (!buddy_json_optional_string(prompt_json, "id", &id, &id_length) || id == NULL ||
-        id_length == 0 || id_length >= sizeof(event->prompt.id) ||
+        id_length == 0 || id_length >= sizeof(prompt->id) ||
         !buddy_json_optional_string(prompt_json, "tool", &tool, &tool_length) ||
         !buddy_json_optional_string(prompt_json, "hint", &hint, &hint_length)) {
         return false;
     }
-    event->type = BUDDY_EVENT_PROMPT;
-    event->prompt.connected = true;
-    event->prompt.running = running;
-    event->prompt.id_length = id_length;
-    event->prompt.id_truncated = false;
-    return buddy_copy_utf8(event->prompt.id, sizeof(event->prompt.id), id, id_length,
-                           &event->prompt.id_truncated) &&
-           buddy_copy_utf8(event->prompt.tool, sizeof(event->prompt.tool), tool, tool_length,
-                           &event->prompt.tool_truncated) &&
-           buddy_copy_utf8(event->prompt.hint, sizeof(event->prompt.hint), hint, hint_length,
-                           &event->prompt.hint_truncated);
+    prompt->connected = true;
+    prompt->running = running;
+    prompt->id_length = id_length;
+    prompt->id_truncated = false;
+    return buddy_copy_utf8(prompt->id, sizeof(prompt->id), id, id_length,
+                           &prompt->id_truncated) &&
+           buddy_copy_utf8(prompt->tool, sizeof(prompt->tool), tool, tool_length,
+                           &prompt->tool_truncated) &&
+           buddy_copy_utf8(prompt->hint, sizeof(prompt->hint), hint, hint_length,
+                           &prompt->hint_truncated);
 }
 
 static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
@@ -258,7 +257,10 @@ static bool buddy_parse_heartbeat(const cJSON *object, buddy_event_t *event)
 
     prompt = cJSON_GetObjectItemCaseSensitive(object, "prompt");
     if (prompt != NULL) {
-        return cJSON_IsObject(prompt) && buddy_parse_prompt(prompt, running, event);
+        if (!cJSON_IsObject(prompt) ||
+            !buddy_parse_prompt(prompt, running, &event->heartbeat.prompt)) {
+            return false;
+        }
     }
     event->type = BUDDY_EVENT_HEARTBEAT;
     return true;
@@ -373,7 +375,9 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
             result = (int)event->type;
         }
     } else if (strcmp(command, "prompt") == 0) {
-        if (buddy_json_unsigned(root, "running", &running) && buddy_parse_prompt(root, running, event)) {
+        if (buddy_json_unsigned(root, "running", &running) &&
+            buddy_parse_prompt(root, running, &event->prompt)) {
+            event->type = BUDDY_EVENT_PROMPT;
             result = (int)event->type;
         }
     } else if (strcmp(command, "time") == 0) {

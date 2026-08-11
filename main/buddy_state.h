@@ -25,6 +25,11 @@ typedef struct {
     bool heartbeat_stale;
     bool confirmation_pending;
     bool approval_locked;
+    bool ble_connected;
+    bool ble_encrypted;
+    bool battery_available;
+    uint8_t battery_percent;
+    uint16_t battery_mv;
 } buddy_state_t;
 
 void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *settings);

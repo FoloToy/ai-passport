@@ -107,6 +107,13 @@ static void buddy_set_ui_refresh(buddy_action_t *action)
     }
 }
 
+static bool buddy_prompt_ids_match(const buddy_prompt_t *left, const buddy_prompt_t *right)
+{
+    return left->id_length == right->id_length &&
+           left->id_length > 0 &&
+           memcmp(left->id, right->id, left->id_length) == 0;
+}
+
 static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t *heartbeat,
                                   uint64_t now_ms, buddy_action_t *action)
 {
@@ -118,6 +125,16 @@ static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t 
     state->heartbeat_stale = !heartbeat->connected;
     if (!heartbeat->connected) {
         buddy_invalidate_prompt(state);
+    } else if (heartbeat->prompt.id[0] == '\0') {
+        buddy_invalidate_prompt(state);
+    } else if (!buddy_prompt_id_is_valid(&heartbeat->prompt)) {
+        buddy_invalidate_prompt(state);
+    } else if (state->prompt.id[0] != '\0' &&
+               buddy_prompt_ids_match(&state->prompt, &heartbeat->prompt)) {
+        state->prompt = heartbeat->prompt;
+    } else {
+        state->prompt = heartbeat->prompt;
+        state->approval_locked = false;
     }
     state->last_heartbeat_ms = now_ms;
     state->running = heartbeat->running;
@@ -312,6 +329,11 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->heartbeat_stale = state->heartbeat_stale;
     snapshot->confirmation_pending = state->confirmation_pending;
     snapshot->approval_locked = state->approval_locked;
+    snapshot->ble_connected = state->ble_connected;
+    snapshot->ble_encrypted = state->ble_encrypted;
+    snapshot->battery_available = state->battery_available;
+    snapshot->battery_percent = state->battery_percent;
+    snapshot->battery_mv = state->battery_mv;
     buddy_copy(snapshot->name, sizeof(snapshot->name), state->name);
     buddy_copy(snapshot->owner, sizeof(snapshot->owner), state->owner);
     buddy_copy(snapshot->time, sizeof(snapshot->time), state->time);

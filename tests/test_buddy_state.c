@@ -217,6 +217,69 @@ static void test_approval_locks_until_a_new_prompt(void)
     assert(strcmp(action.permission.id, "req-2") == 0);
 }
 
+static void test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_ui_snapshot_t snapshot;
+    buddy_event_t heartbeat = test_heartbeat_event(0, 0);
+    buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+    assert(state.approval_locked);
+
+    heartbeat.heartbeat.connected = true;
+    buddy_state_reduce(&state, &heartbeat, 1002, &action);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(!snapshot.approval_locked);
+    assert(snapshot.prompt_id[0] == '\0');
+
+    prompt = test_prompt_event("req-2", "Bash", "git push", 0, 1);
+    buddy_state_reduce(&state, &prompt, 1003, &action);
+    buddy_state_reduce(&state, &approve, 1004, &action);
+    heartbeat.heartbeat.prompt = prompt.prompt;
+    buddy_state_reduce(&state, &heartbeat, 1005, &action);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(snapshot.approval_locked);
+    assert(strcmp(snapshot.prompt_id, "req-2") == 0);
+
+    heartbeat.heartbeat.prompt = test_prompt_event("req-3", "Read", "README", 0, 1).prompt;
+    buddy_state_reduce(&state, &heartbeat, 1006, &action);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(!snapshot.approval_locked);
+    assert(strcmp(snapshot.prompt_id, "req-3") == 0);
+}
+
+static void test_ui_snapshot_runtime_indicators_default_off(void)
+{
+    buddy_state_t state;
+    buddy_ui_snapshot_t snapshot;
+
+    buddy_state_init(&state, NULL);
+    buddy_state_snapshot(&state, &snapshot);
+
+    assert(!snapshot.ble_connected);
+    assert(!snapshot.ble_encrypted);
+    assert(!snapshot.battery_available);
+    assert(snapshot.battery_percent == 0);
+    assert(snapshot.battery_mv == 0);
+
+    state.ble_connected = true;
+    state.ble_encrypted = true;
+    state.battery_available = true;
+    state.battery_percent = 73;
+    state.battery_mv = 3875;
+    buddy_state_snapshot(&state, &snapshot);
+    assert(snapshot.ble_connected);
+    assert(snapshot.ble_encrypted);
+    assert(snapshot.battery_available);
+    assert(snapshot.battery_percent == 73);
+    assert(snapshot.battery_mv == 3875);
+}
+
 static void test_absent_prompt_is_ignored(void)
 {
     buddy_state_t state;
@@ -431,6 +494,8 @@ int main(void)
     test_token_boundaries_celebrate_once();
     test_persisted_celebration_level_is_not_replayed();
     test_approval_locks_until_a_new_prompt();
+    test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock();
+    test_ui_snapshot_runtime_indicators_default_off();
     test_absent_prompt_is_ignored();
     test_timeout_stale_prompt_is_ignored();
     test_disconnect_then_reconnect_does_not_restore_prompt();
