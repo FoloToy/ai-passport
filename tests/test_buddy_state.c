@@ -237,20 +237,21 @@ static void test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock(voi
     assert(!snapshot.approval_locked);
     assert(snapshot.prompt_id[0] == '\0');
 
-    prompt = test_prompt_event("req-2", "Bash", "git push", 0, 1);
-    buddy_state_reduce(&state, &prompt, 1003, &action);
-    buddy_state_reduce(&state, &approve, 1004, &action);
     heartbeat.heartbeat.prompt = prompt.prompt;
+    buddy_state_reduce(&state, &heartbeat, 1003, &action);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(snapshot.prompt_id[0] == '\0');
+    buddy_state_reduce(&state, &approve, 1004, &action);
+    assert(action.type == BUDDY_ACTION_NONE);
+
+    heartbeat.heartbeat.prompt = test_prompt_event("req-2", "Read", "README", 0, 1).prompt;
     buddy_state_reduce(&state, &heartbeat, 1005, &action);
     buddy_state_snapshot(&state, &snapshot);
-    assert(snapshot.approval_locked);
-    assert(strcmp(snapshot.prompt_id, "req-2") == 0);
-
-    heartbeat.heartbeat.prompt = test_prompt_event("req-3", "Read", "README", 0, 1).prompt;
-    buddy_state_reduce(&state, &heartbeat, 1006, &action);
-    buddy_state_snapshot(&state, &snapshot);
     assert(!snapshot.approval_locked);
-    assert(strcmp(snapshot.prompt_id, "req-3") == 0);
+    assert(strcmp(snapshot.prompt_id, "req-2") == 0);
+    buddy_state_reduce(&state, &approve, 1006, &action);
+    assert(action.type == BUDDY_ACTION_PERMISSION);
+    assert(strcmp(action.permission.id, "req-2") == 0);
 }
 
 static void test_ui_snapshot_runtime_indicators_default_off(void)

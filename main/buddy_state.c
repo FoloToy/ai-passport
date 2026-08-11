@@ -114,6 +114,15 @@ static bool buddy_prompt_ids_match(const buddy_prompt_t *left, const buddy_promp
            memcmp(left->id, right->id, left->id_length) == 0;
 }
 
+static bool buddy_prompt_is_last_approved(const buddy_state_t *state,
+                                          const buddy_prompt_t *prompt)
+{
+    return buddy_string_matches_length(state->last_approved_prompt_id,
+                                       sizeof(state->last_approved_prompt_id),
+                                       prompt->id_length) &&
+           memcmp(state->last_approved_prompt_id, prompt->id, prompt->id_length) == 0;
+}
+
 static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t *heartbeat,
                                   uint64_t now_ms, buddy_action_t *action)
 {
@@ -132,6 +141,8 @@ static void buddy_apply_heartbeat(buddy_state_t *state, const buddy_heartbeat_t 
     } else if (state->prompt.id[0] != '\0' &&
                buddy_prompt_ids_match(&state->prompt, &heartbeat->prompt)) {
         state->prompt = heartbeat->prompt;
+    } else if (buddy_prompt_is_last_approved(state, &heartbeat->prompt)) {
+        buddy_invalidate_prompt(state);
     } else {
         state->prompt = heartbeat->prompt;
         state->approval_locked = false;
