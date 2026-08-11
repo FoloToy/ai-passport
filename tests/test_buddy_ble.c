@@ -412,13 +412,49 @@ static void test_host_deinit_failure_blocks_reinitialization(void)
     assert(buddy_ble_lifecycle_init(&ops, &retry_safe) == -30);
     assert(!retry_safe);
     assert(fake.log[fake.count - 1U] == 12); /* No clear after failed deinit. */
+    assert(!buddy_ble_lifecycle_retry_allowed(false, !retry_safe));
 }
 
-static void test_repeated_pending_delete_does_not_replace_host_snapshot(void)
+static void test_host_init_failure_blocks_reinitialization(void)
 {
+    fake_lifecycle_t fake = {.fail_step = 1};
+    buddy_ble_lifecycle_ops_t ops = fake_lifecycle_ops(&fake);
+    bool retry_safe = true;
+
+    assert(buddy_ble_lifecycle_init(&ops, &retry_safe) == -1);
+    assert(!retry_safe);
+    assert(fake.count == 1); /* Unknown partial init state is not cleared. */
+    assert(!buddy_ble_lifecycle_retry_allowed(false, !retry_safe));
+}
+
+static void test_exhausted_delete_retry_preserves_transaction_snapshot(void)
+{
+    unsigned int snapshot_peer_count = 3;
+    uint32_t snapshot_irk_tag = 0x12345678U;
+    unsigned int controller_stale_peers = 1;
+    uint32_t controller_irk_tag = 0x87654321U;
+    const bool pending = true;
+    const bool final_reported = true;
+
+    assert(!buddy_ble_delete_request_is_new(pending, final_reported));
+    assert(buddy_ble_delete_request_resets_attempts(pending, final_reported));
+    if (buddy_ble_delete_request_is_new(pending, final_reported)) {
+        snapshot_peer_count = 0;
+        snapshot_irk_tag = 0;
+    }
+    assert(snapshot_peer_count == 3);
+    assert(snapshot_irk_tag == 0x12345678U);
+    /* The preserved evidence still detects both stale controller state and
+     * an identity mismatch after retry exhaustion. */
+    assert(controller_stale_peers != 0 || controller_irk_tag != snapshot_irk_tag);
+    controller_stale_peers = 0;
+    controller_irk_tag = snapshot_irk_tag;
+    assert(controller_stale_peers == 0 && controller_irk_tag == snapshot_irk_tag);
+
     assert(buddy_ble_delete_request_is_new(false, false));
     assert(!buddy_ble_delete_request_is_new(true, false));
-    assert(buddy_ble_delete_request_is_new(true, true));
+    assert(buddy_ble_delete_request_resets_attempts(false, false));
+    assert(!buddy_ble_delete_request_resets_attempts(true, false));
 }
 
 int main(void)
@@ -438,6 +474,7 @@ int main(void)
     test_controller_and_identity_faults_keep_delete_unverified();
     test_init_failure_rolls_back_and_can_retry();
     test_host_deinit_failure_blocks_reinitialization();
-    test_repeated_pending_delete_does_not_replace_host_snapshot();
+    test_host_init_failure_blocks_reinitialization();
+    test_exhausted_delete_retry_preserves_transaction_snapshot();
     return 0;
 }

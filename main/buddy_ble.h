@@ -80,6 +80,7 @@ bool buddy_ble_adv_epoch_allows_start(uint32_t snapshot_epoch, uint32_t current_
                                       bool start_requested, bool host_synced,
                                       bool delete_bonds_pending, bool has_physical_link);
 bool buddy_ble_delete_request_is_new(bool delete_bonds_pending, bool final_reported);
+bool buddy_ble_delete_request_resets_attempts(bool delete_bonds_pending, bool final_reported);
 
 esp_err_t buddy_ble_init(const buddy_ble_config_t *config);
 esp_err_t buddy_ble_start(void);

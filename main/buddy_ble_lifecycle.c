@@ -23,7 +23,8 @@ int buddy_ble_lifecycle_init(const buddy_ble_lifecycle_ops_t *ops, bool *retry_s
 
     rc = ops->host_init(ops->context);
     if (rc != 0) {
-        goto rollback;
+        *retry_safe = false;
+        return rc;
     }
     host_initialized = true;
 
@@ -69,4 +70,9 @@ rollback:
     }
     ops->clear(ops->context);
     return rc;
+}
+
+bool buddy_ble_lifecycle_retry_allowed(bool initialized, bool rollback_blocked)
+{
+    return !initialized && !rollback_blocked;
 }

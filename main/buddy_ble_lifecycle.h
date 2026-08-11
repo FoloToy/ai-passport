@@ -17,3 +17,4 @@ typedef struct {
 } buddy_ble_lifecycle_ops_t;
 
 int buddy_ble_lifecycle_init(const buddy_ble_lifecycle_ops_t *ops, bool *retry_safe);
+bool buddy_ble_lifecycle_retry_allowed(bool initialized, bool rollback_blocked);

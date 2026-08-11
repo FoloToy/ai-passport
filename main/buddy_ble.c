@@ -82,6 +82,12 @@ bool buddy_ble_adv_epoch_allows_start(uint32_t snapshot_epoch, uint32_t current_
 
 bool buddy_ble_delete_request_is_new(bool delete_bonds_pending, bool final_reported)
 {
+    (void)final_reported;
+    return !delete_bonds_pending;
+}
+
+bool buddy_ble_delete_request_resets_attempts(bool delete_bonds_pending, bool final_reported)
+{
     return !delete_bonds_pending || final_reported;
 }
 
@@ -877,6 +883,8 @@ static void buddy_finish_bond_deletion(struct ble_npl_event *event)
     s_ble.delete_bonds_result = rc;
     if (rc == 0) {
         s_ble.delete_bonds_pending = false;
+        s_ble.delete_snapshot_ready = false;
+        s_ble.delete_peer_count = 0;
         ++s_ble.advertising_epoch;
         s_ble.delete_attempts = 0;
         s_ble.delete_final_reported = false;
@@ -1309,7 +1317,8 @@ esp_err_t buddy_ble_init(const buddy_ble_config_t *config)
     if (config == NULL || config->event_cb == NULL) {
         return ESP_ERR_INVALID_ARG;
     }
-    if (s_ble.initialized || s_ble.init_rollback_blocked) {
+    if (!buddy_ble_lifecycle_retry_allowed(s_ble.initialized,
+                                           s_ble.init_rollback_blocked)) {
         return ESP_ERR_INVALID_STATE;
     }
 
@@ -1490,6 +1499,7 @@ esp_err_t buddy_ble_delete_bonds(void)
     uint16_t conn_handle;
     bool launch_host;
     bool new_request;
+    bool reset_attempts;
 
     if (!s_ble.initialized) {
         return ESP_ERR_INVALID_STATE;
@@ -1498,15 +1508,19 @@ esp_err_t buddy_ble_delete_bonds(void)
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     new_request = buddy_ble_delete_request_is_new(s_ble.delete_bonds_pending,
                                                    s_ble.delete_final_reported);
+    reset_attempts = buddy_ble_delete_request_resets_attempts(s_ble.delete_bonds_pending,
+                                                               s_ble.delete_final_reported);
     s_ble.delete_bonds_pending = true;
     ++s_ble.advertising_epoch;
     ++s_ble.connection_generation;
     s_ble.encrypted = false;
     s_ble.secure = false;
-    if (new_request) {
+    if (reset_attempts) {
         s_ble.delete_bonds_result = 0;
         s_ble.delete_attempts = 0;
         s_ble.delete_final_reported = false;
+    }
+    if (new_request) {
         s_ble.delete_snapshot_ready = false;
         s_ble.delete_peer_count = 0;
     }
