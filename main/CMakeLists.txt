@@ -11,6 +11,8 @@ idf_component_register(
          "buddy_ble_store.c"
          "buddy_ble_lifecycle.c"
          "buddy_settings.c"
+         "buddy_character.c"
+         "buddy_ui.c"
     INCLUDE_DIRS "."
     REQUIRES bsp bt esp_hw_support esp_timer nvs_flash
 )

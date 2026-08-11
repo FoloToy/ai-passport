@@ -24,6 +24,7 @@ typedef struct {
     bool connected;
     bool heartbeat_stale;
     bool confirmation_pending;
+    bool approval_locked;
 } buddy_state_t;
 
 void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *settings);

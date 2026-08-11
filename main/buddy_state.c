@@ -58,11 +58,13 @@ static bool buddy_prompt_id_is_valid(const buddy_prompt_t *prompt)
 static void buddy_invalidate_prompt(buddy_state_t *state)
 {
     memset(&state->prompt, 0, sizeof(state->prompt));
+    state->approval_locked = false;
 }
 
 static buddy_character_t buddy_character_for(const buddy_state_t *state, uint64_t now_ms)
 {
-    bool has_prompt = state->prompt.id[0] != '\0' && !state->heartbeat_stale;
+    bool has_prompt = state->prompt.id[0] != '\0' && !state->heartbeat_stale &&
+                      !state->approval_locked;
 
     if (state->confirmation_pending || state->connection == BUDDY_CONNECTION_CONFIRMING) {
         return BUDDY_CHARACTER_CONFIRMATION;
@@ -148,6 +150,7 @@ static void buddy_apply_prompt(buddy_state_t *state, const buddy_prompt_t *promp
     }
 
     state->prompt = *prompt;
+    state->approval_locked = false;
     state->connected = true;
     state->connection = BUDDY_CONNECTION_CONNECTED;
     state->heartbeat_stale = false;
@@ -173,7 +176,7 @@ static bool buddy_observed_prompt_matches(const buddy_event_t *event, const budd
 static void buddy_approve_prompt(buddy_state_t *state, const buddy_event_t *event,
                                  uint64_t now_ms, buddy_action_t *action)
 {
-    if (state->prompt.id[0] == '\0' || state->heartbeat_stale ||
+    if (state->approval_locked || state->prompt.id[0] == '\0' || state->heartbeat_stale ||
         !buddy_prompt_id_is_valid(&state->prompt) ||
         !buddy_observed_prompt_matches(event, &state->prompt)) {
         return;
@@ -187,7 +190,7 @@ static void buddy_approve_prompt(buddy_state_t *state, const buddy_event_t *even
         action->permission.decision = BUDDY_PERMISSION_ONCE;
     }
     buddy_copy(state->last_approved_prompt_id, sizeof(state->last_approved_prompt_id), state->prompt.id);
-    buddy_invalidate_prompt(state);
+    state->approval_locked = true;
     state->temporary_character = BUDDY_CHARACTER_HEART;
     state->temporary_until_ms = now_ms + BUDDY_HEART_ANIMATION_MS;
 }
@@ -308,6 +311,7 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->tokens = state->tokens;
     snapshot->heartbeat_stale = state->heartbeat_stale;
     snapshot->confirmation_pending = state->confirmation_pending;
+    snapshot->approval_locked = state->approval_locked;
     buddy_copy(snapshot->name, sizeof(snapshot->name), state->name);
     buddy_copy(snapshot->owner, sizeof(snapshot->owner), state->owner);
     buddy_copy(snapshot->time, sizeof(snapshot->time), state->time);

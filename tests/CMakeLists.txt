@@ -38,3 +38,8 @@ target_include_directories(test_buddy_settings PRIVATE test_shims ../main)
 target_compile_definitions(test_buddy_settings PRIVATE BUDDY_SETTINGS_TESTING)
 target_compile_options(test_buddy_settings PRIVATE -Wall -Wextra -Werror)
 add_test(NAME buddy_settings COMMAND test_buddy_settings)
+
+add_executable(test_buddy_character test_buddy_character.c ../main/buddy_character.c)
+target_include_directories(test_buddy_character PRIVATE ../main)
+target_compile_options(test_buddy_character PRIVATE -Wall -Wextra -Werror)
+add_test(NAME buddy_character COMMAND test_buddy_character)

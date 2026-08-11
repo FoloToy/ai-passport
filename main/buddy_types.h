@@ -26,6 +26,7 @@ typedef enum {
     BUDDY_CHARACTER_IDLE,
     BUDDY_CHARACTER_BUSY,
     BUDDY_CHARACTER_ATTENTION,
+    BUDDY_CHARACTER_DIZZY,
     BUDDY_CHARACTER_HEART,
     BUDDY_CHARACTER_CELEBRATE,
     BUDDY_CHARACTER_PAIRING,
@@ -159,4 +160,5 @@ typedef struct {
     uint64_t tokens;
     bool heartbeat_stale;
     bool confirmation_pending;
+    bool approval_locked;
 } buddy_ui_snapshot_t;

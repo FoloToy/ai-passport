@@ -185,6 +185,7 @@ static void test_approval_locks_until_a_new_prompt(void)
 {
     buddy_state_t state;
     buddy_action_t action = {0};
+    buddy_ui_snapshot_t snapshot;
     buddy_event_t prompt;
     buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
 
@@ -199,6 +200,9 @@ static void test_approval_locks_until_a_new_prompt(void)
     assert(strcmp(action.permission.id, "req-1") == 0);
     assert(action.permission.decision == BUDDY_PERMISSION_ONCE);
     assert(state.character == BUDDY_CHARACTER_HEART);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(snapshot.approval_locked);
+    assert(strcmp(snapshot.prompt_id, "req-1") == 0);
 
     memset(&action, 0, sizeof(action));
     buddy_state_reduce(&state, &approve, 2100, &action);
@@ -206,6 +210,8 @@ static void test_approval_locks_until_a_new_prompt(void)
 
     prompt = test_prompt_event("req-2", "Bash", "git status", 1, 1);
     buddy_state_reduce(&state, &prompt, 2200, &action);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(!snapshot.approval_locked);
     buddy_state_reduce(&state, &approve, 2201, &action);
     assert(action.type == BUDDY_ACTION_PERMISSION);
     assert(strcmp(action.permission.id, "req-2") == 0);
