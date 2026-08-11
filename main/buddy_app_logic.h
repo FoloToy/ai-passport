@@ -22,6 +22,14 @@ typedef enum {
 } buddy_app_rx_overflow_action_t;
 
 typedef struct {
+    buddy_app_rx_class_t incoming;
+    uint32_t normal_evictions;
+    uint32_t priority_evictions;
+    bool normal_attempted;
+    bool priority_failed;
+} buddy_app_rx_retry_state_t;
+
+typedef struct {
     bool encrypted;
     bool battery_available;
     uint8_t battery_percent;
@@ -49,6 +57,15 @@ buddy_app_rx_class_t buddy_app_classify_rx(const char *data, size_t length);
 buddy_app_rx_overflow_action_t buddy_app_rx_overflow_policy(
     buddy_app_rx_class_t incoming, bool slot_available, bool normal_pending,
     bool priority_pending, bool priority_full);
+void buddy_app_rx_retry_init(buddy_app_rx_retry_state_t *state,
+                             buddy_app_rx_class_t incoming);
+buddy_app_rx_overflow_action_t buddy_app_rx_retry_next(
+    const buddy_app_rx_retry_state_t *state, bool slot_available,
+    bool normal_pending, bool priority_pending, bool priority_full);
+void buddy_app_rx_retry_record_eviction(buddy_app_rx_retry_state_t *state,
+                                        buddy_app_rx_overflow_action_t action,
+                                        bool succeeded);
+uint64_t buddy_app_rx_retry_overflow_count(const buddy_app_rx_retry_state_t *state);
 bool buddy_app_build_status(buddy_status_report_t *report,
                             const buddy_settings_snapshot_t *settings,
                             const buddy_app_status_runtime_t *runtime);

@@ -342,6 +342,71 @@ buddy_app_rx_overflow_action_t buddy_app_rx_overflow_policy(
                             : BUDDY_APP_RX_DROP;
 }
 
+void buddy_app_rx_retry_init(buddy_app_rx_retry_state_t *state,
+                             buddy_app_rx_class_t incoming)
+{
+    if (state == NULL) {
+        return;
+    }
+    memset(state, 0, sizeof(*state));
+    state->incoming = incoming;
+}
+
+buddy_app_rx_overflow_action_t buddy_app_rx_retry_next(
+    const buddy_app_rx_retry_state_t *state, bool slot_available,
+    bool normal_pending, bool priority_pending, bool priority_full)
+{
+    if (state == NULL) {
+        return BUDDY_APP_RX_DROP;
+    }
+    if (state->incoming == BUDDY_APP_RX_NORMAL_HEARTBEAT) {
+        if (normal_pending && !state->normal_attempted) {
+            return BUDDY_APP_RX_REPLACE_NORMAL;
+        }
+        return slot_available ? BUDDY_APP_RX_ENQUEUE : BUDDY_APP_RX_DROP;
+    }
+    if (priority_full && !state->priority_failed) {
+        return BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY;
+    }
+    if (slot_available) {
+        return BUDDY_APP_RX_ENQUEUE;
+    }
+    if (normal_pending && !state->normal_attempted) {
+        return BUDDY_APP_RX_REPLACE_NORMAL;
+    }
+    if (priority_pending && !state->priority_failed) {
+        return BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY;
+    }
+    return BUDDY_APP_RX_DROP;
+}
+
+void buddy_app_rx_retry_record_eviction(buddy_app_rx_retry_state_t *state,
+                                        buddy_app_rx_overflow_action_t action,
+                                        bool succeeded)
+{
+    if (state == NULL) {
+        return;
+    }
+    if (action == BUDDY_APP_RX_REPLACE_NORMAL) {
+        state->normal_attempted = true;
+        if (succeeded && state->normal_evictions < UINT32_MAX) {
+            ++state->normal_evictions;
+        }
+    } else if (action == BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY) {
+        state->priority_failed = !succeeded;
+        if (succeeded && state->priority_evictions < UINT32_MAX) {
+            ++state->priority_evictions;
+        }
+    }
+}
+
+uint64_t buddy_app_rx_retry_overflow_count(const buddy_app_rx_retry_state_t *state)
+{
+    return state == NULL ? 0U
+                         : (uint64_t)state->normal_evictions +
+                               (uint64_t)state->priority_evictions;
+}
+
 static bool buddy_app_copy_bounded(char *destination, size_t destination_size,
                                    const char *source, size_t source_size)
 {

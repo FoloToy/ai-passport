@@ -80,6 +80,28 @@ static void test_normal_heartbeat_coalesces_or_drops_without_using_priority_capa
            BUDDY_APP_RX_DROP);
 }
 
+static void test_priority_falls_back_when_the_normal_snapshot_races_with_the_consumer(void)
+{
+    buddy_app_rx_retry_state_t retry;
+    buddy_app_rx_overflow_action_t action;
+
+    buddy_app_rx_retry_init(&retry, BUDDY_APP_RX_PRIORITY);
+    action = buddy_app_rx_retry_next(&retry, false, true, true, false);
+    assert(action == BUDDY_APP_RX_REPLACE_NORMAL);
+
+    /* The app consumed normal after the producer's snapshot and still holds its slot. */
+    buddy_app_rx_retry_record_eviction(&retry, action, false);
+    action = buddy_app_rx_retry_next(&retry, false, false, true, false);
+    assert(action == BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY);
+
+    buddy_app_rx_retry_record_eviction(&retry, action, true);
+    action = buddy_app_rx_retry_next(&retry, true, false, true, false);
+    assert(action == BUDDY_APP_RX_ENQUEUE);
+    assert(retry.normal_evictions == 0U);
+    assert(retry.priority_evictions == 1U);
+    assert(buddy_app_rx_retry_overflow_count(&retry) == 1U);
+}
+
 static void test_status_identity_comes_from_settings_snapshot(void)
 {
     buddy_settings_snapshot_t settings = {0};
@@ -130,6 +152,7 @@ int main(void)
     test_only_proven_plain_heartbeat_is_normal();
     test_priority_evicts_stale_normal_before_queued_priority();
     test_normal_heartbeat_coalesces_or_drops_without_using_priority_capacity();
+    test_priority_falls_back_when_the_normal_snapshot_races_with_the_consumer();
     test_status_identity_comes_from_settings_snapshot();
     test_failed_stop_restarts_transport_and_reports_enabled_rollback();
     return 0;

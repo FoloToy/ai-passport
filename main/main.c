@@ -210,7 +210,7 @@ static void buddy_queue_critical(QueueHandle_t queue,
     buddy_notify_app();
 }
 
-static bool buddy_rx_evict(QueueHandle_t queue, atomic_uint *counter)
+static bool buddy_rx_evict(QueueHandle_t queue)
 {
     buddy_rx_slot_t *evicted = NULL;
 
@@ -218,8 +218,21 @@ static bool buddy_rx_evict(QueueHandle_t queue, atomic_uint *counter)
         return false;
     }
     buddy_rx_slot_release(evicted);
-    buddy_count(counter);
     return true;
+}
+
+static void buddy_apply_rx_retry_counts(const buddy_app_rx_retry_state_t *retry)
+{
+    if (retry->normal_evictions != 0U) {
+        (void)atomic_fetch_add_explicit(&s_rx_normal_coalesced,
+                                        retry->normal_evictions,
+                                        memory_order_relaxed);
+    }
+    if (retry->priority_evictions != 0U) {
+        (void)atomic_fetch_add_explicit(&s_rx_priority_evicted,
+                                        retry->priority_evictions,
+                                        memory_order_relaxed);
+    }
 }
 
 static void buddy_queue_rx_line(const buddy_ble_event_t *event)
@@ -233,51 +246,64 @@ static void buddy_queue_rx_line(const buddy_ble_event_t *event)
     QueueHandle_t target = classification == BUDDY_APP_RX_NORMAL_HEARTBEAT
                                ? s_rx_normal_queue
                                : s_rx_priority_queue;
+    buddy_app_rx_retry_state_t retry;
     buddy_rx_slot_t *slot = buddy_rx_slot_acquire();
-    bool normal_pending = uxQueueMessagesWaiting(s_rx_normal_queue) != 0U;
-    bool priority_pending = uxQueueMessagesWaiting(s_rx_priority_queue) != 0U;
-    bool priority_full =
-        uxQueueMessagesWaiting(s_rx_priority_queue) >= BUDDY_RX_PRIORITY_QUEUE_DEPTH;
-    buddy_app_rx_overflow_action_t overflow = buddy_app_rx_overflow_policy(
-        classification, slot != NULL, normal_pending, priority_pending, priority_full);
+    buddy_app_rx_overflow_action_t overflow;
 
-    if (overflow == BUDDY_APP_RX_REPLACE_NORMAL) {
-        (void)buddy_rx_evict(s_rx_normal_queue, &s_rx_normal_coalesced);
-    } else if (overflow == BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY) {
-        (void)buddy_rx_evict(s_rx_priority_queue, &s_rx_priority_evicted);
-    } else if (overflow == BUDDY_APP_RX_DROP) {
-        if (slot != NULL) {
-            buddy_rx_slot_release(slot);
+    buddy_app_rx_retry_init(&retry, classification);
+    for (;;) {
+        bool normal_pending = uxQueueMessagesWaiting(s_rx_normal_queue) != 0U;
+        UBaseType_t priority_count = uxQueueMessagesWaiting(s_rx_priority_queue);
+        bool evicted;
+
+        overflow = buddy_app_rx_retry_next(
+            &retry, slot != NULL, normal_pending, priority_count != 0U,
+            priority_count >= BUDDY_RX_PRIORITY_QUEUE_DEPTH);
+        if (overflow == BUDDY_APP_RX_ENQUEUE) {
+            break;
         }
-        buddy_count(&s_rx_dropped);
-        return;
-    }
-    if (slot == NULL) {
-        slot = buddy_rx_slot_acquire();
-    }
-    if (slot == NULL) {
-        buddy_count(&s_rx_dropped);
-        return;
+        if (overflow == BUDDY_APP_RX_DROP) {
+            if (slot != NULL) {
+                buddy_rx_slot_release(slot);
+            }
+            buddy_apply_rx_retry_counts(&retry);
+            buddy_count(&s_rx_dropped);
+            return;
+        }
+        evicted = buddy_rx_evict(
+            overflow == BUDDY_APP_RX_REPLACE_NORMAL ? s_rx_normal_queue
+                                                    : s_rx_priority_queue);
+        buddy_app_rx_retry_record_eviction(&retry, overflow, evicted);
+        if (slot == NULL) {
+            slot = buddy_rx_slot_acquire();
+        }
     }
     memcpy(slot->data, event->data.rx_line.data, event->data.rx_line.length);
     slot->data[event->data.rx_line.length] = '\0';
     slot->length = event->data.rx_line.length;
     slot->connection_generation = event->data.rx_line.connection_generation;
     if (xQueueSend(target, &slot, 0) == pdTRUE) {
+        buddy_apply_rx_retry_counts(&retry);
         buddy_notify_app();
         return;
     }
 
     /* The app may race the initial snapshot; retain the newest item once. */
     if (classification == BUDDY_APP_RX_NORMAL_HEARTBEAT) {
-        (void)buddy_rx_evict(s_rx_normal_queue, &s_rx_normal_coalesced);
+        overflow = BUDDY_APP_RX_REPLACE_NORMAL;
+        buddy_app_rx_retry_record_eviction(
+            &retry, overflow, buddy_rx_evict(s_rx_normal_queue));
     } else {
-        (void)buddy_rx_evict(s_rx_priority_queue, &s_rx_priority_evicted);
+        overflow = BUDDY_APP_RX_REPLACE_OLDEST_PRIORITY;
+        buddy_app_rx_retry_record_eviction(
+            &retry, overflow, buddy_rx_evict(s_rx_priority_queue));
     }
     if (xQueueSend(target, &slot, 0) != pdTRUE) {
         buddy_rx_slot_release(slot);
+        buddy_apply_rx_retry_counts(&retry);
         buddy_count(&s_rx_dropped);
     } else {
+        buddy_apply_rx_retry_counts(&retry);
         buddy_notify_app();
     }
 }
