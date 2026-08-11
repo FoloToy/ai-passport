@@ -66,6 +66,7 @@ typedef enum {
     BUDDY_ACTION_PERMISSION,
     BUDDY_ACTION_SETTINGS,
     BUDDY_ACTION_STATUS,
+    BUDDY_ACTION_UNPAIR_CONFIRMED,
 } buddy_action_type_t;
 
 typedef enum {

@@ -258,8 +258,16 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_KEY_CLICK:
-        if (state->confirmation_pending &&
-            (event->key == BUDDY_KEY_OK || event->key == BUDDY_KEY_BACK)) {
+        if (state->confirmation_pending && event->key == BUDDY_KEY_OK) {
+            state->confirmation_pending = false;
+            state->connection = state->connected ? BUDDY_CONNECTION_CONNECTED
+                                                 : BUDDY_CONNECTION_OFFLINE;
+            if (action != NULL) {
+                action->type = BUDDY_ACTION_UNPAIR_CONFIRMED;
+            }
+            break;
+        }
+        if (state->confirmation_pending && event->key == BUDDY_KEY_DOWN) {
             state->confirmation_pending = false;
             state->connection = state->connected ? BUDDY_CONNECTION_CONNECTED
                                                  : BUDDY_CONNECTION_OFFLINE;

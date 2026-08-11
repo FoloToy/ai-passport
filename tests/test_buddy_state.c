@@ -384,6 +384,38 @@ static void test_unpair_confirmation_survives_a_heartbeat(void)
     assert(state.character == BUDDY_CHARACTER_CONFIRMATION);
 }
 
+static void test_unpair_confirmation_ok_emits_explicit_action(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t unpair = {.type = BUDDY_EVENT_UNPAIR_CONFIRMATION};
+    buddy_event_t heartbeat = test_heartbeat_event(0, 0);
+    buddy_event_t ok = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &unpair, 1000, &action);
+    buddy_state_reduce(&state, &heartbeat, 1001, &action);
+    buddy_state_reduce(&state, &ok, 1002, &action);
+
+    assert(!state.confirmation_pending);
+    assert(action.type == BUDDY_ACTION_UNPAIR_CONFIRMED);
+}
+
+static void test_unpair_confirmation_down_cancels_without_action(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t unpair = {.type = BUDDY_EVENT_UNPAIR_CONFIRMATION};
+    buddy_event_t down = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &unpair, 1000, &action);
+    buddy_state_reduce(&state, &down, 1001, &action);
+
+    assert(!state.confirmation_pending);
+    assert(action.type == BUDDY_ACTION_UI_REFRESH);
+}
+
 int main(void)
 {
     test_offline_initialization();
@@ -403,5 +435,7 @@ int main(void)
     test_protocol_command_events_refresh_the_display();
     test_status_request_does_not_overwrite_message();
     test_unpair_confirmation_survives_a_heartbeat();
+    test_unpair_confirmation_ok_emits_explicit_action();
+    test_unpair_confirmation_down_cancels_without_action();
     return 0;
 }
