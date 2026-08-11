@@ -11,7 +11,12 @@ typedef struct {
     size_t count;
 } line_capture_t;
 
-static void capture_line(const char *line, size_t length, void *context)
+typedef struct {
+    line_capture_t capture;
+    bool gate_open;
+} gated_line_capture_t;
+
+static bool capture_line(const char *line, size_t length, void *context)
 {
     line_capture_t *capture = context;
 
@@ -21,6 +26,17 @@ static void capture_line(const char *line, size_t length, void *context)
     capture->lines[capture->count][length] = '\0';
     capture->lengths[capture->count] = length;
     ++capture->count;
+    return true;
+}
+
+static bool capture_line_then_revoke_gate(const char *line, size_t length, void *context)
+{
+    gated_line_capture_t *gated = context;
+
+    assert(gated->gate_open);
+    (void)capture_line(line, length, &gated->capture);
+    gated->gate_open = false;
+    return gated->gate_open;
 }
 
 static void test_split_and_multiple_lines(void)
@@ -89,11 +105,29 @@ static void test_overflow_discards_through_newline_then_recovers(void)
     assert(strcmp(capture.lines[0], "{\"ok\":true}") == 0);
 }
 
+static void test_callback_can_abort_remaining_lines_and_reset_buffer(void)
+{
+    buddy_line_buffer_t rx;
+    gated_line_capture_t gated = {
+        .gate_open = true,
+    };
+
+    buddy_line_init(&rx);
+    assert(buddy_line_push(&rx, (const uint8_t *)"one\ntwo\npartial", 15,
+                           capture_line_then_revoke_gate, &gated) == BUDDY_LINE_ABORTED);
+    assert(!gated.gate_open);
+    assert(gated.capture.count == 1);
+    assert(strcmp(gated.capture.lines[0], "one") == 0);
+    assert(rx.length == 0);
+    assert(!rx.discarding);
+}
+
 int main(void)
 {
     test_split_and_multiple_lines();
     test_crlf_is_trimmed();
     test_exact_limit_line_is_delivered();
     test_overflow_discards_through_newline_then_recovers();
+    test_callback_can_abort_remaining_lines_and_reset_buffer();
     return 0;
 }

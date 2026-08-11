@@ -36,8 +36,9 @@ buddy_line_result_t buddy_line_push(buddy_line_buffer_t *buffer, const uint8_t *
                 --line_length;
             }
             buffer->data[line_length] = '\0';
-            if (callback != NULL) {
-                callback(buffer->data, line_length, context);
+            if (callback != NULL && !callback(buffer->data, line_length, context)) {
+                buddy_line_init(buffer);
+                return BUDDY_LINE_ABORTED;
             }
             buffer->length = 0;
             continue;

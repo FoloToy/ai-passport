@@ -21,6 +21,7 @@
         0x40, 0x6e
 
 #define BUDDY_BLE_TX_CHUNK_MAX 244U
+#define BUDDY_BLE_DELETE_MAX_ATTEMPTS 5U
 
 typedef enum {
     BUDDY_BLE_EVENT_CONNECTED,
@@ -28,6 +29,7 @@ typedef enum {
     BUDDY_BLE_EVENT_PASSKEY,
     BUDDY_BLE_EVENT_ENCRYPTION,
     BUDDY_BLE_EVENT_RX_LINE,
+    BUDDY_BLE_EVENT_BOND_DELETE_RESULT,
 } buddy_ble_event_type_t;
 
 typedef struct {
@@ -52,6 +54,10 @@ typedef struct {
             const char *data;
             size_t length;
         } rx_line;
+        struct {
+            int status;
+            bool success;
+        } bond_delete_result;
     } data;
 } buddy_ble_event_t;
 
@@ -66,6 +72,10 @@ typedef struct {
 
 size_t buddy_ble_tx_fragment_size(uint16_t mtu);
 bool buddy_ble_link_is_secure(bool encrypted, bool authenticated, bool bonded, uint8_t key_size);
+bool buddy_ble_should_protect_cccd_read(uint16_t uuid16, bool write_encrypted);
+bool buddy_ble_should_advertise(bool start_requested, bool host_synced,
+                                bool delete_bonds_pending, bool has_physical_link);
+uint32_t buddy_ble_retry_delay_ms(unsigned int attempt);
 
 esp_err_t buddy_ble_init(const buddy_ble_config_t *config);
 esp_err_t buddy_ble_start(void);
@@ -73,6 +83,8 @@ esp_err_t buddy_ble_stop(void);
 esp_err_t buddy_ble_send(const char *data, size_t length);
 bool buddy_ble_is_connected(void);
 bool buddy_ble_is_encrypted(void);
-/* With a running host, ESP_OK means the deletion request was accepted.
- * Advertising remains suppressed until every stored bond has been deleted. */
+/* ESP_OK means the asynchronous deletion request was accepted. A
+ * BUDDY_BLE_EVENT_BOND_DELETE_RESULT reports verified success or retry
+ * exhaustion. Advertising remains suppressed after failure and until a later
+ * explicit request verifies that every stored bond has been deleted. */
 esp_err_t buddy_ble_delete_bonds(void);

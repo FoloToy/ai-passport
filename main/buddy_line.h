@@ -9,9 +9,10 @@
 typedef enum {
     BUDDY_LINE_OK,
     BUDDY_LINE_OVERFLOW,
+    BUDDY_LINE_ABORTED,
 } buddy_line_result_t;
 
-typedef void (*buddy_line_callback_t)(const char *line, size_t length, void *context);
+typedef bool (*buddy_line_callback_t)(const char *line, size_t length, void *context);
 
 typedef struct {
     char data[BUDDY_JSON_LINE_MAX + 1];

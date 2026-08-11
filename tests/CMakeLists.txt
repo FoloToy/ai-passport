@@ -20,7 +20,7 @@ target_include_directories(test_buddy_line PRIVATE ../main)
 target_compile_options(test_buddy_line PRIVATE -Wall -Wextra -Werror)
 add_test(NAME buddy_line COMMAND test_buddy_line)
 
-add_executable(test_buddy_ble test_buddy_ble.c ../main/buddy_ble.c)
+add_executable(test_buddy_ble test_buddy_ble.c ../main/buddy_ble.c ../main/buddy_ble_store.c)
 target_include_directories(test_buddy_ble PRIVATE test_shims ../main)
 target_compile_definitions(test_buddy_ble PRIVATE BUDDY_BLE_HOST_TEST)
 target_compile_options(test_buddy_ble PRIVATE -Wall -Wextra -Werror)
