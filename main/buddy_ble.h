@@ -53,6 +53,7 @@ typedef struct {
         struct {
             const char *data;
             size_t length;
+            uint32_t connection_generation;
         } rx_line;
         struct {
             int status;
@@ -72,6 +73,9 @@ typedef struct {
 
 size_t buddy_ble_tx_fragment_size(uint16_t mtu);
 bool buddy_ble_link_is_secure(bool encrypted, bool authenticated, bool bonded, uint8_t key_size);
+bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool has_connection,
+                                     uint32_t expected_generation,
+                                     uint32_t current_generation);
 bool buddy_ble_should_protect_cccd_read(uint16_t uuid16, bool write_encrypted);
 bool buddy_ble_should_advertise(bool start_requested, bool host_synced,
                                 bool delete_bonds_pending, bool has_physical_link);
@@ -86,6 +90,9 @@ esp_err_t buddy_ble_init(const buddy_ble_config_t *config);
 esp_err_t buddy_ble_start(void);
 esp_err_t buddy_ble_stop(void);
 esp_err_t buddy_ble_send(const char *data, size_t length);
+esp_err_t buddy_ble_send_for_generation(const char *data, size_t length,
+                                        uint32_t expected_generation);
+bool buddy_ble_is_generation_secure(uint32_t expected_generation);
 bool buddy_ble_is_connected(void);
 bool buddy_ble_is_encrypted(void);
 /* ESP_OK means the asynchronous deletion request was accepted. A

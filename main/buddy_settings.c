@@ -6,7 +6,6 @@
 #ifdef ESP_PLATFORM
 #include "esp_timer.h"
 #include "nvs.h"
-#include "nvs_flash.h"
 #endif
 
 #define BUDDY_SETTINGS_NAMESPACE "buddy"
@@ -257,13 +256,7 @@ esp_err_t buddy_settings_init(void)
         return ESP_ERR_INVALID_STATE;
     }
 #elif defined(ESP_PLATFORM)
-    esp_err_t err = nvs_flash_init();
-
-    if (err != ESP_OK) {
-        s_initialized = false;
-        return err;
-    }
-    err = nvs_open(BUDDY_SETTINGS_NAMESPACE, NVS_READWRITE, &s_nvs_handle);
+    esp_err_t err = nvs_open(BUDDY_SETTINGS_NAMESPACE, NVS_READWRITE, &s_nvs_handle);
 
     if (err != ESP_OK) {
         s_initialized = false;

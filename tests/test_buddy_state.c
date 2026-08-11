@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "buddy_protocol.h"
 #include "buddy_state.h"
 
 static buddy_event_t test_prompt_event(const char *id, const char *tool,
@@ -131,7 +132,7 @@ static void test_timeout_clears_prompt(void)
     buddy_event_t prompt = test_prompt_event("req-1", "Bash", "git push", 0, 1);
     buddy_state_reduce(&state, &prompt, 1001, &action);
     memset(&action, 0, sizeof(action));
-    buddy_state_reduce(&state, &tick, 31000, &action);
+    buddy_state_reduce(&state, &tick, 31001, &action);
 
     assert(action.type == BUDDY_ACTION_UI_REFRESH);
     assert(state.heartbeat_stale);
@@ -215,6 +216,42 @@ static void test_approval_locks_until_a_new_prompt(void)
     buddy_state_reduce(&state, &approve, 2201, &action);
     assert(action.type == BUDDY_ACTION_PERMISSION);
     assert(strcmp(action.permission.id, "req-2") == 0);
+}
+
+static void test_denial_locks_and_emits_exactly_once(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-deny", "Bash", "rm guarded", 1, 1);
+    buddy_event_t deny = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &deny, 1001, &action);
+
+    assert(action.type == BUDDY_ACTION_PERMISSION);
+    assert(strcmp(action.permission.id, "req-deny") == 0);
+    assert(action.permission.decision == BUDDY_PERMISSION_DENY);
+    assert(state.approval_locked);
+
+    buddy_state_reduce(&state, &deny, 1002, &action);
+    assert(action.type == BUDDY_ACTION_NONE);
+}
+
+static void test_permission_action_is_bound_to_the_prompt_connection(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-generation", "Bash", "git push", 1, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    prompt.ble.connection_generation = 7;
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+
+    assert(action.type == BUDDY_ACTION_PERMISSION);
+    assert(action.permission.connection_generation == 7);
 }
 
 static void test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock(void)
@@ -304,9 +341,24 @@ static void test_timeout_stale_prompt_is_ignored(void)
     buddy_state_init(&state, NULL);
     buddy_state_reduce(&state, &heartbeat, 1000, &action);
     buddy_state_reduce(&state, &prompt, 1001, &action);
-    buddy_state_reduce(&state, &tick, 31000, &action);
-    buddy_state_reduce(&state, &approve, 31001, &action);
+    buddy_state_reduce(&state, &tick, 31001, &action);
+    buddy_state_reduce(&state, &approve, 31002, &action);
     assert(action.type == BUDDY_ACTION_NONE);
+}
+
+static void test_standalone_prompt_refreshes_liveness_clock(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t prompt = test_prompt_event("req-late", "Bash", "git status", 0, 1);
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &prompt, 60000, &action);
+    buddy_state_reduce(&state, &approve, 60001, &action);
+
+    assert(action.type == BUDDY_ACTION_PERMISSION);
+    assert(strcmp(action.permission.id, "req-late") == 0);
 }
 
 static void test_disconnect_then_reconnect_does_not_restore_prompt(void)
@@ -431,10 +483,12 @@ static void test_status_request_does_not_overwrite_message(void)
     buddy_event_t event = {.type = BUDDY_EVENT_STATUS_REQUEST};
 
     buddy_state_init(&state, NULL);
+    event.ble.connection_generation = 11;
     snprintf(state.message, sizeof(state.message), "%s", "Keep this");
     buddy_state_reduce(&state, &event, 1000, &action);
 
     assert(action.type == BUDDY_ACTION_STATUS);
+    assert(action.connection_generation == 11);
     assert(strcmp(state.message, "Keep this") == 0);
 }
 
@@ -486,6 +540,150 @@ static void test_unpair_confirmation_down_cancels_without_action(void)
     assert(action.type == BUDDY_ACTION_UI_REFRESH);
 }
 
+static void test_parsed_heartbeat_approval_serializes_permission(void)
+{
+    const char *json =
+        "{\"cmd\":\"heartbeat\",\"running\":1,\"prompt\":{"
+        "\"id\":\"req-e2e\",\"tool\":\"Bash\",\"hint\":\"git status\"}}";
+    buddy_state_t state;
+    buddy_event_t heartbeat = {0};
+    buddy_event_t approve = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+    buddy_action_t action = {0};
+    char output[160];
+
+    assert(buddy_protocol_parse(json, strlen(json), &heartbeat) == BUDDY_EVENT_HEARTBEAT);
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &heartbeat, 1000, &action);
+    buddy_state_reduce(&state, &approve, 1001, &action);
+
+    assert(action.type == BUDDY_ACTION_PERMISSION);
+    assert(buddy_protocol_permission_json(output, sizeof(output), action.permission.id,
+                                          action.permission.decision) > 0);
+    assert(strcmp(output,
+                  "{\"cmd\":\"permission\",\"id\":\"req-e2e\",\"decision\":\"once\"}\n") ==
+           0);
+}
+
+static void test_normal_navigation_and_approval_scroll_are_distinct(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t down = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
+    buddy_event_t up = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_UP};
+    buddy_event_t prompt = test_prompt_event("req-scroll", "Read", "long hint", 0, 1);
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &down, 1000, &action);
+    assert(state.page == BUDDY_PAGE_TRANSCRIPT);
+    assert(action.type == BUDDY_ACTION_UI_REFRESH);
+    buddy_state_reduce(&state, &up, 1001, &action);
+    assert(state.page == BUDDY_PAGE_HOME);
+
+    buddy_state_reduce(&state, &prompt, 1002, &action);
+    buddy_state_reduce(&state, &up, 1003, &action);
+    assert(action.type == BUDDY_ACTION_UI_SCROLL);
+    assert(action.scroll_delta < 0);
+}
+
+static void test_settings_actions_have_separate_confirmations(void)
+{
+    buddy_settings_snapshot_t settings = {.ble_enabled = true};
+    buddy_state_t state;
+    buddy_ui_snapshot_t snapshot;
+    buddy_action_t action = {0};
+    buddy_event_t long_ok = {.type = BUDDY_EVENT_KEY_LONG, .key = BUDDY_KEY_OK};
+    buddy_event_t click_ok = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+    buddy_event_t click_down = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
+
+    buddy_state_init(&state, &settings);
+    buddy_state_reduce(&state, &long_ok, 1000, &action);
+    buddy_state_reduce(&state, &click_ok, 1001, &action);
+    assert(action.type == BUDDY_ACTION_BLE_TOGGLE);
+    assert(!action.ble_enabled);
+    buddy_state_snapshot(&state, &snapshot);
+    assert(!snapshot.ble_enabled);
+
+    buddy_state_reduce(&state, &click_down, 1002, &action);
+    buddy_state_reduce(&state, &click_ok, 1003, &action);
+    assert(state.confirmation == BUDDY_CONFIRM_UNPAIR);
+    assert(!state.confirmation_acknowledge);
+    buddy_state_reduce(&state, &click_down, 1004, &action);
+
+    buddy_state_reduce(&state, &long_ok, 1005, &action);
+    buddy_state_reduce(&state, &click_down, 1006, &action);
+    buddy_state_reduce(&state, &click_down, 1007, &action);
+    buddy_state_reduce(&state, &click_ok, 1008, &action);
+    assert(state.confirmation == BUDDY_CONFIRM_FACTORY_RESET);
+    buddy_state_reduce(&state, &click_ok, 1009, &action);
+    assert(action.type == BUDDY_ACTION_FACTORY_RESET_CONFIRMED);
+}
+
+static void test_remote_unpair_confirmation_remembers_ack(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t unpair = {.type = BUDDY_EVENT_UNPAIR_CONFIRMATION};
+    buddy_event_t ok = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    unpair.ble.connection_generation = 13;
+    buddy_state_reduce(&state, &unpair, 1000, &action);
+    assert(state.confirmation == BUDDY_CONFIRM_UNPAIR);
+    assert(state.confirmation_acknowledge);
+    buddy_state_reduce(&state, &ok, 1001, &action);
+    assert(action.type == BUDDY_ACTION_UNPAIR_CONFIRMED);
+    assert(action.confirmation_acknowledge);
+    assert(action.connection_generation == 13);
+}
+
+static void test_remote_unpair_cannot_replace_a_local_confirmation(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t remote_unpair = {.type = BUDDY_EVENT_UNPAIR_CONFIRMATION};
+
+    buddy_state_init(&state, NULL);
+    state.confirmation = BUDDY_CONFIRM_FACTORY_RESET;
+    state.confirmation_pending = true;
+    remote_unpair.ble.connection_generation = 17;
+    buddy_state_reduce(&state, &remote_unpair, 1000, &action);
+
+    assert(state.confirmation == BUDDY_CONFIRM_FACTORY_RESET);
+    assert(!state.confirmation_acknowledge);
+    assert(action.type == BUDDY_ACTION_NONE);
+}
+
+static void test_ble_security_events_update_owned_state_and_clear_sensitive_prompt(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t connected = {.type = BUDDY_EVENT_BLE_CONNECTED};
+    buddy_event_t passkey = {.type = BUDDY_EVENT_BLE_PASSKEY};
+    buddy_event_t encrypted = {.type = BUDDY_EVENT_BLE_ENCRYPTION};
+    buddy_event_t disconnected = {.type = BUDDY_EVENT_BLE_DISCONNECTED};
+    buddy_event_t prompt = test_prompt_event("req-secret", "Bash", "secret", 0, 1);
+
+    passkey.ble.passkey = 123456;
+    encrypted.ble.secure = true;
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &connected, 1000, &action);
+    assert(state.ble_connected);
+    assert(!state.ble_encrypted);
+    buddy_state_reduce(&state, &passkey, 1001, &action);
+    assert(state.passkey_visible);
+    assert(state.passkey == 123456);
+    buddy_state_reduce(&state, &encrypted, 1002, &action);
+    assert(state.ble_encrypted);
+    assert(!state.passkey_visible);
+
+    buddy_state_reduce(&state, &prompt, 1003, &action);
+    buddy_state_reduce(&state, &disconnected, 1004, &action);
+    assert(!state.ble_connected);
+    assert(!state.ble_encrypted);
+    assert(state.heartbeat_stale);
+    assert(state.prompt.id[0] == '\0');
+}
+
 int main(void)
 {
     test_offline_initialization();
@@ -495,10 +693,13 @@ int main(void)
     test_token_boundaries_celebrate_once();
     test_persisted_celebration_level_is_not_replayed();
     test_approval_locks_until_a_new_prompt();
+    test_denial_locks_and_emits_exactly_once();
+    test_permission_action_is_bound_to_the_prompt_connection();
     test_heartbeat_prompt_snapshot_clears_or_preserves_approval_lock();
     test_ui_snapshot_runtime_indicators_default_off();
     test_absent_prompt_is_ignored();
     test_timeout_stale_prompt_is_ignored();
+    test_standalone_prompt_refreshes_liveness_clock();
     test_disconnect_then_reconnect_does_not_restore_prompt();
     test_mismatched_observed_prompt_is_ignored();
     test_nonterminated_prompt_id_is_ignored();
@@ -509,5 +710,11 @@ int main(void)
     test_unpair_confirmation_survives_a_heartbeat();
     test_unpair_confirmation_ok_emits_explicit_action();
     test_unpair_confirmation_down_cancels_without_action();
+    test_parsed_heartbeat_approval_serializes_permission();
+    test_normal_navigation_and_approval_scroll_are_distinct();
+    test_settings_actions_have_separate_confirmations();
+    test_remote_unpair_confirmation_remembers_ack();
+    test_remote_unpair_cannot_replace_a_local_confirmation();
+    test_ble_security_events_update_owned_state_and_clear_sensitive_prompt();
     return 0;
 }

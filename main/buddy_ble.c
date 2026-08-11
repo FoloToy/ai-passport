@@ -49,6 +49,14 @@ bool buddy_ble_link_is_secure(bool encrypted, bool authenticated, bool bonded, u
     return encrypted && authenticated && bonded && key_size == 16U;
 }
 
+bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool has_connection,
+                                     uint32_t expected_generation,
+                                     uint32_t current_generation)
+{
+    return start_requested && secure && has_connection &&
+           expected_generation == current_generation;
+}
+
 bool buddy_ble_should_protect_cccd_read(uint16_t uuid16, bool write_encrypted)
 {
     return uuid16 == 0x2902U && write_encrypted;
@@ -335,6 +343,7 @@ static bool buddy_rx_line(const char *line, size_t length, void *context)
         .data.rx_line = {
             .data = line,
             .length = length,
+            .connection_generation = rx_context->generation,
         },
     };
 
@@ -1415,7 +1424,9 @@ esp_err_t buddy_ble_stop(void)
     return rc == 0 ? ESP_OK : buddy_ble_error(rc);
 }
 
-esp_err_t buddy_ble_send(const char *data, size_t length)
+static esp_err_t buddy_ble_send_internal(const char *data, size_t length,
+                                         bool require_generation,
+                                         uint32_t expected_generation)
 {
     uint16_t conn_handle;
     size_t fragment_size;
@@ -1431,7 +1442,13 @@ esp_err_t buddy_ble_send(const char *data, size_t length)
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     conn_handle = s_ble.conn_handle;
-    if (!s_ble.start_requested || conn_handle == BLE_HS_CONN_HANDLE_NONE || !s_ble.secure) {
+    if (require_generation
+            ? !buddy_ble_tx_generation_matches(
+                  s_ble.start_requested, s_ble.secure,
+                  conn_handle != BLE_HS_CONN_HANDLE_NONE,
+                  expected_generation, s_ble.connection_generation)
+            : (!s_ble.start_requested || conn_handle == BLE_HS_CONN_HANDLE_NONE ||
+               !s_ble.secure)) {
         xSemaphoreGive(s_ble.mutex);
         return ESP_ERR_INVALID_STATE;
     }
@@ -1466,6 +1483,33 @@ esp_err_t buddy_ble_send(const char *data, size_t length)
 
     xSemaphoreGive(s_ble.mutex);
     return result;
+}
+
+esp_err_t buddy_ble_send(const char *data, size_t length)
+{
+    return buddy_ble_send_internal(data, length, false, 0);
+}
+
+esp_err_t buddy_ble_send_for_generation(const char *data, size_t length,
+                                        uint32_t expected_generation)
+{
+    return buddy_ble_send_internal(data, length, true, expected_generation);
+}
+
+bool buddy_ble_is_generation_secure(uint32_t expected_generation)
+{
+    bool matches;
+
+    if (!s_ble.initialized) {
+        return false;
+    }
+    xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+    matches = buddy_ble_tx_generation_matches(
+        s_ble.start_requested, s_ble.secure,
+        s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE,
+        expected_generation, s_ble.connection_generation);
+    xSemaphoreGive(s_ble.mutex);
+    return matches;
 }
 
 bool buddy_ble_is_connected(void)

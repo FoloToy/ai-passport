@@ -348,6 +348,38 @@ static bool buddy_json_raw_controls_valid(const char *json, size_t length)
     return true;
 }
 
+static bool buddy_json_depth_valid(const char *json, size_t length)
+{
+    bool in_string = false;
+    bool escaped = false;
+    unsigned depth = 0;
+    size_t index;
+
+    for (index = 0; index < length; ++index) {
+        char byte = json[index];
+
+        if (in_string) {
+            if (escaped) {
+                escaped = false;
+            } else if (byte == '\\') {
+                escaped = true;
+            } else if (byte == '"') {
+                in_string = false;
+            }
+        } else if (byte == '"') {
+            in_string = true;
+        } else if (byte == '{' || byte == '[') {
+            if (depth >= BUDDY_JSON_MAX_DEPTH) {
+                return false;
+            }
+            ++depth;
+        } else if ((byte == '}' || byte == ']') && depth > 0U) {
+            --depth;
+        }
+    }
+    return true;
+}
+
 int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
 {
     cJSON *root;
@@ -357,17 +389,28 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     unsigned running = 0;
     int result = BUDDY_EVENT_MALFORMED;
 
-    if (json == NULL || event == NULL || length > BUDDY_JSON_LINE_MAX ||
-        !buddy_utf8_valid(json, length) || !buddy_json_raw_controls_valid(json, length) ||
-        buddy_json_contains_nul_escape(json, length)) {
+    if (event == NULL) {
         return BUDDY_EVENT_MALFORMED;
     }
     memset(event, 0, sizeof(*event));
+    if (json == NULL || length > BUDDY_JSON_LINE_MAX ||
+        !buddy_utf8_valid(json, length) || !buddy_json_raw_controls_valid(json, length) ||
+        !buddy_json_depth_valid(json, length) ||
+        buddy_json_contains_nul_escape(json, length)) {
+        return BUDDY_EVENT_MALFORMED;
+    }
     root = cJSON_ParseWithLengthOpts(json, length, &end, 0);
     if (root == NULL || end != json + length || !cJSON_IsObject(root) ||
         !buddy_json_optional_string(root, "cmd", &command, &command_length) || command == NULL ||
         command_length == 0) {
         cJSON_Delete(root);
+        return BUDDY_EVENT_MALFORMED;
+    }
+    if (command_length >= sizeof(event->command.name) ||
+        !buddy_copy_utf8(event->command.name, sizeof(event->command.name), command,
+                         command_length, NULL)) {
+        cJSON_Delete(root);
+        memset(event, 0, sizeof(*event));
         return BUDDY_EVENT_MALFORMED;
     }
     if (strcmp(command, "heartbeat") == 0) {
@@ -401,7 +444,11 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
         result = BUDDY_EVENT_UNKNOWN_COMMAND;
     }
     if (result < BUDDY_EVENT_NONE) {
+        char parsed_command[BUDDY_COMMAND_MAX];
+
+        memcpy(parsed_command, event->command.name, sizeof(parsed_command));
         memset(event, 0, sizeof(*event));
+        memcpy(event->command.name, parsed_command, sizeof(event->command.name));
     }
     cJSON_Delete(root);
     return result;
@@ -496,6 +543,11 @@ static void buddy_writer_u64(buddy_json_writer_t *writer, uint64_t value)
     buddy_writer_literal(writer, number);
 }
 
+static void buddy_writer_bool(buddy_json_writer_t *writer, bool value)
+{
+    buddy_writer_literal(writer, value ? "true" : "false");
+}
+
 static int buddy_writer_finish(const buddy_json_writer_t *writer)
 {
     return writer->valid && writer->length <= INT_MAX ? (int)writer->length : 0;
@@ -576,6 +628,75 @@ int buddy_protocol_status_json(char *json, size_t size, const buddy_heartbeat_t 
     buddy_writer_u64(&writer, heartbeat->running);
     buddy_writer_literal(&writer, ",\"tokens\":");
     buddy_writer_u64(&writer, heartbeat->tokens);
+    buddy_writer_literal(&writer, "}\n");
+    return buddy_writer_finish(&writer);
+}
+
+int buddy_protocol_command_ack_json(char *json, size_t size, const char *command,
+                                    bool ok, const char *error)
+{
+    buddy_json_writer_t writer;
+    size_t command_length = buddy_bounded_length(command, BUDDY_COMMAND_MAX);
+    size_t error_length = buddy_bounded_length(error, BUDDY_MESSAGE_MAX);
+
+    if (command == NULL || command_length == 0 || command_length == BUDDY_COMMAND_MAX ||
+        !buddy_utf8_valid(command, command_length) ||
+        (!ok && (error == NULL || error_length == 0 || error_length == BUDDY_MESSAGE_MAX ||
+                 !buddy_utf8_valid(error, error_length)))) {
+        return 0;
+    }
+    buddy_writer_init(&writer, json, size);
+    buddy_writer_literal(&writer, "{\"ack\":");
+    buddy_writer_json_string(&writer, command, command_length);
+    buddy_writer_literal(&writer, ",\"ok\":");
+    buddy_writer_bool(&writer, ok);
+    if (!ok) {
+        buddy_writer_literal(&writer, ",\"error\":");
+        buddy_writer_json_string(&writer, error, error_length);
+    }
+    buddy_writer_literal(&writer, "}\n");
+    return buddy_writer_finish(&writer);
+}
+
+int buddy_protocol_device_status_json(char *json, size_t size,
+                                      const buddy_status_report_t *status)
+{
+    buddy_json_writer_t writer;
+    size_t name_length;
+    size_t owner_length;
+
+    if (status == NULL) {
+        return 0;
+    }
+    name_length = buddy_bounded_length(status->name, sizeof(status->name));
+    owner_length = buddy_bounded_length(status->owner, sizeof(status->owner));
+    if (name_length == sizeof(status->name) || owner_length == sizeof(status->owner) ||
+        !buddy_utf8_valid(status->name, name_length) ||
+        !buddy_utf8_valid(status->owner, owner_length)) {
+        return 0;
+    }
+
+    buddy_writer_init(&writer, json, size);
+    buddy_writer_literal(&writer, "{\"cmd\":\"status\",\"name\":");
+    buddy_writer_json_string(&writer, status->name, name_length);
+    buddy_writer_literal(&writer, ",\"owner\":");
+    buddy_writer_json_string(&writer, status->owner, owner_length);
+    buddy_writer_literal(&writer, ",\"sec\":");
+    buddy_writer_bool(&writer, status->encrypted);
+    if (status->battery_available) {
+        buddy_writer_literal(&writer, ",\"battery_percent\":");
+        buddy_writer_u64(&writer, status->battery_percent);
+        buddy_writer_literal(&writer, ",\"battery_mv\":");
+        buddy_writer_u64(&writer, status->battery_mv);
+    }
+    buddy_writer_literal(&writer, ",\"uptime_ms\":");
+    buddy_writer_u64(&writer, status->uptime_ms);
+    buddy_writer_literal(&writer, ",\"free_heap\":");
+    buddy_writer_u64(&writer, status->free_heap);
+    buddy_writer_literal(&writer, ",\"approval_count\":");
+    buddy_writer_u64(&writer, status->approval_count);
+    buddy_writer_literal(&writer, ",\"denial_count\":");
+    buddy_writer_u64(&writer, status->denial_count);
     buddy_writer_literal(&writer, "}\n");
     return buddy_writer_finish(&writer);
 }

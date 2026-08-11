@@ -11,6 +11,7 @@
 #define BUDDY_ENTRY_COUNT 4
 #define BUDDY_PROMPT_ID_MAX 96
 #define BUDDY_TOOL_MAX 48
+#define BUDDY_COMMAND_MAX 32
 #define BUDDY_HINT_MAX 320
 #define BUDDY_JSON_LINE_MAX 4096
 
@@ -41,6 +42,20 @@ typedef enum {
 } buddy_page_t;
 
 typedef enum {
+    BUDDY_CONFIRM_NONE,
+    BUDDY_CONFIRM_UNPAIR,
+    BUDDY_CONFIRM_FACTORY_RESET,
+} buddy_confirmation_t;
+
+typedef enum {
+    BUDDY_SETTINGS_BLE,
+    BUDDY_SETTINGS_UNPAIR,
+    BUDDY_SETTINGS_FACTORY_RESET,
+    BUDDY_SETTINGS_BACK,
+    BUDDY_SETTINGS_COUNT,
+} buddy_settings_item_t;
+
+typedef enum {
     BUDDY_KEY_NONE,
     BUDDY_KEY_UP,
     BUDDY_KEY_DOWN,
@@ -58,6 +73,11 @@ typedef enum {
     BUDDY_EVENT_STATUS,
     BUDDY_EVENT_STATUS_REQUEST,
     BUDDY_EVENT_UNPAIR_CONFIRMATION,
+    BUDDY_EVENT_BLE_CONNECTED,
+    BUDDY_EVENT_BLE_DISCONNECTED,
+    BUDDY_EVENT_BLE_PASSKEY,
+    BUDDY_EVENT_BLE_ENCRYPTION,
+    BUDDY_EVENT_BOND_DELETE_RESULT,
     BUDDY_EVENT_KEY_CLICK,
     BUDDY_EVENT_KEY_LONG,
     BUDDY_EVENT_TICK,
@@ -70,6 +90,9 @@ typedef enum {
     BUDDY_ACTION_SETTINGS,
     BUDDY_ACTION_STATUS,
     BUDDY_ACTION_UNPAIR_CONFIRMED,
+    BUDDY_ACTION_FACTORY_RESET_CONFIRMED,
+    BUDDY_ACTION_BLE_TOGGLE,
+    BUDDY_ACTION_UI_SCROLL,
 } buddy_action_type_t;
 
 typedef enum {
@@ -108,6 +131,7 @@ typedef struct {
 } buddy_heartbeat_t;
 
 typedef struct {
+    char name[BUDDY_COMMAND_MAX];
     char value[BUDDY_MESSAGE_MAX];
     bool value_truncated;
 } buddy_command_t;
@@ -122,11 +146,20 @@ typedef struct {
 } buddy_settings_snapshot_t;
 
 typedef struct {
+    uint32_t passkey;
+    uint32_t connection_generation;
+    int status;
+    bool secure;
+    bool success;
+} buddy_ble_state_event_t;
+
+typedef struct {
     buddy_event_type_t type;
     buddy_key_t key;
     buddy_heartbeat_t heartbeat;
     buddy_prompt_t prompt;
     buddy_command_t command;
+    buddy_ble_state_event_t ble;
     char observed_prompt_id[BUDDY_PROMPT_ID_MAX];
     size_t observed_prompt_id_length;
     bool has_observed_prompt_id;
@@ -138,6 +171,7 @@ typedef struct {
     char tool[BUDDY_TOOL_MAX];
     char hint[BUDDY_HINT_MAX];
     buddy_permission_decision_t decision;
+    uint32_t connection_generation;
 } buddy_permission_action_t;
 
 typedef struct {
@@ -145,6 +179,10 @@ typedef struct {
     buddy_permission_action_t permission;
     buddy_settings_snapshot_t settings;
     char message[BUDDY_MESSAGE_MAX];
+    int scroll_delta;
+    uint32_t connection_generation;
+    bool ble_enabled;
+    bool confirmation_acknowledge;
 } buddy_action_t;
 
 typedef struct {
@@ -163,10 +201,17 @@ typedef struct {
     uint64_t tokens;
     bool heartbeat_stale;
     bool confirmation_pending;
+    buddy_confirmation_t confirmation;
+    buddy_settings_item_t settings_selection;
     bool approval_locked;
     bool ble_connected;
     bool ble_encrypted;
+    bool ble_enabled;
     bool battery_available;
+    bool passkey_visible;
+    uint32_t prompt_connection_generation;
+    uint32_t confirmation_connection_generation;
+    uint32_t passkey;
     uint8_t battery_percent;
     uint16_t battery_mv;
 } buddy_ui_snapshot_t;

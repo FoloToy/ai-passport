@@ -253,6 +253,36 @@ static void test_parser_rejects_raw_nul_and_control_bytes(void)
     assert(parse("{\n\"cmd\":\"status\"\n}", &event) == BUDDY_EVENT_STATUS_REQUEST);
 }
 
+static void test_parser_rejects_excessive_json_nesting(void)
+{
+    buddy_event_t event = {0};
+    char json[256];
+    size_t length = 0;
+    unsigned depth;
+
+    for (depth = 0; depth < BUDDY_JSON_MAX_DEPTH + 1U; ++depth) {
+        length += (size_t)snprintf(json + length, sizeof(json) - length, "{\"x\":");
+    }
+    length += (size_t)snprintf(json + length, sizeof(json) - length, "0");
+    for (depth = 0; depth < BUDDY_JSON_MAX_DEPTH + 1U; ++depth) {
+        length += (size_t)snprintf(json + length, sizeof(json) - length, "}");
+    }
+
+    assert(length < sizeof(json));
+    assert(buddy_protocol_parse(json, length, &event) == BUDDY_EVENT_MALFORMED);
+}
+
+static void test_preflight_failure_clears_a_reused_event(void)
+{
+    buddy_event_t event = {0};
+
+    assert(parse("{\"cmd\":\"status\"}", &event) == BUDDY_EVENT_STATUS_REQUEST);
+    assert(event.command.name[0] != '\0');
+    assert(parse("{\"cmd\":\"status\"}\x01", &event) == BUDDY_EVENT_MALFORMED);
+    assert(event.type == BUDDY_EVENT_NONE);
+    assert(event.command.name[0] == '\0');
+}
+
 static void test_serializers_write_documented_json(void)
 {
     char json[192];
@@ -306,6 +336,75 @@ static void test_serializers_reject_invalid_or_unterminated_inputs(void)
     assert(buddy_protocol_status_json(json, sizeof(json), &heartbeat) == 0);
 }
 
+static void test_command_ack_names_the_request_and_error(void)
+{
+    buddy_event_t event = {0};
+    char json[160];
+
+    assert(parse("{\"cmd\":\"char_begin\"}", &event) == BUDDY_EVENT_UNSUPPORTED_COMMAND);
+    assert(strcmp(event.command.name, "char_begin") == 0);
+    assert(buddy_protocol_command_ack_json(json, sizeof(json), event.command.name, false,
+                                           "unsupported in phase 1") > 0);
+    assert(strcmp(json,
+                  "{\"ack\":\"char_begin\",\"ok\":false,"
+                  "\"error\":\"unsupported in phase 1\"}\n") == 0);
+}
+
+static void test_device_status_omits_unavailable_battery_fields(void)
+{
+    buddy_status_report_t status = {
+        .encrypted = true,
+        .uptime_ms = 123456,
+        .free_heap = 32000,
+        .approval_count = 7,
+        .denial_count = 2,
+        .battery_available = false,
+    };
+    char json[320];
+
+    snprintf(status.name, sizeof(status.name), "%s", "Buddy");
+    snprintf(status.owner, sizeof(status.owner), "%s", "Claude");
+    assert(buddy_protocol_device_status_json(json, sizeof(json), &status) > 0);
+    assert(strcmp(json,
+                  "{\"cmd\":\"status\",\"name\":\"Buddy\",\"owner\":\"Claude\","
+                  "\"sec\":true,\"uptime_ms\":123456,\"free_heap\":32000,"
+                  "\"approval_count\":7,\"denial_count\":2}\n") == 0);
+    assert(strstr(json, "battery") == NULL);
+
+    status.battery_available = true;
+    status.battery_percent = 73;
+    status.battery_mv = 3875;
+    assert(buddy_protocol_device_status_json(json, sizeof(json), &status) > 0);
+    assert(strstr(json, "\"battery_percent\":73") != NULL);
+    assert(strstr(json, "\"battery_mv\":3875") != NULL);
+}
+
+static void test_task_tx_capacity_handles_worst_case_escaping(void)
+{
+    char id[BUDDY_PROMPT_ID_MAX];
+    buddy_status_report_t status = {0};
+    char json[BUDDY_PROTOCOL_TX_MAX];
+    size_t index;
+
+    for (index = 0; index + 1U < sizeof(id); ++index) {
+        id[index] = '\x01';
+    }
+    id[sizeof(id) - 1U] = '\0';
+    memset(status.name, '\x01', sizeof(status.name) - 1U);
+    memset(status.owner, '\x01', sizeof(status.owner) - 1U);
+    status.encrypted = true;
+    status.battery_available = true;
+    status.battery_percent = 100;
+    status.battery_mv = UINT16_MAX;
+    status.uptime_ms = UINT64_MAX;
+    status.free_heap = UINT64_MAX;
+    status.approval_count = UINT64_MAX;
+    status.denial_count = UINT64_MAX;
+
+    assert(buddy_protocol_permission_json(json, sizeof(json), id, BUDDY_PERMISSION_ONCE) > 0);
+    assert(buddy_protocol_device_status_json(json, sizeof(json), &status) > 0);
+}
+
 int main(void)
 {
     test_heartbeat_maps_documented_fields();
@@ -326,8 +425,13 @@ int main(void)
     test_name_command_truncates_at_a_utf8_codepoint_boundary();
     test_parser_rejects_oversized_or_invalid_utf8_lines();
     test_parser_rejects_raw_nul_and_control_bytes();
+    test_parser_rejects_excessive_json_nesting();
+    test_preflight_failure_clears_a_reused_event();
     test_serializers_write_documented_json();
     test_serializers_fail_without_writing_past_the_output_bound();
     test_serializers_reject_invalid_or_unterminated_inputs();
+    test_command_ack_names_the_request_and_error();
+    test_device_status_omits_unavailable_battery_fields();
+    test_task_tx_capacity_handles_worst_case_escaping();
     return 0;
 }

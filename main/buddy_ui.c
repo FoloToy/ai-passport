@@ -16,7 +16,9 @@ static lv_obj_t *s_summary_label;
 static lv_obj_t *s_hint_label;
 static lv_obj_t *s_transcript_page;
 static lv_obj_t *s_transcript_label;
+static lv_obj_t *s_transcript_box;
 static lv_obj_t *s_settings_page;
+static lv_obj_t *s_settings_label;
 static lv_obj_t *s_approval_page;
 static lv_obj_t *s_approval_character_label;
 static lv_obj_t *s_approval_tool_label;
@@ -26,6 +28,8 @@ static lv_obj_t *s_approval_action_label;
 static lv_obj_t *s_passkey_page;
 static lv_obj_t *s_passkey_label;
 static lv_obj_t *s_confirmation_page;
+static lv_obj_t *s_confirmation_label;
+static lv_obj_t *s_scroll_target;
 static buddy_character_t s_character = BUDDY_CHARACTER_SLEEP;
 
 static void buddy_ui_label_style(lv_obj_t *label, const lv_font_t *font)
@@ -124,7 +128,8 @@ static void buddy_ui_create_transcript(void)
     }
     s_transcript_page = buddy_ui_page_create();
     (void)buddy_ui_text(s_transcript_page, 12, 12, 216, &lv_font_montserrat_20, "Transcript");
-    (void)buddy_ui_hint_box(s_transcript_page, 12, 52, 216, 252, &s_transcript_label);
+    s_transcript_box = buddy_ui_hint_box(s_transcript_page, 12, 52, 216, 252,
+                                         &s_transcript_label);
 }
 
 static void buddy_ui_create_settings(void)
@@ -134,8 +139,8 @@ static void buddy_ui_create_settings(void)
     }
     s_settings_page = buddy_ui_page_create();
     (void)buddy_ui_text(s_settings_page, 12, 18, 216, &lv_font_montserrat_20, "Settings");
-    (void)buddy_ui_text(s_settings_page, 12, 70, 216, &lv_font_montserrat_14,
-                        "OK Save\nDOWN Back");
+    s_settings_label = buddy_ui_text(s_settings_page, 12, 62, 216,
+                                     &lv_font_montserrat_14, "");
 }
 
 static void buddy_ui_create_approval(void)
@@ -178,8 +183,37 @@ static void buddy_ui_create_confirmation(void)
     s_confirmation_page = buddy_ui_page_create();
     (void)buddy_ui_text(s_confirmation_page, 12, 25, 216, &lv_font_montserrat_20,
                         "Confirm action");
-    (void)buddy_ui_text(s_confirmation_page, 12, 90, 216, &lv_font_montserrat_14,
-                        "Unpair or factory reset?\n\nOK Confirm\nDOWN Cancel");
+    s_confirmation_label = buddy_ui_text(s_confirmation_page, 12, 90, 216,
+                                          &lv_font_montserrat_14, "");
+}
+
+static void buddy_ui_render_settings(const buddy_ui_snapshot_t *snapshot)
+{
+    static const char *const labels[BUDDY_SETTINGS_COUNT] = {
+        "BLE", "Unpair", "Factory reset", "Back",
+    };
+    char text[160];
+    size_t offset = 0;
+    unsigned index;
+
+    buddy_ui_create_settings();
+    for (index = 0; index < BUDDY_SETTINGS_COUNT && offset < sizeof(text); ++index) {
+        const char *suffix = index == BUDDY_SETTINGS_BLE
+                                 ? (snapshot->ble_enabled ? " (enabled)" : " (disabled)")
+                                 : "";
+        int written = snprintf(text + offset, sizeof(text) - offset, "%s%s%s\n",
+                               index == (unsigned)snapshot->settings_selection ? "> " : "  ",
+                               labels[index], suffix);
+
+        if (written < 0 || (size_t)written >= sizeof(text) - offset) {
+            text[sizeof(text) - 1] = '\0';
+            break;
+        }
+        offset += (size_t)written;
+    }
+    lv_label_set_text(s_settings_label, text);
+    s_scroll_target = NULL;
+    buddy_ui_show(s_settings_page);
 }
 
 static const char *buddy_ui_connection_text(const buddy_ui_snapshot_t *snapshot)
@@ -247,10 +281,19 @@ void buddy_ui_render(const buddy_ui_snapshot_t *snapshot)
     }
     buddy_ui_init();
     s_character = snapshot->character;
+    s_scroll_target = NULL;
 
     if (snapshot->confirmation_pending || snapshot->connection == BUDDY_CONNECTION_CONFIRMING) {
         buddy_ui_create_confirmation();
+        lv_label_set_text(s_confirmation_label,
+                          snapshot->confirmation == BUDDY_CONFIRM_FACTORY_RESET
+                              ? "Factory reset settings and statistics?\n\nOK Confirm\nDOWN Cancel"
+                              : "Delete BLE bonds and unpair?\n\nOK Confirm\nDOWN Cancel");
         buddy_ui_show(s_confirmation_page);
+        return;
+    }
+    if (snapshot->passkey_visible) {
+        buddy_ui_show_passkey(snapshot->passkey);
         return;
     }
     if (snapshot->prompt_id[0] != '\0') {
@@ -274,12 +317,12 @@ void buddy_ui_render(const buddy_ui_snapshot_t *snapshot)
             lv_obj_set_y(s_approval_action_label, 240);
             lv_label_set_text(s_approval_action_label, "OK Approve once\nDOWN Deny");
         }
+        s_scroll_target = s_approval_hint_box;
         buddy_ui_show(s_approval_page);
         return;
     }
     if (snapshot->page == BUDDY_PAGE_SETTINGS) {
-        buddy_ui_create_settings();
-        buddy_ui_show(s_settings_page);
+        buddy_ui_render_settings(snapshot);
         return;
     }
     if (snapshot->page == BUDDY_PAGE_TRANSCRIPT) {
@@ -290,6 +333,7 @@ void buddy_ui_render(const buddy_ui_snapshot_t *snapshot)
                        snapshot->entries[0], snapshot->entries[1], snapshot->entries[2],
                        snapshot->entries[3]);
         lv_label_set_text(s_transcript_label, transcript);
+        s_scroll_target = s_transcript_box;
         buddy_ui_show(s_transcript_page);
         return;
     }
@@ -314,5 +358,12 @@ void buddy_ui_tick(uint64_t elapsed_ms)
         !lv_obj_has_flag(s_approval_character_label, LV_OBJ_FLAG_HIDDEN)) {
         lv_label_set_text(s_approval_character_label,
                           buddy_character_frame(BUDDY_CHARACTER_HEART, elapsed_ms));
+    }
+}
+
+void buddy_ui_scroll(int delta)
+{
+    if (s_scroll_target != NULL) {
+        lv_obj_scroll_by(s_scroll_target, 0, delta, LV_ANIM_OFF);
     }
 }

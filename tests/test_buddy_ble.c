@@ -166,6 +166,15 @@ static void test_secure_link_requires_mitm_bond_and_full_sc_key(void)
     assert(!buddy_ble_link_is_secure(true, true, true, 15));
 }
 
+static void test_tx_generation_gate_rejects_a_reconnected_peer(void)
+{
+    assert(buddy_ble_tx_generation_matches(true, true, true, 7, 7));
+    assert(!buddy_ble_tx_generation_matches(true, true, true, 7, 8));
+    assert(!buddy_ble_tx_generation_matches(false, true, true, 7, 7));
+    assert(!buddy_ble_tx_generation_matches(true, false, true, 7, 7));
+    assert(!buddy_ble_tx_generation_matches(true, true, false, 7, 7));
+}
+
 static void test_commit_failure_preserves_retry_truth_across_restart(void)
 {
     fake_store_t store = {
@@ -462,6 +471,7 @@ int main(void)
     test_nus_uuid_bytes_match_standard_values();
     test_tx_fragment_size_reserves_att_overhead_and_clamps();
     test_secure_link_requires_mitm_bond_and_full_sc_key();
+    test_tx_generation_gate_rejects_a_reconnected_peer();
     test_commit_failure_preserves_retry_truth_across_restart();
     test_persistent_verification_failure_never_clears_volatile_store();
     test_silent_partial_erase_is_detected_before_volatile_reload();
