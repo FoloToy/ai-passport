@@ -6,7 +6,9 @@ idf_component_register(
          "demo_button.c"
          "demo_audio.c"
          "demo_battery.c"
+         "buddy_line.c"
+         "buddy_ble.c"
          "buddy_settings.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp esp_timer nvs_flash
+    REQUIRES bsp bt esp_hw_support esp_timer nvs_flash
 )
