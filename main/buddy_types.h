@@ -111,7 +111,10 @@ typedef struct {
 typedef struct {
     char name[BUDDY_NAME_MAX];
     char owner[BUDDY_OWNER_MAX];
+    uint64_t approval_count;
+    uint64_t denial_count;
     uint64_t highest_celebrated_level;
+    bool ble_enabled;
 } buddy_settings_snapshot_t;
 
 typedef struct {
