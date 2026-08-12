@@ -60,6 +60,9 @@ sdkconfig.defaults  ESP32-C3 与 LVGL 默认配置
 
 可复用的硬件驱动位于 `components/bsp`，应用界面和演示逻辑位于 `main`。
 
+面向 AI 编程助手和新开发者的完整硬件上下文、约束与验收清单见
+[`docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
+
 ## 测试
 
 提交修改前至少执行一次完整构建：
