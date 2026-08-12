@@ -37,9 +37,21 @@ typedef enum {
 typedef enum {
     BUDDY_PAGE_HOME,
     BUDDY_PAGE_STATUS = BUDDY_PAGE_HOME,
+    BUDDY_PAGE_PET,
+    BUDDY_PAGE_INFO,
     BUDDY_PAGE_TRANSCRIPT,
     BUDDY_PAGE_SETTINGS,
 } buddy_page_t;
+
+typedef enum {
+    BUDDY_MENU_SETTINGS,
+    BUDDY_MENU_TURN_OFF,
+    BUDDY_MENU_HELP,
+    BUDDY_MENU_ABOUT,
+    BUDDY_MENU_DEMO,
+    BUDDY_MENU_CLOSE,
+    BUDDY_MENU_COUNT,
+} buddy_menu_item_t;
 
 typedef enum {
     BUDDY_CONFIRM_NONE,
@@ -48,12 +60,26 @@ typedef enum {
 } buddy_confirmation_t;
 
 typedef enum {
+    BUDDY_SETTINGS_BRIGHTNESS,
+    BUDDY_SETTINGS_SOUND,
     BUDDY_SETTINGS_BLE,
-    BUDDY_SETTINGS_UNPAIR,
-    BUDDY_SETTINGS_FACTORY_RESET,
+    BUDDY_SETTINGS_WIFI,
+    BUDDY_SETTINGS_LED,
+    BUDDY_SETTINGS_TRANSCRIPT,
+    BUDDY_SETTINGS_CLOCK_ROTATION,
+    BUDDY_SETTINGS_ASCII_PET,
+    BUDDY_SETTINGS_RESET,
     BUDDY_SETTINGS_BACK,
     BUDDY_SETTINGS_COUNT,
 } buddy_settings_item_t;
+
+typedef enum {
+    BUDDY_RESET_DELETE_CHARACTER,
+    BUDDY_RESET_FACTORY_RESET,
+    BUDDY_RESET_UNPAIR,
+    BUDDY_RESET_BACK,
+    BUDDY_RESET_COUNT,
+} buddy_reset_item_t;
 
 typedef enum {
     BUDDY_KEY_NONE,
@@ -94,6 +120,8 @@ typedef enum {
     BUDDY_ACTION_FACTORY_RESET_CONFIRMED,
     BUDDY_ACTION_BLE_TOGGLE,
     BUDDY_ACTION_UI_SCROLL,
+    BUDDY_ACTION_DISPLAY_BACKLIGHT,
+    BUDDY_ACTION_SCREEN_OFF,
 } buddy_action_type_t;
 
 typedef enum {
@@ -200,6 +228,7 @@ typedef struct {
     buddy_settings_snapshot_t settings;
     char message[BUDDY_MESSAGE_MAX];
     int scroll_delta;
+    uint8_t brightness_percent;
     uint32_t connection_generation;
     bool ble_enabled;
     bool confirmation_acknowledge;
@@ -224,10 +253,21 @@ typedef struct {
     uint64_t tokens_today;
     int64_t epoch_seconds;
     int32_t timezone_offset_seconds;
+    uint64_t time_received_ms;
     bool heartbeat_stale;
     bool confirmation_pending;
     buddy_confirmation_t confirmation;
     buddy_settings_item_t settings_selection;
+    buddy_reset_item_t reset_selection;
+    buddy_menu_item_t menu_selection;
+    uint8_t pet_page;
+    uint8_t info_page;
+    bool menu_open;
+    bool reset_open;
+    bool transcript_enabled;
+    bool screen_off;
+    uint8_t brightness_level;
+    uint8_t species;
     bool approval_locked;
     buddy_permission_delivery_t permission_delivery;
     bool ble_connected;

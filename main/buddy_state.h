@@ -23,6 +23,7 @@ typedef struct {
     uint64_t tokens_today;
     int64_t epoch_seconds;
     int32_t timezone_offset_seconds;
+    uint64_t time_received_ms;
     uint64_t highest_celebrated_level;
     uint64_t last_heartbeat_ms;
     uint64_t temporary_until_ms;
@@ -36,6 +37,16 @@ typedef struct {
     buddy_confirmation_t confirmation;
     bool confirmation_acknowledge;
     buddy_settings_item_t settings_selection;
+    buddy_reset_item_t reset_selection;
+    buddy_menu_item_t menu_selection;
+    uint8_t pet_page;
+    uint8_t info_page;
+    bool menu_open;
+    bool reset_open;
+    bool transcript_enabled;
+    bool screen_off;
+    uint8_t brightness_level;
+    uint8_t species;
     buddy_permission_delivery_t permission_delivery;
     bool approval_locked;
     bool ble_connected;

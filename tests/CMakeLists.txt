@@ -57,3 +57,19 @@ target_include_directories(test_buddy_orchestrator PRIVATE test_shims ../main
                            ${BUDDY_CJSON_DIR})
 target_compile_options(test_buddy_orchestrator PRIVATE -Wall -Wextra -Werror)
 add_test(NAME buddy_orchestrator COMMAND test_buddy_orchestrator)
+
+add_executable(test_buddy_i4 test_buddy_i4.c ../main/buddy_i4.c)
+target_include_directories(test_buddy_i4 PRIVATE ../main)
+add_test(NAME buddy_i4 COMMAND test_buddy_i4)
+
+add_executable(test_buddy_sprite test_buddy_sprite.c ../main/buddy_sprite.c
+               ../main/buddy_i4.c)
+target_include_directories(test_buddy_sprite PRIVATE ../main)
+target_compile_options(test_buddy_sprite PRIVATE -Wall -Wextra -Werror)
+add_test(NAME buddy_sprite COMMAND test_buddy_sprite)
+
+add_executable(test_buddy_text_layout test_buddy_text_layout.c
+               ../main/buddy_text_layout.c)
+target_include_directories(test_buddy_text_layout PRIVATE ../main)
+target_compile_options(test_buddy_text_layout PRIVATE -Wall -Wextra -Werror)
+add_test(NAME buddy_text_layout COMMAND test_buddy_text_layout)

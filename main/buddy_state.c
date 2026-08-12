@@ -166,6 +166,30 @@ static void buddy_close_confirmation(buddy_state_t *state)
 static void buddy_settings_click(buddy_state_t *state, buddy_key_t key,
                                  buddy_action_t *action)
 {
+    if (state->reset_open) {
+        if (key == BUDDY_KEY_UP) {
+            state->reset_selection = (buddy_reset_item_t)(
+                (state->reset_selection + BUDDY_RESET_COUNT - 1) % BUDDY_RESET_COUNT);
+            buddy_set_ui_refresh(action);
+        } else if (key == BUDDY_KEY_DOWN) {
+            state->reset_selection =
+                (buddy_reset_item_t)((state->reset_selection + 1) % BUDDY_RESET_COUNT);
+            buddy_set_ui_refresh(action);
+        } else if (key == BUDDY_KEY_OK) {
+            if (state->reset_selection == BUDDY_RESET_FACTORY_RESET) {
+                buddy_open_confirmation(state, BUDDY_CONFIRM_FACTORY_RESET, false, 0, action);
+            } else if (state->reset_selection == BUDDY_RESET_UNPAIR) {
+                buddy_open_confirmation(state, BUDDY_CONFIRM_UNPAIR, false, 0, action);
+            } else if (state->reset_selection == BUDDY_RESET_BACK) {
+                state->reset_open = false;
+                buddy_set_ui_refresh(action);
+            } else {
+                buddy_copy(state->message, sizeof(state->message), "No custom character installed");
+                buddy_set_ui_refresh(action);
+            }
+        }
+        return;
+    }
     if (key == BUDDY_KEY_UP) {
         state->settings_selection =
             (buddy_settings_item_t)((state->settings_selection + BUDDY_SETTINGS_COUNT - 1) %
@@ -184,6 +208,24 @@ static void buddy_settings_click(buddy_state_t *state, buddy_key_t key,
     }
 
     switch (state->settings_selection) {
+    case BUDDY_SETTINGS_BRIGHTNESS:
+        state->brightness_level = (uint8_t)((state->brightness_level + 1U) % 5U);
+        if (action != NULL) {
+            action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
+            action->brightness_percent = (uint8_t)(20U + state->brightness_level * 20U);
+        }
+        break;
+    case BUDDY_SETTINGS_SOUND:
+    case BUDDY_SETTINGS_WIFI:
+    case BUDDY_SETTINGS_LED:
+    case BUDDY_SETTINGS_CLOCK_ROTATION:
+        buddy_copy(state->message, sizeof(state->message), "Unavailable on this hardware");
+        buddy_set_ui_refresh(action);
+        break;
+    case BUDDY_SETTINGS_ASCII_PET:
+        state->species = (uint8_t)((state->species + 1U) % 18U);
+        buddy_set_ui_refresh(action);
+        break;
     case BUDDY_SETTINGS_BLE:
         state->settings.ble_enabled = !state->settings.ble_enabled;
         if (action != NULL) {
@@ -191,11 +233,14 @@ static void buddy_settings_click(buddy_state_t *state, buddy_key_t key,
             action->ble_enabled = state->settings.ble_enabled;
         }
         break;
-    case BUDDY_SETTINGS_UNPAIR:
-        buddy_open_confirmation(state, BUDDY_CONFIRM_UNPAIR, false, 0, action);
+    case BUDDY_SETTINGS_TRANSCRIPT:
+        state->transcript_enabled = !state->transcript_enabled;
+        buddy_set_ui_refresh(action);
         break;
-    case BUDDY_SETTINGS_FACTORY_RESET:
-        buddy_open_confirmation(state, BUDDY_CONFIRM_FACTORY_RESET, false, 0, action);
+    case BUDDY_SETTINGS_RESET:
+        state->reset_open = true;
+        state->reset_selection = BUDDY_RESET_DELETE_CHARACTER;
+        buddy_set_ui_refresh(action);
         break;
     case BUDDY_SETTINGS_BACK:
     case BUDDY_SETTINGS_COUNT:
@@ -208,12 +253,55 @@ static void buddy_settings_click(buddy_state_t *state, buddy_key_t key,
 static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
                                buddy_action_t *action)
 {
+    if (state->menu_open) {
+        if (key == BUDDY_KEY_UP) {
+            state->menu_selection = (buddy_menu_item_t)(
+                (state->menu_selection + BUDDY_MENU_COUNT - 1) % BUDDY_MENU_COUNT);
+        } else if (key == BUDDY_KEY_DOWN) {
+            state->menu_selection =
+                (buddy_menu_item_t)((state->menu_selection + 1) % BUDDY_MENU_COUNT);
+        } else if (key == BUDDY_KEY_OK) {
+            if (state->menu_selection == BUDDY_MENU_SETTINGS) {
+                state->page = BUDDY_PAGE_SETTINGS;
+                state->settings_selection = BUDDY_SETTINGS_BRIGHTNESS;
+            } else if (state->menu_selection == BUDDY_MENU_TURN_OFF) {
+                state->screen_off = true;
+                if (action != NULL) {
+                    action->type = BUDDY_ACTION_SCREEN_OFF;
+                }
+            } else if (state->menu_selection == BUDDY_MENU_HELP) {
+                state->page = BUDDY_PAGE_INFO;
+                state->info_page = 1;
+            } else if (state->menu_selection == BUDDY_MENU_ABOUT) {
+                state->page = BUDDY_PAGE_INFO;
+                state->info_page = 5;
+            } else if (state->menu_selection == BUDDY_MENU_DEMO) {
+                buddy_copy(state->message, sizeof(state->message), "Demo unavailable");
+            }
+            state->menu_open = false;
+        }
+        buddy_set_ui_refresh(action);
+        return;
+    }
     if (state->page == BUDDY_PAGE_SETTINGS) {
         buddy_settings_click(state, key, action);
-    } else if (key == BUDDY_KEY_UP || key == BUDDY_KEY_DOWN) {
-        state->page = state->page == BUDDY_PAGE_HOME ? BUDDY_PAGE_TRANSCRIPT
-                                                     : BUDDY_PAGE_HOME;
+    } else if (key == BUDDY_KEY_UP) {
+        state->page = state->page == BUDDY_PAGE_HOME
+                          ? BUDDY_PAGE_PET
+                          : (state->page == BUDDY_PAGE_PET ? BUDDY_PAGE_INFO
+                                                          : BUDDY_PAGE_HOME);
         buddy_set_ui_refresh(action);
+    } else if (key == BUDDY_KEY_DOWN && state->page == BUDDY_PAGE_PET) {
+        state->pet_page = (uint8_t)((state->pet_page + 1U) % 2U);
+        buddy_set_ui_refresh(action);
+    } else if (key == BUDDY_KEY_DOWN && state->page == BUDDY_PAGE_INFO) {
+        state->info_page = (uint8_t)((state->info_page + 1U) % 6U);
+        buddy_set_ui_refresh(action);
+    } else if (key == BUDDY_KEY_DOWN && state->page == BUDDY_PAGE_HOME) {
+        if (action != NULL) {
+            action->type = BUDDY_ACTION_UI_SCROLL;
+            action->scroll_delta = -24;
+        }
     }
 }
 
@@ -380,6 +468,8 @@ void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *set
     state->connection = BUDDY_CONNECTION_OFFLINE;
     state->page = BUDDY_PAGE_HOME;
     state->heartbeat_stale = true;
+    state->brightness_level = 4;
+    state->transcript_enabled = true;
     if (settings != NULL) {
         state->settings = *settings;
         state->highest_celebrated_level = settings->highest_celebrated_level;
@@ -413,6 +503,7 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
     case BUDDY_EVENT_TIME:
         state->epoch_seconds = event->time.epoch_seconds;
         state->timezone_offset_seconds = event->time.timezone_offset_seconds;
+        state->time_received_ms = now_ms;
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_NAME:
@@ -507,6 +598,15 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_apply_permission_result(state, &event->permission_result, now_ms, action);
         break;
     case BUDDY_EVENT_KEY_CLICK:
+        if (state->screen_off) {
+            state->screen_off = false;
+            if (action != NULL) {
+                action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
+                action->brightness_percent =
+                    (uint8_t)(20U + state->brightness_level * 20U);
+            }
+            break;
+        }
         if (state->confirmation != BUDDY_CONFIRM_NONE && event->key == BUDDY_KEY_OK) {
             buddy_confirmation_t confirmation = state->confirmation;
             bool acknowledge = state->confirmation_acknowledge;
@@ -546,8 +646,9 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
     case BUDDY_EVENT_KEY_LONG:
         if (event->key == BUDDY_KEY_OK && state->confirmation == BUDDY_CONFIRM_NONE &&
             !buddy_has_prompt(state)) {
-            state->page = BUDDY_PAGE_SETTINGS;
-            state->settings_selection = BUDDY_SETTINGS_BLE;
+            state->menu_open = !state->menu_open;
+            state->menu_selection = BUDDY_MENU_SETTINGS;
+            state->reset_open = false;
             buddy_set_ui_refresh(action);
         }
         break;
@@ -578,10 +679,21 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->tokens_today = state->tokens_today;
     snapshot->epoch_seconds = state->epoch_seconds;
     snapshot->timezone_offset_seconds = state->timezone_offset_seconds;
+    snapshot->time_received_ms = state->time_received_ms;
     snapshot->heartbeat_stale = state->heartbeat_stale;
     snapshot->confirmation_pending = state->confirmation_pending;
     snapshot->confirmation = state->confirmation;
     snapshot->settings_selection = state->settings_selection;
+    snapshot->reset_selection = state->reset_selection;
+    snapshot->menu_selection = state->menu_selection;
+    snapshot->pet_page = state->pet_page;
+    snapshot->info_page = state->info_page;
+    snapshot->menu_open = state->menu_open;
+    snapshot->reset_open = state->reset_open;
+    snapshot->transcript_enabled = state->transcript_enabled;
+    snapshot->brightness_level = state->brightness_level;
+    snapshot->screen_off = state->screen_off;
+    snapshot->species = state->species;
     snapshot->approval_locked = state->approval_locked;
     snapshot->permission_delivery = state->permission_delivery;
     snapshot->ble_connected = state->ble_connected;

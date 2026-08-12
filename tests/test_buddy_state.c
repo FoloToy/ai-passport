@@ -578,8 +578,39 @@ static void test_long_ok_opens_settings(void)
     buddy_state_init(&state, NULL);
     buddy_state_reduce(&state, &long_ok, 1000, &action);
 
-    assert(state.page == BUDDY_PAGE_SETTINGS);
+    assert(state.menu_open);
+    assert(state.menu_selection == BUDDY_MENU_SETTINGS);
     assert(action.type == BUDDY_ACTION_UI_REFRESH);
+}
+
+static void test_original_screen_and_menu_navigation(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t up = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_UP};
+    buddy_event_t down = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
+    buddy_event_t ok = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+    buddy_event_t menu = {.type = BUDDY_EVENT_KEY_LONG, .key = BUDDY_KEY_OK};
+
+    buddy_state_init(&state, NULL);
+    buddy_state_reduce(&state, &up, 1, &action);
+    assert(state.page == BUDDY_PAGE_PET);
+    buddy_state_reduce(&state, &down, 2, &action);
+    assert(state.pet_page == 1);
+    buddy_state_reduce(&state, &up, 3, &action);
+    assert(state.page == BUDDY_PAGE_INFO);
+    buddy_state_reduce(&state, &down, 4, &action);
+    assert(state.info_page == 1);
+    buddy_state_reduce(&state, &up, 5, &action);
+    assert(state.page == BUDDY_PAGE_HOME);
+
+    buddy_state_reduce(&state, &menu, 6, &action);
+    buddy_state_reduce(&state, &down, 7, &action);
+    assert(state.menu_selection == BUDDY_MENU_TURN_OFF);
+    buddy_state_reduce(&state, &up, 8, &action);
+    buddy_state_reduce(&state, &ok, 9, &action);
+    assert(!state.menu_open);
+    assert(state.page == BUDDY_PAGE_SETTINGS);
 }
 
 static void test_protocol_command_events_refresh_the_display(void)
@@ -610,6 +641,11 @@ static void test_protocol_command_events_refresh_the_display(void)
     buddy_state_reduce(&state, &event, 1003, &action);
     assert(state.epoch_seconds == 1775731234);
     assert(state.timezone_offset_seconds == -25200);
+    assert(state.time_received_ms == 1003);
+
+    buddy_ui_snapshot_t time_snapshot;
+    buddy_state_snapshot(&state, &time_snapshot);
+    assert(time_snapshot.time_received_ms == 1003);
 
     event.type = BUDDY_EVENT_UNPAIR_CONFIRMATION;
     buddy_state_reduce(&state, &event, 1004, &action);
@@ -716,10 +752,10 @@ static void test_normal_navigation_and_approval_scroll_are_distinct(void)
 
     buddy_state_init(&state, NULL);
     buddy_state_reduce(&state, &down, 1000, &action);
-    assert(state.page == BUDDY_PAGE_TRANSCRIPT);
-    assert(action.type == BUDDY_ACTION_UI_REFRESH);
-    buddy_state_reduce(&state, &up, 1001, &action);
     assert(state.page == BUDDY_PAGE_HOME);
+    assert(action.type == BUDDY_ACTION_UI_SCROLL);
+    buddy_state_reduce(&state, &up, 1001, &action);
+    assert(state.page == BUDDY_PAGE_PET);
 
     buddy_state_reduce(&state, &prompt, 1002, &action);
     buddy_state_reduce(&state, &up, 1003, &action);
@@ -735,29 +771,53 @@ static void test_settings_actions_have_separate_confirmations(void)
     buddy_action_t action = {0};
     buddy_event_t long_ok = {.type = BUDDY_EVENT_KEY_LONG, .key = BUDDY_KEY_OK};
     buddy_event_t click_ok = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
-    buddy_event_t click_down = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
 
     buddy_state_init(&state, &settings);
     buddy_state_reduce(&state, &long_ok, 1000, &action);
     buddy_state_reduce(&state, &click_ok, 1001, &action);
+    assert(state.page == BUDDY_PAGE_SETTINGS);
+    state.settings_selection = BUDDY_SETTINGS_BLE;
+    buddy_state_reduce(&state, &click_ok, 1002, &action);
     assert(action.type == BUDDY_ACTION_BLE_TOGGLE);
     assert(!action.ble_enabled);
     buddy_state_snapshot(&state, &snapshot);
     assert(!snapshot.ble_enabled);
 
-    buddy_state_reduce(&state, &click_down, 1002, &action);
+    state.settings_selection = BUDDY_SETTINGS_RESET;
     buddy_state_reduce(&state, &click_ok, 1003, &action);
+    assert(state.reset_open);
+    state.reset_selection = BUDDY_RESET_UNPAIR;
+    buddy_state_reduce(&state, &click_ok, 1004, &action);
     assert(state.confirmation == BUDDY_CONFIRM_UNPAIR);
     assert(!state.confirmation_acknowledge);
-    buddy_state_reduce(&state, &click_down, 1004, &action);
+    buddy_event_t click_down = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_DOWN};
+    buddy_state_reduce(&state, &click_down, 1005, &action);
 
-    buddy_state_reduce(&state, &long_ok, 1005, &action);
-    buddy_state_reduce(&state, &click_down, 1006, &action);
-    buddy_state_reduce(&state, &click_down, 1007, &action);
+    buddy_state_reduce(&state, &long_ok, 1006, &action);
+    buddy_state_reduce(&state, &click_ok, 1007, &action);
+    state.settings_selection = BUDDY_SETTINGS_RESET;
     buddy_state_reduce(&state, &click_ok, 1008, &action);
+    state.reset_selection = BUDDY_RESET_FACTORY_RESET;
+    buddy_state_reduce(&state, &click_ok, 1010, &action);
     assert(state.confirmation == BUDDY_CONFIRM_FACTORY_RESET);
-    buddy_state_reduce(&state, &click_ok, 1009, &action);
+    buddy_state_reduce(&state, &click_ok, 1011, &action);
     assert(action.type == BUDDY_ACTION_FACTORY_RESET_CONFIRMED);
+}
+
+static void test_original_settings_surface_is_complete_and_bounded(void)
+{
+    buddy_state_t state;
+    buddy_action_t action = {0};
+    buddy_event_t ok = {.type = BUDDY_EVENT_KEY_CLICK, .key = BUDDY_KEY_OK};
+
+    assert(BUDDY_SETTINGS_COUNT == 10);
+    assert(BUDDY_RESET_COUNT == 4);
+    buddy_state_init(&state, NULL);
+    state.page = BUDDY_PAGE_SETTINGS;
+    state.settings_selection = BUDDY_SETTINGS_BRIGHTNESS;
+    buddy_state_reduce(&state, &ok, 1, &action);
+    assert(action.type == BUDDY_ACTION_DISPLAY_BACKLIGHT);
+    assert(action.brightness_percent <= 100);
 }
 
 static void test_remote_unpair_confirmation_remembers_ack(void)
@@ -908,6 +968,7 @@ int main(void)
     test_nonterminated_prompt_id_is_ignored();
     test_truncated_prompt_id_is_ignored();
     test_long_ok_opens_settings();
+    test_original_screen_and_menu_navigation();
     test_protocol_command_events_refresh_the_display();
     test_status_request_does_not_overwrite_message();
     test_unpair_confirmation_survives_a_heartbeat();
@@ -916,6 +977,7 @@ int main(void)
     test_parsed_heartbeat_approval_serializes_permission();
     test_normal_navigation_and_approval_scroll_are_distinct();
     test_settings_actions_have_separate_confirmations();
+    test_original_settings_surface_is_complete_and_bounded();
     test_remote_unpair_confirmation_remembers_ack();
     test_remote_unpair_cannot_replace_a_local_confirmation();
     test_ble_security_events_update_owned_state_and_clear_sensitive_prompt();

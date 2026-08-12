@@ -3,14 +3,14 @@
 This project implements compatibility with the public Hardware Buddy BLE wire protocol
 documented by Anthropic in [`anthropics/claude-desktop-buddy`](https://github.com/anthropics/claude-desktop-buddy).
 
-The FoloToy-Card implementation was written against that public protocol reference using
-ESP-IDF APIs. No source code, character art, GIF, or other artwork from the upstream
-repository was copied or adapted. The repository's existing licensing situation is
-unchanged; this notice does not add an upstream license to the FoloToy-Card source.
+The BLE/runtime implementation was written against that public protocol reference using
+ESP-IDF APIs. The programmatic pixel sprites are original implementations informed by the
+public species names and behavior. No upstream character renderer, GIF, or raster artwork
+is included in the firmware.
 
 The upstream repository currently publishes the following MIT license. It is reproduced
-here for accurate attribution; it applies to upstream material, not to files in this
-repository that were independently implemented:
+here for accurate attribution; it applies to upstream material, not independently written
+files in this repository:
 
 Copyright 2026 Anthropic, PBC.
 

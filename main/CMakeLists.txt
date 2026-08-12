@@ -9,7 +9,10 @@ idf_component_register(
          "buddy_state.c"
          "buddy_settings.c"
          "buddy_character.c"
-         "buddy_ui.c"
+        "buddy_ui.c"
+        "buddy_i4.c"
+        "buddy_sprite.c"
+        "buddy_text_layout.c"
     INCLUDE_DIRS "."
     REQUIRES bsp bt esp_hw_support esp_timer json nvs_flash
 )

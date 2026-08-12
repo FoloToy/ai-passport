@@ -15,8 +15,9 @@ Developer Mode）。
 - 三个 ADC 按键：`UP`、`DOWN`、`OK`
 - CW2017 电量计（若硬件不可用，状态页显示 `--`）
 - 加密 BLE LE Secure Connections、绑定和设备端取消配对
-- 单个内置 ASCII Buddy，支持 sleep、idle、busy、attention、celebrate、heart
-  和 pairing/confirmation 状态
+- 原版 18 种像素 Buddy，可在 Settings → Buddy 切换；每种均支持 sleep、idle、
+  busy、attention、celebrate、heart 和 pairing/confirmation 动画
+- 针对 240 × 320 竖屏重排的原版风格像素 HUD、Pet、Info、菜单与审批面板
 
 设备默认以 `Claude-<MAC 后缀>` 广播。协议使用公开 Hardware Buddy wire protocol：
 
@@ -45,10 +46,11 @@ RX、TX 和 TX CCCD 需要加密访问。收发数据是以换行分隔的 UTF-8
 
 ### 普通页面
 
-- `UP` / `DOWN` 短按：在 Home（Buddy/状态）和 Transcript（近期消息）之间切换。
-- `OK` 长按：进入 Settings。
-- 状态页显示连接、加密、时间、电池、运行会话数和 token 统计；Transcript 页只
-  显示有限的近期条目，不保存完整聊天记录。
+- `UP` 短按：按原版顺序循环 Normal、Pet 和 Info。
+- `DOWN` 短按：Normal 中滚动近期消息，Pet 中循环 2 页，Info 中循环 6 页。
+- `OK` 长按：打开原版浮层菜单；用 `UP`/`DOWN` 选择、`OK` 执行。
+- Normal 显示 Buddy 和近期消息；Pet 显示 token/等级及说明；Info 包含 About、
+  Buttons、Claude、Device、Bluetooth 和 Credits 六页。
 
 ### 审批页面
 
@@ -63,8 +65,11 @@ RX、TX 和 TX CCCD 需要加密访问。收发数据是以换行分隔的 UTF-8
 
 ### Settings 页面
 
-- `UP` / `DOWN`：选择 `BLE`、`Unpair`、`Factory reset` 或 `Back`。
-- `OK`：切换 BLE 或进入所选操作。
+- `UP` / `DOWN`：选择原版的 Brightness、Sound、Bluetooth、Wi-Fi、LED、
+  Transcript、Clock rotation、Buddy、Reset 或 Back。
+- `OK`：调整亮度、切换 BLE/Transcript，或进入 Reset 子菜单。
+- 本板没有对应硬件或尚未移植的 Sound、Wi-Fi、LED 和 Clock rotation
+  显示为 `n/a`，选择时只提示不可用，不会伪造状态。
 - `Unpair`：确认页中 `OK` 删除 BLE bonds 并取消配对，`DOWN` 取消。
 - `Factory reset`：确认页中 `OK` 清除应用设置和统计，`DOWN` 取消。
 
@@ -93,8 +98,8 @@ ctest --test-dir build-host --output-on-failure
 
 ## 第一阶段限制
 
-当前交付是第一阶段实现：只有一个内置 ASCII Buddy；没有完整角色集、GIF 解码、
-LittleFS 角色包、角色文件推送、`char_begin`/`file`/`chunk`/`file_end`/`char_end`
+当前交付内置 18 种程序化像素 Buddy 和七种动画状态；没有 GIF 解码、LittleFS
+角色包、角色文件推送、`char_begin`/`file`/`chunk`/`file_end`/`char_end`
 传输，也没有 IMU 摇晃或翻面触发。设备不保存近期消息、工具参数、审批 ID 或会话
 内容到 Flash。文件传输命令会返回明确的不支持错误，不会创建半成品文件。
 
@@ -112,7 +117,7 @@ LittleFS 角色包、角色文件推送、`char_begin`/`file`/`chunk`/`file_end`
 - [ ] 状态页的电池、电压、连接安全状态和统计字段正确，或明确显示不可用。
 - [ ] 工具名和参数提示可查看；批准一次、拒绝和发送失败均安全且各只发送一次。
 - [ ] 审批期间快速重复按键、断开连接和 30 秒心跳超时都不会产生额外决定。
-- [ ] Home、Transcript、长按 Settings、BLE 开关和两个确认流程均可操作。
+- [ ] Normal、Pet 2 页、Info 6 页、长按菜单、Settings、Reset 和确认流程均可操作。
 - [ ] 至少重复连接/断开 20 次，并持续连接 30 分钟；无看门狗、BLE/分配错误或
       持续下降的可用堆。
 

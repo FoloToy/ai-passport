@@ -58,6 +58,10 @@ typedef struct {
             buddy_page_t page;
             buddy_confirmation_t confirmation;
             buddy_settings_item_t settings_selection;
+            buddy_menu_item_t menu_selection;
+            buddy_reset_item_t reset_selection;
+            bool menu_open;
+            bool reset_open;
             bool approval_visible;
             bool passkey_visible;
             bool ble_enabled;
@@ -79,6 +83,10 @@ typedef struct {
     buddy_page_t page;
     buddy_confirmation_t confirmation;
     buddy_settings_item_t settings_selection;
+    buddy_menu_item_t menu_selection;
+    buddy_reset_item_t reset_selection;
+    bool menu_open;
+    bool reset_open;
     bool approval_visible;
     bool passkey_visible;
     bool ble_enabled;
@@ -324,6 +332,10 @@ static void on_key(bsp_btn_t button, bsp_btn_ev_t event, void *context)
     control.data.key.page = s_rendered_view.page;
     control.data.key.confirmation = s_rendered_view.confirmation;
     control.data.key.settings_selection = s_rendered_view.settings_selection;
+    control.data.key.menu_selection = s_rendered_view.menu_selection;
+    control.data.key.reset_selection = s_rendered_view.reset_selection;
+    control.data.key.menu_open = s_rendered_view.menu_open;
+    control.data.key.reset_open = s_rendered_view.reset_open;
     control.data.key.approval_visible = s_rendered_view.approval_visible;
     control.data.key.passkey_visible = s_rendered_view.passkey_visible;
     control.data.key.ble_enabled = s_rendered_view.ble_enabled;
@@ -429,6 +441,10 @@ static bool buddy_key_matches_state(const buddy_control_event_t *control,
     }
     return state->confirmation == BUDDY_CONFIRM_NONE && !state->passkey_visible &&
            state->prompt.id[0] == '\0' && state->page == control->data.key.page &&
+           state->menu_open == control->data.key.menu_open &&
+           (!state->menu_open || state->menu_selection == control->data.key.menu_selection) &&
+           state->reset_open == control->data.key.reset_open &&
+           (!state->reset_open || state->reset_selection == control->data.key.reset_selection) &&
            (state->page != BUDDY_PAGE_SETTINGS ||
             (state->settings_selection == control->data.key.settings_selection &&
              (state->settings_selection != BUDDY_SETTINGS_BLE ||
@@ -773,6 +789,17 @@ static bool buddy_execute_action(buddy_state_t *state, const buddy_action_t *act
 {
     buddy_orchestrator_ops_t ops = buddy_orchestrator_ops(state);
 
+    if (action->type == BUDDY_ACTION_DISPLAY_BACKLIGHT) {
+        bsp_display_backlight(action->brightness_percent);
+        memset(result_event, 0, sizeof(*result_event));
+        return false;
+    }
+    if (action->type == BUDDY_ACTION_SCREEN_OFF) {
+        bsp_display_backlight(0);
+        memset(result_event, 0, sizeof(*result_event));
+        return false;
+    }
+
     (void)buddy_orchestrator_execute_action(state, &ops, action, result_event);
     if (result_event->type == BUDDY_EVENT_PERMISSION_SEND_RESULT &&
         !result_event->permission_result.success) {
@@ -786,6 +813,10 @@ static bool buddy_rendered_view_same(const buddy_rendered_view_t *left,
 {
     return left->page == right->page && left->confirmation == right->confirmation &&
            left->settings_selection == right->settings_selection &&
+           left->menu_selection == right->menu_selection &&
+           left->reset_selection == right->reset_selection &&
+           left->menu_open == right->menu_open &&
+           left->reset_open == right->reset_open &&
            left->approval_visible == right->approval_visible &&
            left->passkey_visible == right->passkey_visible &&
            left->ble_enabled == right->ble_enabled &&
@@ -802,6 +833,10 @@ static void buddy_publish_rendered_view(const buddy_ui_snapshot_t *snapshot)
         .page = snapshot->page,
         .confirmation = snapshot->confirmation,
         .settings_selection = snapshot->settings_selection,
+        .menu_selection = snapshot->menu_selection,
+        .reset_selection = snapshot->reset_selection,
+        .menu_open = snapshot->menu_open,
+        .reset_open = snapshot->reset_open,
         .approval_visible = !snapshot->confirmation_pending && !snapshot->passkey_visible &&
                             !snapshot->approval_locked && snapshot->prompt_id[0] != '\0',
         .passkey_visible = snapshot->passkey_visible,
