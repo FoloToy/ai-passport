@@ -6,6 +6,10 @@ idf_component_register(
          "demo_button.c"
          "demo_audio.c"
          "demo_battery.c"
+         "demo_rps.c"
     INCLUDE_DIRS "."
     REQUIRES bsp
+    EMBED_FILES "assets/rock.rgb565"
+                "assets/scissors.rgb565"
+                "assets/paper.rgb565"
 )

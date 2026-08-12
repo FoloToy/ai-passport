@@ -9,6 +9,7 @@ FoloToy-Card 是一个基于 ESP32-C3 的卡片设备固件示例，使用 ESP-I
 - ADC 三按键输入
 - ES8311 音频播放与录音
 - CW2017 电量和电压读取
+- 石头剪刀布小游戏与粒子爆散待机动画
 - USB Serial/JTAG 日志输出
 
 ## 硬件
@@ -48,12 +49,13 @@ idf.py flash monitor
 - **Button**：显示按键事件及 ADC 电压
 - **Audio**：播放测试音或录音回放
 - **Battery**：显示当前电量和电池电压
+- **RPS**：粒子动画待机，`UP` 选石头、`DOWN` 选剪刀、`OK` 选布
 
 ## 项目结构
 
 ```text
 components/bsp/     板级驱动及公开接口
-main/               主程序、LVGL 界面和功能演示
+main/               主程序、LVGL 界面、功能演示和游戏素材
 tests/              可在主机运行的轻量逻辑测试
 sdkconfig.defaults  ESP32-C3 与 LVGL 默认配置
 ```
