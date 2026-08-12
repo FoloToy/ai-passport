@@ -12,6 +12,13 @@
 #define BUDDY_UI_ACTION_Y 296
 #define BUDDY_UI_ACTION_H 24
 
+#define BUDDY_ACTION_HOME "UP:PAGE  HOLD OK:MENU"
+#define BUDDY_ACTION_PET "DOWN:INFO  HOLD OK:MENU"
+#define BUDDY_ACTION_INFO "DOWN:NEXT  HOLD OK:MENU"
+#define BUDDY_ACTION_SETTINGS "UP/DOWN:SELECT  OK:SET"
+#define BUDDY_ACTION_CONFIRM "OK:YES  DOWN:NO"
+#define BUDDY_ACTION_APPROVAL "OK:ALLOW  DOWN:DENY"
+
 typedef unsigned (*buddy_text_measure_fn)(const char *text, size_t length, void *context);
 
 typedef struct {

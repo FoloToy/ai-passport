@@ -22,6 +22,12 @@ int main(void)
     assert(BUDDY_UI_STAGE_Y == 26 && BUDDY_UI_STAGE_H == 132);
     assert(BUDDY_UI_INFO_Y == 158 && BUDDY_UI_INFO_H == 138);
     assert(BUDDY_UI_ACTION_Y == 296 && BUDDY_UI_ACTION_H == 24);
+    assert(strlen(BUDDY_ACTION_HOME) * 8U <= 224U);
+    assert(strlen(BUDDY_ACTION_PET) * 8U <= 224U);
+    assert(strlen(BUDDY_ACTION_INFO) * 8U <= 224U);
+    assert(strlen(BUDDY_ACTION_SETTINGS) * 8U <= 224U);
+    assert(strlen(BUDDY_ACTION_CONFIRM) * 8U <= 204U);
+    assert(strlen(BUDDY_ACTION_APPROVAL) * 8U <= 204U);
     assert(buddy_overlay_select(true, true, true, true) == BUDDY_OVERLAY_CONFIRMATION);
     assert(buddy_overlay_select(false, true, true, true) == BUDDY_OVERLAY_PAIRING);
     assert(buddy_overlay_select(false, false, true, true) == BUDDY_OVERLAY_APPROVAL);

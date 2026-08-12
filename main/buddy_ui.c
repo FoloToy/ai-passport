@@ -237,7 +237,7 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
              (s->ble_connected ? "WAITING FOR CLAUDE" : "OPEN CLAUDE DESKTOP TO PAIR"));
     wrapped_text(layer, 18, 174, 204, s->heartbeat_stale ? COL_DIM : COL_INK,
                  caption, 8);
-    text(layer, 8, 300, 224, COL_DIM, "UP  SCREENS       HOLD OK  MENU", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 300, 224, COL_DIM, BUDDY_ACTION_HOME, false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_heart(lv_layer_t *layer, int x, int y, bool on)
@@ -275,7 +275,7 @@ static void draw_pet(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         box(layer, 93 + (int)i * 16, 248, 11, 8, on ? COL_YELLOW : COL_LINE,
             on ? COL_YELLOW : COL_LINE, 0, 1);
     }
-    text(layer, 8, 300, 224, COL_DIM, "DOWN  DETAILS        HOLD OK  MENU", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 300, 224, COL_DIM, BUDDY_ACTION_PET, false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_info(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -297,7 +297,7 @@ static void draw_info(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     default: snprintf(body, sizeof(body), "CLAUDE DESKTOP BUDDY\nBY FELIX RIESEBERG\n\nESP32-C3 HARDWARE PORT\nFOR TRAE CARD BSP\n\nAPACHE-2.0"); break;
     }
     wrapped_text(layer, 16, 82 - s_scroll, 208, COL_INK, body, 18);
-    text(layer, 8, 300, 224, COL_DIM, "DOWN  NEXT PAGE      HOLD OK  MENU", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 300, 224, COL_DIM, BUDDY_ACTION_INFO, false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_list(lv_layer_t *layer, const char *title, const char *const *items,
@@ -322,7 +322,7 @@ static void draw_list(lv_layer_t *layer, const char *title, const char *const *i
         text(layer, 20, y, 142, active ? COL_BG : COL_INK, row, false, LV_TEXT_ALIGN_LEFT);
         text(layer, 158, y, 62, active ? COL_BG : COL_DIM, suffix, false, LV_TEXT_ALIGN_RIGHT);
     }
-    text(layer, 8, 300, 224, COL_DIM, "UP/DOWN  SELECT       OK  CHANGE", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 300, 224, COL_DIM, BUDDY_ACTION_SETTINGS, false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_settings(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -368,14 +368,14 @@ static void draw_overlay(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     if (overlay == BUDDY_OVERLAY_CONFIRMATION) {
         panel(layer, 62, 196, COL_RED, "CONFIRM ACTION",
               s->confirmation == BUDDY_CONFIRM_FACTORY_RESET ? "FACTORY RESET?\n\nSETTINGS AND STATISTICS\nWILL BE ERASED." : "UNPAIR CLAUDE DESKTOP?\n\nTHE SAVED BLUETOOTH BOND\nWILL BE ERASED.",
-              "OK  CONFIRM        DOWN  CANCEL");
+              BUDDY_ACTION_CONFIRM);
     } else if (overlay == BUDDY_OVERLAY_PAIRING) {
         snprintf(body, sizeof(body), "ENTER THIS CODE\nIN CLAUDE DESKTOP\n\n       %06lu", (unsigned long)s->passkey);
         panel(layer, 66, 188, COL_BLUE, "BLUETOOTH PAIRING", body, "KEEP THIS SCREEN OPEN");
     } else if (overlay == BUDDY_OVERLAY_APPROVAL) {
         snprintf(body, sizeof(body), "%s\n\n%s", s->prompt_tool, s->prompt_hint);
         panel(layer, 154, 158, s->approval_locked ? COL_DIM : COL_RED, "CLAUDE NEEDS APPROVAL", body,
-              s->approval_locked ? (s->permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED ? "SEND FAILED - TRY AGAIN" : "SENDING...") : "OK  APPROVE        DOWN  DENY");
+              s->approval_locked ? (s->permission_delivery == BUDDY_PERMISSION_DELIVERY_FAILED ? "SEND FAILED" : "SENDING...") : BUDDY_ACTION_APPROVAL);
     } else if (overlay == BUDDY_OVERLAY_MENU) {
         static const char *const menu[] = {"SETTINGS", "TURN OFF", "HELP", "ABOUT", "DEMO", "CLOSE"};
         unsigned i;
