@@ -2,6 +2,8 @@
 // 新增一个演示页 = 实现这三个函数 + 在 main.c 的 DEMOS[] 里加一行。
 #pragma once
 
+#include <stdbool.h>
+
 #include "bsp_button.h"
 
 typedef struct {
@@ -23,3 +25,7 @@ void demo_audio_key(bsp_btn_t btn, bsp_btn_ev_t ev);
 
 void demo_battery_enter(void); void demo_battery_exit(void);
 void demo_battery_key(bsp_btn_t btn, bsp_btn_ev_t ev);
+
+void demo_pomodoro_prepare(bool audio_ok, bool battery_ok);
+void demo_pomodoro_enter(void); void demo_pomodoro_exit(void);
+void demo_pomodoro_key(bsp_btn_t btn, bsp_btn_ev_t ev);

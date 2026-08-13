@@ -10,6 +10,7 @@ FoloToy-Card 是一个基于 ESP32-C3 的卡片设备固件示例，使用 ESP-I
 - ES8311 音频播放与录音
 - CW2017 电量和电压读取
 - USB Serial/JTAG 日志输出
+- 离线猫咪养成番茄钟（15/25/45 分钟、短/长休息、断电续存）
 
 ## 硬件
 
@@ -48,6 +49,10 @@ idf.py flash monitor
 - **Button**：显示按键事件及 ADC 电压
 - **Audio**：播放测试音或录音回放
 - **Battery**：显示当前电量和电池电压
+- **Pomo**：完成专注让猫咪成长；空闲时用 `UP`/`DOWN` 选择 15、25 或 45 分钟，`OK` 开始/暂停，暂停后 `UP` 可放弃；双击 `OK` 查看猫咪档案，双击 `DOWN` 静音
+
+番茄钟采用单调时钟计算倒计时，运行中退出或异常重启后会以暂停状态恢复；成长、专注统计和休息轮次保存在 NVS。完整产品定义见
+[`docs/PRD_CAT_THEMED_POMODORO_TIMER.md`](docs/PRD_CAT_THEMED_POMODORO_TIMER.md)。
 
 ## 项目结构
 
@@ -70,6 +75,15 @@ sdkconfig.defaults  ESP32-C3 与 LVGL 默认配置
 ```bash
 get_idf553
 idf.py build
+```
+
+番茄钟的纯业务状态机可以不依赖 ESP-IDF 在主机验证：
+
+```bash
+cc -std=c11 -Wall -Wextra -Werror -Imain \
+  tests/test_pomodoro_model.c main/pomodoro_model.c \
+  -o /tmp/test_pomodoro_model
+/tmp/test_pomodoro_model
 ```
 
 显示、音频、电池和实体按键功能需要在 FoloToy-Card 硬件上完成最终验证。

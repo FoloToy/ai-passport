@@ -6,6 +6,9 @@ idf_component_register(
          "demo_button.c"
          "demo_audio.c"
          "demo_battery.c"
+         "demo_pomodoro.c"
+         "pomodoro_model.c"
+         "pomodoro_store.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp
+    REQUIRES bsp nvs_flash esp_timer
 )
