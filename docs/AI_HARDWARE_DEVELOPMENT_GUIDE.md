@@ -1,4 +1,4 @@
-# FoloToy-Card AI 硬件开发指南
+# FoloToy AI Passport AI 硬件开发指南
 
 本文是面向 AI 编程助手和新开发者的板级上下文入口。目标不是替代数据手册，而是准确说明**当前仓库已经确认的硬件事实、软件架构、不可随意改变的约束、扩展方式和验收方法**。
 
@@ -16,7 +16,7 @@ AI 应先完成以下检查：
 
 ## 2. 硬件总览
 
-当前代码针对 ESP32-C3 FoloToy-Card，使用 ESP-IDF 5.5.x（已知开发环境为 5.5.3）。MCU **没有 PSRAM**，外设 DMA 和 UI 都使用内部 RAM。
+当前代码针对 ESP32-C3 FoloToy AI Passport，使用 ESP-IDF 5.5.x（已知开发环境为 5.5.3）。MCU **没有 PSRAM**，外设 DMA 和 UI 都使用内部 RAM。
 
 | 子系统 | 器件/方式 | 总线或资源 | 当前状态 |
 | --- | --- | --- | --- |
@@ -349,7 +349,7 @@ idf.py build
 | 能烧录但无日志 | 确认 USB Serial/JTAG 配置和正确端口，不要默认改用 GPIO21 UART TX |
 | 构建目录来自其他 IDF | 激活 5.5.3 后 `idf.py fullclean`，再 set-target/build |
 
-环境验收标准是：`idf.py --version` 正确、`idf.py build` 无错误、设备可烧录、monitor 能看到 `FoloToy-Card BSP demo 启动`，并且启动后没有持续重启或 assert。
+环境验收标准是：`idf.py --version` 正确、`idf.py build` 无错误、设备可烧录、monitor 能看到 `FoloToy AI Passport BSP demo 启动`，并且启动后没有持续重启或 assert。
 
 ## 13. 构建与验证
 

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository is an ESP-IDF BSP and hardware demonstration for the ESP32-C3-based FoloToy-Card.
+This repository is an ESP-IDF BSP and hardware demonstration for the ESP32-C3-based FoloToy AI Passport.
 
 - `components/bsp/include/`: public BSP APIs and the hardware pin/configuration source of truth (`bsp_pins.h`).
 - `components/bsp/src/`: display, button, audio, battery, and shared-I2C implementations.
