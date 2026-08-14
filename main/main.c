@@ -18,10 +18,11 @@
 static const char *TAG = "main";
 
 static const demo_entry_t DEMOS[] = {
-    { "Display", demo_display_enter, demo_display_exit, demo_display_key },
-    { "Button",  demo_button_enter,  demo_button_exit,  demo_button_key  },
-    { "Audio",   demo_audio_enter,   demo_audio_exit,   demo_audio_key   },
-    { "Battery", demo_battery_enter, demo_battery_exit, demo_battery_key },
+    { "Display",   demo_display_enter,   demo_display_exit,   demo_display_key   },
+    { "Button",    demo_button_enter,    demo_button_exit,    demo_button_key    },
+    { "Audio",     demo_audio_enter,     demo_audio_exit,     demo_audio_key     },
+    { "Battery",   demo_battery_enter,   demo_battery_exit,   demo_battery_key   },
+    { "Stopwatch", demo_stopwatch_enter, demo_stopwatch_exit, demo_stopwatch_key },
 };
 #define DEMO_COUNT (sizeof(DEMOS) / sizeof(DEMOS[0]))
 
@@ -51,15 +52,15 @@ static void menu_build(void) {
 
     for (size_t i = 0; i < DEMO_COUNT; i++) {
         int x = 11 + (int)(i % 2) * 112;
-        int y = 58 + (int)(i / 2) * 86;
-        s_cards[i] = ui_pixel_panel_create(s_menu_scr, x, y, 102, 72, UI_PAPER);
+        int y = 58 + (int)(i / 2) * 76;                 // 2x3 网格,容纳第 5 项
+        s_cards[i] = ui_pixel_panel_create(s_menu_scr, x, y, 102, 62, UI_PAPER);
         s_rows[i] = lv_label_create(s_cards[i]);
         lv_obj_set_style_text_font(s_rows[i], &lv_font_montserrat_20, 0);
         lv_obj_set_style_text_align(s_rows[i], LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_center(s_rows[i]);
     }
 
-    s_mascot = ui_pixel_mascot_create(s_menu_scr, 101, 238);
+    s_mascot = ui_pixel_mascot_create(s_menu_scr, 101, 272);   // 第三行卡片下方
 
     menu_refresh();
     lv_screen_load(s_menu_scr);
@@ -120,6 +121,7 @@ void app_main(void) {
     s_ok[1] = (bsp_button_init(on_key, NULL) == ESP_OK);
     s_ok[2] = (bsp_audio_init() == ESP_OK);
     s_ok[3] = (bsp_battery_init() == ESP_OK);
+    s_ok[4] = true;                                   // Stopwatch 纯软件,无硬件依赖
 
     if (bsp_lvgl_lock(1000)) { enter_menu(); bsp_lvgl_unlock(); }
 
