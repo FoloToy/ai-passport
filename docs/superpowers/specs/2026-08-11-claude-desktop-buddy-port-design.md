@@ -2,7 +2,7 @@
 
 ## 目标
 
-将 Anthropic `claude-desktop-buddy` 的核心体验原生移植到 FoloToy-Card。固件基于 ESP-IDF 5.5.3 和现有 BSP，启动后直接进入 Claude Buddy，不再保留当前硬件演示菜单和 `demo_*` 业务逻辑。
+将 Anthropic `claude-desktop-buddy` 的核心体验原生移植到 FoloToy AI Passport。固件基于 ESP-IDF 5.5.3 和现有 BSP，启动后直接进入 Claude Buddy，不再保留当前硬件演示菜单和 `demo_*` 业务逻辑。
 
 移植采用分阶段交付：第一阶段完成安全 BLE 连接、Claude 状态与审批交互、单个 ASCII Buddy、设置与基础统计；第二阶段再加入完整角色集、GIF 角色包、文件系统和 BLE 文件推送。
 

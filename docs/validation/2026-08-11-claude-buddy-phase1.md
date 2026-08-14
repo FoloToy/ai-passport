@@ -2,11 +2,11 @@
 
 Date: 2026-08-11
 Repository: trae_card_bsp
-Target: ESP32-C3 / FoloToy-Card
+Target: ESP32-C3 / FoloToy AI Passport
 ESP-IDF: 5.5.3 (/home/cjiio/.espressif/v5.5.3/esp-idf)
 
 This record reports only checks actually performed in this environment. No
-FoloToy-Card or other usable serial device was attached, and Claude Desktop was
+FoloToy AI Passport or other usable serial device was attached, and Claude Desktop was
 not available. Hardware, pairing, live-state, and soak checks are NOT RUN.
 
 ## Summary
@@ -71,7 +71,7 @@ Firmware evidence:
 ~~~
 Set Target to: esp32c3
 Project build complete.
-FoloToy-Card.bin binary size 0xfefd0 bytes.
+FoloToy-AI-Passport.bin binary size 0xfefd0 bytes.
 Smallest app partition is 0x177000 bytes.
 0x78030 bytes (32%) free.
 ~~~
@@ -103,7 +103,7 @@ Both exited 0. idf.py size reported:
 Generated artifact sizes:
 
 ~~~
-build/FoloToy-Card.bin                    1,044,432 bytes (0xfefd0)
+build/FoloToy-AI-Passport.bin             1,044,432 bytes (0xfefd0)
 build/bootloader/bootloader.bin             21,024 bytes (0x5220)
 build/partition_table/partition-table.bin   3,072 bytes
 ~~~

@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the FoloToy-Card hardware demo with a secure, native ESP-IDF Claude Desktop Buddy that displays session state and lets the user approve or deny permission prompts.
+**Goal:** Replace the FoloToy AI Passport hardware demo with a secure, native ESP-IDF Claude Desktop Buddy that displays session state and lets the user approve or deny permission prompts.
 
 **Architecture:** Keep `components/bsp` unchanged and replace the demo application with focused C modules for pure state, JSON protocol, NVS settings, NimBLE NUS transport, ASCII character rendering, LVGL pages, and orchestration. BLE callbacks publish bounded events to the application task; only the LVGL task/lock holder mutates UI objects.
 
-**Tech Stack:** ESP-IDF 5.5.3, ESP32-C3 NimBLE, FreeRTOS queues/timers, cJSON, NVS, LVGL 9.5, existing FoloToy-Card BSP, host CTest tests.
+**Tech Stack:** ESP-IDF 5.5.3, ESP32-C3 NimBLE, FreeRTOS queues/timers, cJSON, NVS, LVGL 9.5, existing FoloToy AI Passport BSP, host CTest tests.
 
 ## Global Constraints
 
@@ -499,7 +499,7 @@ git commit -m "docs: replace BSP demo documentation with Claude Buddy"
 - Create: `docs/validation/2026-08-11-claude-buddy-phase1.md`
 
 **Interfaces:**
-- Consumes: complete phase-one firmware and a FoloToy-Card plus Claude Desktop in developer mode.
+- Consumes: complete phase-one firmware and a FoloToy AI Passport plus Claude Desktop in developer mode.
 - Produces: reproducible build/resource evidence and an explicit hardware result record; does not claim unperformed checks passed.
 
 - [ ] **Step 1: Run a clean host and firmware build**

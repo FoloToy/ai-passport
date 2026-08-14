@@ -145,4 +145,4 @@ Expected: all host tests PASS, ESP-IDF build and size PASS, diff check returns n
 
 - [ ] **Step 5: Generate the 0x0 image**
 
-Run esptool `merge_bin` with the bootloader at `0x0`, partition table at `0x8000`, and application at `0x10000`; output `build/FoloToy-Card-0x0.bin` and record SHA-256.
+Run esptool `merge_bin` with the bootloader at `0x0`, partition table at `0x8000`, and application at `0x10000`; output `build/FoloToy-AI-Passport-0x0.bin` and record SHA-256.

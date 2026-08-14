@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 
 This repository is an ESP-IDF 5.5.3 Claude Hardware Buddy firmware for the ESP32-C3
-FoloToy-Card. Keep the board support layer independent from the Buddy application:
+FoloToy AI Passport. Keep the board support layer independent from the Buddy application:
 
 - `components/bsp/include/`: public board APIs and the pin/configuration source of truth
   (`bsp_pins.h`).

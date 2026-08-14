@@ -1,6 +1,6 @@
-# FoloToy-Card Claude Buddy
+# FoloToy AI Passport Claude Buddy
 
-这是面向 ESP32-C3 FoloToy-Card 的 Claude Hardware Buddy 固件。设备使用现有
+这是面向 ESP32-C3 FoloToy AI Passport 的 Claude Hardware Buddy 固件。设备使用现有
 BSP、LVGL 和 ESP-IDF 原生 API，通过加密 BLE Nordic UART Service 与 Claude
 Desktop 通信，在屏幕上显示会话状态、近期消息和工具审批请求。
 
@@ -105,7 +105,7 @@ ctest --test-dir build-host --output-on-failure
 
 ## 板级验收清单
 
-请在真实 FoloToy-Card 和开启开发者模式的 Claude Desktop 上逐项记录 `PASS`、
+请在真实 FoloToy AI Passport 和开启开发者模式的 Claude Desktop 上逐项记录 `PASS`、
 `FAIL` 或 `NOT RUN`，不要把未执行的硬件项目当作通过：
 
 - [ ] ESP-IDF 5.5.3 全新配置、编译成功，且无项目源文件警告。
@@ -124,7 +124,7 @@ ctest --test-dir build-host --output-on-failure
 ## 项目结构
 
 ```text
-components/bsp/     FoloToy-Card 板级驱动和公开接口
+components/bsp/     FoloToy AI Passport 板级驱动和公开接口
 main/               Claude Buddy 应用、BLE、协议、状态、设置和 LVGL UI
 tests/              无硬件的协议、状态、BLE 和应用逻辑测试
 sdkconfig.defaults  ESP32-C3、LVGL 和应用默认配置
