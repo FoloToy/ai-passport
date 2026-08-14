@@ -60,7 +60,11 @@ esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user) {
             .min          = BTN_MV[i][0],
             .max          = BTN_MV[i][1],
         };
-        const button_config_t bc = { 0 };
+        // 游戏中的方向键长按是明确操作,650ms 兼顾可控性和响应速度；OK
+        // 长按仍保留默认 1500ms,避免误触全局“返回菜单”。
+        const button_config_t bc = {
+            .long_press_time = i == BSP_BTN_OK ? 0 : 650,
+        };
         esp_err_t e = iot_button_new_adc_device(&bc, &ac, &s_btn[i]);
         if (e != ESP_OK || !s_btn[i]) {
             ESP_LOGE(TAG, "按键 %d 创建失败 (%s) —— 检查 GPIO%d 的 ADC 配置与分压电阻",

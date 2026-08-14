@@ -10,6 +10,7 @@ FoloToy-Card 是一个基于 ESP32-C3 的卡片设备固件示例，使用 ESP-I
 - ES8311 音频播放与录音
 - CW2017 电量和电压读取
 - USB Serial/JTAG 日志输出
+- 三键俄罗斯方块（7-bag、幽灵落点、消行计分、等级加速和 RTTTL 游戏音效）
 
 ## 硬件
 
@@ -48,6 +49,7 @@ idf.py flash monitor
 - **Button**：显示按键事件及 ADC 电压
 - **Audio**：播放测试音或录音回放
 - **Battery**：显示当前电量和电池电压
+- **Tetris**：`UP` 左移、`DOWN` 右移、`OK` 旋转；长按 `DOWN` 硬降，长按 `UP` 暂停/继续；开局、按键、落地、消行和结束均有 RTTTL 音效
 
 ## 项目结构
 
@@ -73,3 +75,12 @@ idf.py build
 ```
 
 显示、音频、电池和实体按键功能需要在 FoloToy-Card 硬件上完成最终验证。
+
+俄罗斯方块纯状态机可在主机运行：
+
+```bash
+cc -std=c11 -Wall -Wextra -Werror -Imain \
+  tests/test_tetris_model.c main/tetris_model.c \
+  -o /tmp/test_tetris_model
+/tmp/test_tetris_model
+```

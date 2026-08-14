@@ -6,6 +6,9 @@ idf_component_register(
          "demo_button.c"
          "demo_audio.c"
          "demo_battery.c"
+         "demo_tetris.c"
+         "rtttl_player.c"
+         "tetris_model.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp
+    REQUIRES bsp esp_timer
 )

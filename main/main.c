@@ -22,8 +22,10 @@ static const demo_entry_t DEMOS[] = {
     { "Button",  demo_button_enter,  demo_button_exit,  demo_button_key  },
     { "Audio",   demo_audio_enter,   demo_audio_exit,   demo_audio_key   },
     { "Battery", demo_battery_enter, demo_battery_exit, demo_battery_key },
+    { "Tetris",  demo_tetris_enter,  demo_tetris_exit,  demo_tetris_key  },
 };
 #define DEMO_COUNT (sizeof(DEMOS) / sizeof(DEMOS[0]))
+#define TETRIS_DEMO_INDEX ((int)DEMO_COUNT - 1)
 
 // 各外设初始化结果:失败的项在菜单里标 [FAIL] 且不允许进入。
 static bool s_ok[DEMO_COUNT];
@@ -51,15 +53,16 @@ static void menu_build(void) {
 
     for (size_t i = 0; i < DEMO_COUNT; i++) {
         int x = 11 + (int)(i % 2) * 112;
-        int y = 58 + (int)(i / 2) * 86;
-        s_cards[i] = ui_pixel_panel_create(s_menu_scr, x, y, 102, 72, UI_PAPER);
+        int y = 54 + (int)(i / 2) * 66;
+        if (i == DEMO_COUNT - 1 && (DEMO_COUNT % 2) == 1) x = 67;
+        s_cards[i] = ui_pixel_panel_create(s_menu_scr, x, y, 102, 54, UI_PAPER);
         s_rows[i] = lv_label_create(s_cards[i]);
         lv_obj_set_style_text_font(s_rows[i], &lv_font_montserrat_20, 0);
         lv_obj_set_style_text_align(s_rows[i], LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_center(s_rows[i]);
     }
 
-    s_mascot = ui_pixel_mascot_create(s_menu_scr, 101, 238);
+    s_mascot = ui_pixel_mascot_create(s_menu_scr, 191, 252);
 
     menu_refresh();
     lv_screen_load(s_menu_scr);
@@ -73,6 +76,15 @@ static void enter_menu(void) {
 // 按键回调运行在 button 组件的任务里,操作 LVGL 必须加锁。
 static void on_key(bsp_btn_t btn, bsp_btn_ev_t ev, void *user) {
     (void)user;
+
+    // 游戏按下事件先进入无阻塞队列,由 LVGL 定时器下一帧处理。若在此等待
+    // LVGL 锁,按下事件可能超时丢失,最终退化到有双击判定延迟的 CLICK。
+    if (s_active == TETRIS_DEMO_INDEX &&
+        !(btn == BSP_BTN_OK && ev == BSP_BTN_LONG)) {
+        DEMOS[s_active].key(btn, ev);
+        return;
+    }
+
     if (!bsp_lvgl_lock(500)) return;
 
     if (s_active >= 0) {
@@ -120,9 +132,10 @@ void app_main(void) {
     s_ok[1] = (bsp_button_init(on_key, NULL) == ESP_OK);
     s_ok[2] = (bsp_audio_init() == ESP_OK);
     s_ok[3] = (bsp_battery_init() == ESP_OK);
+    s_ok[4] = s_ok[1];                              // Tetris 需要屏幕和按键
 
     if (bsp_lvgl_lock(1000)) { enter_menu(); bsp_lvgl_unlock(); }
 
-    ESP_LOGI(TAG, "就绪:Display=%d Button=%d Audio=%d Battery=%d",
-             s_ok[0], s_ok[1], s_ok[2], s_ok[3]);
+    ESP_LOGI(TAG, "就绪:Display=%d Button=%d Audio=%d Battery=%d Tetris=%d",
+             s_ok[0], s_ok[1], s_ok[2], s_ok[3], s_ok[4]);
 }
