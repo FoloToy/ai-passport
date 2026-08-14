@@ -1,100 +1,103 @@
 # FoloToy AI Passport
 
-FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，本仓库是这款 AI 硬件的开发基线。它不只展示“板子能运行什么”，还把 agent 开发应用所需的**硬件事实、稳定接口、资源边界、参考实现和验收方法**放在同一仓库中。
+English | [简体中文](README.zh_CN.md)
 
-这个仓库的组织方式是：
+FoloToy AI Passport is open wearable AI hardware designed for AI agents. This repository is the development baseline for the device. It goes beyond showing “what the board can run” by keeping the **hardware facts, stable interfaces, resource boundaries, reference implementations, and validation methods** that an agent needs to build applications in one place.
 
-- `main` 是最小但完整的可运行基线，也是当前硬件能力的可执行说明；
-- `components/bsp` 隔离板级差异，为应用提供稳定 API；
-- `demo/*` 分支展示从需求到成品的不同实现路径；
-- `AGENTS.md` 约束 agent 的仓库操作，`docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md` 提供完整硬件上下文和故障知识；
-- 构建结果与真机结果分开记录，禁止把“编译通过”描述成“硬件验证通过”。
+The repository is organized around the following principles:
 
-理想的使用方式是：把仓库和一句应用需求交给 agent。agent 先从这里识别能力与限制，再选择相关示例、实现、构建，并给出可在真机上执行的验收清单。
+- `main` is the smallest complete runnable baseline and an executable description of the current hardware capabilities.
+- `components/bsp` isolates board-level details and exposes stable APIs to applications.
+- `demo/*` branches show different paths from a product requirement to a working implementation.
+- `AGENTS.md` defines how an agent should work in the repository, while `docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md` contains the complete hardware context and troubleshooting knowledge.
+- Build results and physical-device results are reported separately. A successful build must never be presented as successful hardware validation.
 
-## 给 AI agent 的入口
+The intended workflow is simple: give an agent this repository and an application requirement. The agent identifies the available capabilities and constraints, selects relevant examples, implements and builds the application, and returns an acceptance checklist that can be executed on the physical device.
 
-开始开发前，按以下顺序建立上下文：
+## Entry point for AI agents
 
-1. 阅读 `AGENTS.md`、本 README 和 [`docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
-2. 执行 `git status --short --branch`，保留用户已有改动。
-3. 阅读需求会触及的 `components/bsp/include/*.h` 及其实现，不根据芯片或开发板的常见配置猜测本板行为。
-4. 用 `git branch -r --list 'origin/demo/*'` 查找接近需求的示例，只复用相关设计，不默认合并整个示例分支。
-5. 将需求拆成输入、输出、状态、并发任务、持久化、内存预算和失败降级，再决定修改 `main` 还是扩展 `components/bsp`。
-6. 完成最低构建检查和适用的逻辑测试；所有依赖屏幕、按键、音频、电池或时序的结论均保留真机验收项。
+Before starting development, establish context in this order:
 
-### 事实来源优先级
+1. Read `AGENTS.md`, this README, and [`docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+2. Run `git status --short --branch` and preserve all existing user changes.
+3. Read the affected `components/bsp/include/*.h` headers and their implementations. Do not infer board behavior from common chip or development-board configurations.
+4. Use `git branch -r --list 'origin/demo/*'` to find examples close to the requirement. Reuse only the relevant design patterns; do not merge an entire demo branch by default.
+5. Break the requirement into inputs, outputs, state, concurrent tasks, persistence, memory budget, and failure degradation before deciding whether to change `main` or extend `components/bsp`.
+6. Complete the minimum build check and all applicable logic tests. Keep explicit on-device acceptance items for every conclusion that depends on the display, buttons, audio, battery, or timing.
 
-发生冲突时，使用以下优先级：
+### Source-of-truth priority
+
+When information conflicts, use this priority order:
 
 ```text
-原理图 / PCB / 板卡版本 / 实机测量
+Schematic / PCB / board revision / physical measurement
     > components/bsp/include/bsp_pins.h
-    > BSP 公开头文件与实现
+    > BSP public headers and implementations
     > docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md
-    > README 与示例应用
+    > README and example applications
 ```
 
-当前仓库尚未包含原理图和 PCB 源文件。遇到板卡版本、接线、极性、寄存器或未使用 GPIO 等未知信息时，agent 应明确报告未知项并请求证据，不能用其他 ESP32-C3 开发板的参数补全答案。
+The repository does not currently include schematic or PCB source files. When the board revision, wiring, polarity, register behavior, or unused GPIOs are unknown, an agent must report the unknown and request evidence instead of filling the gap with parameters from another ESP32-C3 board.
 
-## 硬件能力契约
+## Hardware capability contract
 
-下表描述的是当前 `main` 已提供的应用能力，而不是芯片数据手册中所有可能的能力。
+The table below describes the application capabilities implemented by the current `main` branch. It is not a list of everything that might be possible according to the chip datasheet.
 
-| 能力 | 已确认实现 | 应用接口 | 必须遵守的边界 |
+| Capability | Confirmed implementation | Application interface | Boundaries that must be respected |
 | --- | --- | --- | --- |
-| 显示 | ST7789P3，240 × 320，竖屏 RGB565，SPI2 40 MHz；LEDC 背光 | `bsp_display_*`、`bsp_lvgl_*` | ESP32-C3 无 PSRAM；当前为小型单 DMA 缓冲；没有 LCD MISO、触摸或已知 TE 接口 |
-| 输入 | `UP` / `DOWN` / `OK` 三键，共用 GPIO0 的 ADC 电阻分压 | `bsp_button_init()`、`bsp_button_read_mv()` | 回调运行在 button 组件任务中，不能阻塞；不能再创建第二个 ADC1 unit |
-| 音频 | ES8311，I2S0 全双工 PCM，可播放和麦克风录音 | `bsp_audio_*` | PCM 读写为阻塞调用，应放工作任务；格式切换必须保留 BSP 内的 close/open 流程 |
-| 电池 | CW2017 的 SOC 与电压读取 | `bsp_battery_*` | 是可缺省能力；读数精度取决于电芯与 profile，不能等同于已标定结果 |
-| 共享总线 | ES8311 与 CW2017 共用 I2C0 | `bsp_i2c_*` | 所有设备复用 BSP 持有的总线；不能为扫描或新设备再创建同端口总线 |
-| 日志与烧录 | ESP32-C3 原生 USB Serial/JTAG | ESP-IDF console | GPIO18/19 保留给 USB；UART0 默认 TX GPIO21 与背光冲突 |
+| Display | ST7789P3, 240 × 320 portrait RGB565, SPI2 at 40 MHz; LEDC backlight | `bsp_display_*`, `bsp_lvgl_*` | The ESP32-C3 has no PSRAM; the current design uses a small single DMA buffer; no LCD MISO, touch, or known TE interface |
+| Input | `UP`, `DOWN`, and `OK` share an ADC resistor ladder on GPIO0 | `bsp_button_init()`, `bsp_button_read_mv()` | Callbacks run in the button component task and must not block; do not create a second ADC1 unit |
+| Audio | ES8311 with full-duplex PCM over I2S0, supporting playback and microphone capture | `bsp_audio_*` | PCM reads and writes block and belong in a worker task; format changes must retain the BSP close/open sequence |
+| Battery | CW2017 state-of-charge and voltage readings | `bsp_battery_*` | This capability is optional at runtime; accuracy depends on the cell and battery profile and is not equivalent to a calibrated result |
+| Shared bus | ES8311 and CW2017 share I2C0 | `bsp_i2c_*` | Every device must reuse the bus owned by the BSP; do not create another bus on the same port for scanning or a new device |
+| Logging and flashing | Native ESP32-C3 USB Serial/JTAG | ESP-IDF console | GPIO18/19 are reserved for USB; the default UART0 TX on GPIO21 conflicts with the backlight |
 
-所有引脚、地址、面板参数和按键电压窗口只在 [`components/bsp/include/bsp_pins.h`](components/bsp/include/bsp_pins.h) 定义。应用代码不得复制这些常量。完整引脚表、面板初始化、ADC 阈值、I2C 地址规则、音频时钟和内存说明见 [AI 硬件开发指南](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
+All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
 
-应用也可以使用 ESP-IDF 提供的定时器、FreeRTOS 任务和内部 Flash/NVS；番茄钟分支提供了 NVS 示例。ESP32-C3 芯片支持 2.4 GHz Wi-Fi 和 Bluetooth LE，但当前 BSP 没有为无线能力提供封装，`main` 也不初始化无线栈；`demo/claude-buddy-port` 只能作为 BLE 应用架构参考，不能替代对当前板卡天线、射频表现、功耗和共存行为的实测。所有 FoloToy AI Passport 均配备 8 MB Flash，默认固件配置也以 8 MB 为准。
+Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. The ESP32-C3 supports 2.4 GHz Wi-Fi and Bluetooth LE, but the current BSP does not wrap either radio and `main` does not initialize a wireless stack. `demo/claude-buddy-port` is a BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior. Every FoloToy AI Passport has 8 MB of Flash, and the default firmware configuration targets 8 MB.
 
-### 不属于当前能力契约的事项
+### Capabilities outside the current contract
 
-仓库目前没有足够证据保证以下能力：触摸、屏幕读回、IMU、外部存储、充电控制、USB 插拔检测、可控功放使能、深度睡眠唤醒、任意“空闲 GPIO”、电池精确容量或量产级电源指标。ESP32-C3 芯片具备某项功能，不代表这块板已经接出、供电正确或经过验证。
+The repository does not currently provide enough evidence to guarantee touch input, display readback, an IMU, external storage, charging control, USB insertion detection, controllable power-amplifier enable, deep-sleep wakeup, arbitrary “free GPIOs,” exact battery capacity, or production-grade power specifications. A capability being present in the ESP32-C3 silicon does not mean that it is connected, powered correctly, or validated on this board.
 
-需要这些能力时，先补充原理图、板卡修订号、器件资料或实测结果，再扩展 BSP 和验收项。
+Requirements involving these capabilities must begin with a schematic, board revision, component documentation, or physical measurements. Only then should the BSP and its acceptance criteria be extended.
 
-## 用一句需求开始开发
+## Start development with one requirement
 
-简单需求可以直接这样交给 agent：
+A simple request can be given directly to an agent:
 
 ```text
-请基于 main 分支为 FoloToy AI Passport 开发一个离线习惯打卡应用。
-使用三个实体按键和 240×320 屏幕，记录保存在掉电不丢失的存储中。
-遵守 AGENTS.md 和 AI_HARDWARE_DEVELOPMENT_GUIDE.md；先查找相关 demo 分支，
-保持硬件逻辑在 components/bsp、应用逻辑在 main，完成可运行实现与测试，
-最后分别报告构建结果、未执行的真机项目和逐项验收方法。
+On the main branch, build an offline habit-tracking application for FoloToy AI Passport.
+Use the three physical buttons and the 240×320 display, and preserve records across power loss.
+Follow AGENTS.md and AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches first,
+keep hardware logic in components/bsp and application logic in main, deliver a runnable
+implementation with tests, and report the build result, unexecuted device checks, and exact
+on-device acceptance steps separately.
 ```
 
-需求越具体，agent 越容易一次实现正确。建议说明：
+The more specific the requirement, the more likely the agent is to implement it correctly in one pass. Useful details include:
 
-- 用户流程：每个页面显示什么，三个按键的短按、双击、长按分别做什么；
-- 状态与数据：是否计时、断电保存、联网、录音或与电脑通信；
-- 体验目标：字体、颜色、动画、声音、响应时间和异常状态；
-- 限制条件：是否允许替换主菜单、增加依赖、使用 Flash 或改变默认交互；
-- 验收标准：哪些行为必须自动测试，哪些必须在真实硬件观察。
+- User flow: what each page displays and what short press, double press, and long press do for each button.
+- State and data: whether the application needs timing, persistence across power loss, networking, recording, or communication with a computer.
+- Experience goals: fonts, colors, animation, sound, response time, and error states.
+- Constraints: whether the main menu may be replaced, dependencies added, Flash used, or default interactions changed.
+- Acceptance criteria: which behaviors require automated tests and which must be observed on real hardware.
 
-若需求没有给出所有细节，agent 可以在不改变产品方向的范围内采用保守默认值，但应在交付中列出这些假设。涉及新接线、电源安全、硬件版本或不可恢复数据格式的决定必须先确认。
+When details are omitted, an agent may choose conservative defaults that do not change the product direction, but it must list those assumptions in the delivery. Decisions involving new wiring, electrical safety, board revisions, or irreversible data formats require confirmation first.
 
-## 示例分支是设计案例，不是功能堆叠
+## Demo branches are design cases, not a feature pile
 
-每个 `demo/*` 分支都从基线演化出一个独立应用。它们的价值是展示具体问题的实现方式；新应用通常应从 `main` 建分支，按需参考，而不是把多个 demo 整体合并。
+Each `demo/*` branch evolves the baseline into an independent application. The branches demonstrate how specific problems were solved. New applications should normally branch from `main` and consult relevant examples instead of merging multiple demos wholesale.
 
-| 分支 | 展示的应用 | 值得复用的模式 |
+| Branch | Application | Patterns worth reusing |
 | --- | --- | --- |
-| `demo/stopwatch` | 秒表 | 最小计时应用、纯逻辑与 LVGL 分离、主机逻辑测试 |
-| `demo/cat-themed-pomodoro-timer` | 猫咪养成番茄钟 | 单调时钟、暂停/恢复、NVS 持久化、较完整的 PRD 与状态模型 |
-| `demo/rock-paper-scissors` | 石头剪刀布 | RGB565 图片资产、素材生成脚本、Flash 资源权衡 |
-| `demo/tetris-game` | 三键俄罗斯方块 | 实时游戏循环、低延迟 `PRESS` 输入、局部刷新、纯游戏模型、音效与麦克风交互 |
-| `demo/claude-buddy-port` | 桌面 AI 硬件伴侣 | 用完整应用替换 demo 菜单、加密 BLE、协议解析、状态归约、任务通信和较完整的主机测试 |
+| `demo/stopwatch` | Stopwatch | Minimal timer application, separation of pure logic from LVGL, host-side logic tests |
+| `demo/cat-themed-pomodoro-timer` | Cat-themed Pomodoro timer | Monotonic time, pause/resume, NVS persistence, a detailed PRD, and a state model |
+| `demo/rock-paper-scissors` | Rock paper scissors | RGB565 image assets, asset-generation scripts, and Flash resource tradeoffs |
+| `demo/tetris-game` | Three-button Tetris | Real-time game loop, low-latency `PRESS` input, partial refresh, a pure game model, audio, and microphone interaction |
+| `demo/claude-buddy-port` | Desktop AI hardware companion | Replacing the demo menu with a complete application, encrypted BLE, protocol parsing, state reduction, task communication, and extensive host tests |
 
-查看示例而不切换当前工作区：
+Inspect an example without switching the current working tree:
 
 ```bash
 git branch -r --list 'origin/demo/*'
@@ -102,58 +105,58 @@ git diff main...origin/demo/tetris-game -- main components tests
 git show origin/demo/tetris-game:main/demo_tetris.c
 ```
 
-开始新应用：
+Start a new application:
 
 ```bash
 git switch main
 git switch -c feature/my-passport-app
 ```
 
-示例分支之间可能改变了同一菜单、配置或驱动。agent 应先理解差异，再提取状态模型、资源流水线或并发模式；不能因为代码曾出现在示例分支，就把它当成当前 `main` 的 BSP 保证。
+Example branches may change the same menu, configuration, or driver in incompatible ways. An agent must understand the differences before extracting a state model, asset pipeline, or concurrency pattern. Code appearing in an example branch is not automatically part of the current `main` BSP contract.
 
-## 应用与 BSP 的边界
+## Application and BSP boundary
 
 ```text
-自然语言需求
-  └─ main/                         页面、状态机、动画、业务任务、应用资源
-      └─ components/bsp/include/  稳定的板级 API
-          └─ components/bsp/src/  GPIO、总线、器件和驱动细节
-              └─ bsp_pins.h       引脚与硬件参数的单一事实来源
+Natural-language requirement
+  └─ main/                         Pages, state machines, animation, app tasks, assets
+      └─ components/bsp/include/  Stable board-level APIs
+          └─ components/bsp/src/  GPIO, buses, devices, and driver details
+              └─ bsp_pins.h       Single source of truth for pins and hardware parameters
 ```
 
-新增普通页面时，创建 `main/demo_<feature>.c` 并实现 `enter`、`exit`、`key` 接口，然后同步修改：
+To add a regular page, create `main/demo_<feature>.c` and implement the `enter`, `exit`, and `key` interface, then update:
 
-- `main/demo.h` 中的声明；
-- `main/CMakeLists.txt` 中的源文件；
-- `main/main.c` 的 `DEMOS[]` 注册；
-- 若有新的可选外设，菜单的初始化状态与失败降级。
+- Declarations in `main/demo.h`.
+- The source list in `main/CMakeLists.txt`.
+- The `DEMOS[]` registration in `main/main.c`.
+- Menu initialization status and failure degradation if a new optional peripheral is involved.
 
-只有多个应用都会使用的硬件能力才进入 `components/bsp`。BSP API 需要说明阻塞性、线程上下文、内存所有权、失败值和初始化顺序；引脚或 I2C 地址只能加入 `bsp_pins.h`。
+Only hardware capabilities shared by multiple applications belong in `components/bsp`. A BSP API must document blocking behavior, thread context, memory ownership, failure values, and initialization order. Pins and I2C addresses belong only in `bsp_pins.h`.
 
-### 运行时不可破坏的规则
+### Runtime invariants
 
-- LVGL 不是线程安全的；非 LVGL 上下文操作 `lv_*` 对象必须持有 `bsp_lvgl_lock()`。
-- 按键回调只派发轻量事件；录音、播放、存储和其他慢操作放到工作任务。
-- 页面退出时先停止可能访问 UI 的任务或定时器，再删除 screen 并清空对象指针。
-- 全局交互默认是菜单中 `UP`/`DOWN` 导航、`OK` 单击进入、页面中 `OK` 长按返回；改动时要明确说明。
-- 新图片、字体、网络栈、音频缓存、LVGL buffer 或任务栈都要评估内部 RAM；总空闲堆足够不代表存在足够大的连续内存块。
-- 可测试的状态机、协议、计时和布局计算应与 ESP-IDF/LVGL 分离，优先加入主机逻辑测试。
+- LVGL is not thread-safe. Code outside the LVGL context must hold `bsp_lvgl_lock()` while accessing `lv_*` objects.
+- Button callbacks only dispatch lightweight events. Recording, playback, storage, and other slow operations belong in worker tasks.
+- When leaving a page, stop every task or timer that may access its UI before deleting the screen and clearing object pointers.
+- The default global interaction is `UP`/`DOWN` navigation in the menu, short `OK` to enter, and long `OK` to return from a page. Any change must be explicit.
+- New images, fonts, network stacks, audio buffers, LVGL buffers, and task stacks must be evaluated against internal RAM. Sufficient total free heap does not guarantee a sufficiently large contiguous block.
+- Testable state machines, protocols, timing, and layout calculations should be separated from ESP-IDF/LVGL and covered by host-side logic tests.
 
-## 构建与运行基线
+## Build and run baseline
 
-项目使用 ESP-IDF 5.5.x，已知环境为 5.5.3：
+The project uses ESP-IDF 5.5.x; the known development environment is 5.5.3:
 
 ```bash
-get_idf553                    # 维护者本机快捷命令
-# 或 source "$HOME/esp/esp-idf-v5.5.3/export.sh"（示例安装路径）
-idf.py set-target esp32c3     # 新 checkout 或曾配置其他目标时执行
+get_idf553                    # Maintainer-local helper
+# Or source "$HOME/esp/esp-idf-v5.5.3/export.sh" (example installation path)
+idf.py set-target esp32c3     # Run for a fresh checkout or after using another target
 idf.py build
 idf.py flash monitor
 ```
 
-首次构建会通过 ESP-IDF Component Manager 获取 LVGL、`esp_lvgl_port`、`button` 和 `esp_codec_dev` 等依赖。不要直接修改生成的 `managed_components/`。配置陈旧时可以使用 `idf.py fullclean` 后重新配置，但不要用它清理用户源码改动。
+The first build uses ESP-IDF Component Manager to fetch LVGL, `esp_lvgl_port`, `button`, `esp_codec_dev`, and other dependencies. Do not edit the generated `managed_components/` directory. If configuration state is stale, use `idf.py fullclean` and configure again, but never use it to clean user source changes.
 
-当前基线的纯逻辑测试可独立运行：
+The current baseline includes a pure-logic test that can run independently:
 
 ```bash
 cc -std=c11 -Wall -Wextra -Werror -Imain \
@@ -162,38 +165,38 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
-不同示例分支可能提供自己的 host test 命令，应以该分支 README 为准。
+Different example branches may provide their own host-test commands; follow the README on that branch.
 
-## 验收与交付格式
+## Acceptance and delivery format
 
-`idf.py build` 是最低自动检查，不是硬件验收。涉及实体外设的改动，至少在 FoloToy AI Passport 上记录：
+`idf.py build` is the minimum automated check, not hardware validation. For changes involving physical peripherals, record at least the following on a FoloToy AI Passport:
 
-- USB Serial/JTAG 有稳定启动日志，无重启循环、assert 或 watchdog；
-- 显示方向、颜色、边缘、刷新与背光正确；
-- `UP` / `DOWN` / `OK` 的目标事件和长按返回正确；
-- 音频采样速度、播放、非零录音和页面退出正确；
-- 电池读数合理，CW2017 缺失时应用能安全降级；
-- 重复进出页面和并发操作后没有任务、对象或堆持续泄漏。
+- USB Serial/JTAG produces stable startup logs with no reboot loop, assertion, or watchdog reset.
+- Display orientation, colors, edges, refresh behavior, and backlight are correct.
+- `UP`, `DOWN`, and `OK` produce the intended events, and long `OK` returns correctly.
+- Audio sample rate, playback, non-zero recording, and page exit behavior are correct.
+- Battery readings are plausible, and the application degrades safely when the CW2017 is absent.
+- Repeated page transitions and concurrent operations do not continuously leak tasks, objects, or heap.
 
-agent 的最终交付应明确区分：
+An agent's final delivery must distinguish these outcomes:
 
 ```text
 Build: PASS / FAIL / NOT RUN
 Host tests: PASS / FAIL / NOT RUN
 Device tests: PASS / FAIL / NOT RUN
-Unverified: 仍需板卡、仪器或用户确认的事项
+Unverified: items that still require a board, instrument, or user confirmation
 ```
 
-按引脚、LCD、ADC、codec、I2C、DMA 等修改类型展开的验收矩阵和故障速查表见 [AI 硬件开发指南](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
+See the [AI Hardware Development Guide](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the acceptance matrix by change type—including pins, LCD, ADC, codec, I2C, and DMA—and the troubleshooting reference.
 
-## 项目结构
+## Project structure
 
 ```text
-components/bsp/include/  BSP 公开 API 与 bsp_pins.h 硬件事实
-components/bsp/src/      显示、按键、音频、电池、共享 I2C 实现
-main/                    最小菜单、LVGL UI 与独立硬件演示页
-tests/                   可脱离硬件运行的轻量逻辑测试源
-docs/                    agent 硬件开发指南与扩展文档
-sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
-AGENTS.md                agent 在本仓库的编码、验证和提交规则
+components/bsp/include/  Public BSP APIs and bsp_pins.h hardware facts
+components/bsp/src/      Display, button, audio, battery, and shared-I2C implementations
+main/                    Minimal menu, LVGL UI, and independent hardware demo pages
+tests/                   Lightweight logic tests that can run without hardware
+docs/                    Agent hardware development guide and extension documentation
+sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
+AGENTS.md                Coding, validation, and contribution rules for agents
 ```
