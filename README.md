@@ -1,6 +1,6 @@
-# FoloToy-Card
+# FoloToy AI Passport
 
-FoloToy-Card 是一个基于 ESP32-C3 的卡片设备固件示例，使用 ESP-IDF 和 LVGL 构建。项目提供像素风交互界面，并包含显示、按键、音频和电池管理等板级功能的参考实现。
+FoloToy AI Passport 是一个基于 ESP32-C3 的卡片设备固件示例，使用 ESP-IDF 和 LVGL 构建。项目提供像素风交互界面，并包含显示、按键、音频和电池管理等板级功能的参考实现。
 
 ## 功能
 
@@ -74,7 +74,7 @@ get_idf553
 idf.py build
 ```
 
-显示、音频、电池和实体按键功能需要在 FoloToy-Card 硬件上完成最终验证。
+显示、音频、电池和实体按键功能需要在 FoloToy AI Passport 硬件上完成最终验证。
 
 俄罗斯方块纯状态机可在主机运行：
 
