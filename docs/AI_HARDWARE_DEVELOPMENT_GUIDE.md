@@ -20,7 +20,7 @@ AI 应先完成以下检查：
 
 | 子系统 | 器件/方式 | 总线或资源 | 当前状态 |
 | --- | --- | --- | --- |
-| MCU | ESP32-C3 | 4 MB 兼容 Flash 配置 | 已实现 |
+| MCU | ESP32-C3 | 8 MB Flash | 已实现 |
 | 显示 | ST7789P3，240 × 320，RGB565 | SPI2，40 MHz，mode 0 | 已实现 |
 | 背光 | LCD LED 背光 | GPIO21，LEDC 5 kHz/10 bit | 已实现 |
 | 按键 | UP/DOWN/OK 三键电阻分压 | GPIO0 / ADC1_CH0 | 已实现 |
@@ -187,7 +187,7 @@ SOC 准确度取决于电芯与 profile 的匹配程度。本驱动给出的是�
 
 ## 10. Flash、控制台和资源预算
 
-`sdkconfig.defaults` 固定目标为 ESP32-C3，并使用 4 MB Flash 镜像配置以兼容已知 4 MB/8 MB 批次；烧录时允许按探测容量更新镜像头。不要仅因为手头样机为 8 MB 就提高默认镜像容量，否则 4 MB 板可能启动失败。
+FoloToy AI Passport 的所有硬件批次均使用 8 MB Flash，`sdkconfig.defaults` 因此固定使用 8 MB Flash 镜像配置；烧录时仍允许按实际探测容量更新镜像头。若实机探测结果不是 8 MB，应视为硬件、料号或连接异常并先确认，不能为了让未知板卡启动而把项目默认值降为 4 MB。
 
 控制台固定为 USB Serial/JTAG，不使用 UART0 默认输出，因为其 TX GPIO21 与背光冲突。任何日志接口修改都必须同时检查引脚占用。
 
@@ -298,7 +298,7 @@ idf.py build
 grep -E 'IDF_TARGET|ESP_CONSOLE_USB_SERIAL_JTAG|SPIRAM|FLASHSIZE' sdkconfig
 ```
 
-预期目标为 ESP32-C3、控制台为 USB Serial/JTAG、Flash 默认兼容 4 MB，并且不启用 PSRAM。`sdkconfig.defaults` 只影响新生成配置；已有 `sdkconfig` 不会自动完全跟随 defaults。defaults 变化后应检查配置差异，必要时备份有用选项后执行 `idf.py fullclean` 并重新配置。
+预期目标为 ESP32-C3、控制台为 USB Serial/JTAG、Flash 为 8 MB，并且不启用 PSRAM。`sdkconfig.defaults` 只影响新生成配置；已有 `sdkconfig` 不会自动完全跟随 defaults。defaults 变化后应检查配置差异，必要时备份有用选项后执行 `idf.py fullclean` 并重新配置。
 
 ### 12.4 连接、烧录与监视
 

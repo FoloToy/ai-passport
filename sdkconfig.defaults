@@ -3,11 +3,9 @@ CONFIG_IDF_TARGET="esp32c3"
 # 注:ESP32-C3 无 PSRAM,故不设 CONFIG_SPIRAM。
 
 # --- Flash ---
-# 取 4MB:镜像头里的 flash 大小若【大于】芯片实际容量,启动时 esp_flash_init_default_chip
-# 探测失败会 assert 进而无限重启;反之(头 ≤ 实际)正常。开源硬件用户手上可能是 4MB 或
-# 8MB 批次,取 4MB 则同一份产物两种板子都能启动。
-CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
-# 烧录时按实际探测容量回写镜像头,进一步保证兼容。
+# FoloToy AI Passport 的所有硬件批次均使用 8MB Flash。
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+# 烧录时按实际探测容量回写镜像头。
 CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE=y
 
 # --- 控制台:USB-Serial-JTAG(C3 原生 USB,GPIO18/19)---
