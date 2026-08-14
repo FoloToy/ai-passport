@@ -1,9 +1,11 @@
 #include "demo.h"
 
+#include "bsp_audio.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "freertos/task.h"
 #include "lvgl.h"
 #include "rtttl_player.h"
 #include "tetris_model.h"
@@ -21,6 +23,22 @@
 #define BOARD_CANVAS_H (TETRIS_BOARD_HEIGHT * CELL_PITCH)
 #define NEXT_CANVAS_W  (4 * CELL_PITCH)
 #define NEXT_CANVAS_H  (4 * CELL_PITCH)
+#define BURST_CANVAS_W  64
+#define BURST_CANVAS_H  64
+#define BURST_PIXEL     4
+
+#define MIC_SAMPLE_RATE        16000
+#define MIC_FRAME_SAMPLES      256
+#define MIC_CALIBRATION_FRAMES 32
+#define MIC_REARM_FRAMES       12
+#define MIC_COOLDOWN_MS        900
+#define MIC_SPEAKER_GUARD_MS   180
+#define MIC_BUTTON_GUARD_MS    250
+#define MIC_NOISE_FLOOR        180
+#define MIC_MIN_AVG_LEVEL      650
+#define MIC_MIN_PEAK_LEVEL     3000
+#define MIC_TASK_STACK_BYTES   4096
+#define BURST_VISIBLE_MS       260
 
 static const char *TAG = "tetris";
 static const char *SFX_START =
@@ -42,6 +60,7 @@ static const uint32_t PIECE_COLORS[] = {
 typedef struct {
     bsp_btn_t btn;
     bsp_btn_ev_t ev;
+    bool mic_drop;
 } tetris_input_t;
 
 typedef struct {
@@ -55,6 +74,7 @@ typedef struct {
 
 LV_DRAW_BUF_DEFINE_STATIC(board_buf, BOARD_CANVAS_W, BOARD_CANVAS_H, LV_COLOR_FORMAT_I4);
 LV_DRAW_BUF_DEFINE_STATIC(next_buf, NEXT_CANVAS_W, NEXT_CANVAS_H, LV_COLOR_FORMAT_I4);
+LV_DRAW_BUF_DEFINE_STATIC(burst_buf, BURST_CANVAS_W, BURST_CANVAS_H, LV_COLOR_FORMAT_I4);
 
 static tetris_model_t s_model;
 static lv_obj_t *s_scr;
@@ -63,6 +83,7 @@ static lv_obj_t *s_next_canvas;
 static lv_obj_t *s_stats_label;
 static lv_obj_t *s_status_label;
 static lv_obj_t *s_input_label;
+static lv_obj_t *s_burst_canvas;
 static lv_timer_t *s_timer;
 static QueueHandle_t s_input_queue;
 static uint64_t s_last_drop_ms;
@@ -70,9 +91,14 @@ static uint64_t s_last_press_ms[3];
 static bool s_press_seen[3];
 static tetris_visual_t s_visual;
 static bool s_up_press_shifted;
-static bool s_down_press_shifted;
+static TaskHandle_t s_mic_task;
+static volatile bool s_mic_active;
+static volatile bool s_mic_idle = true;
+static volatile uint32_t s_mic_ignore_until_ms;
+static uint64_t s_burst_until_ms;
 
 static void handle_key(bsp_btn_t btn, bsp_btn_ev_t ev);
+static void handle_mic_drop(void);
 
 static void play_event_sound(tetris_event_t event) {
     const char *song = NULL;
@@ -86,6 +112,132 @@ static void play_event_sound(tetris_event_t event) {
 
 static uint64_t now_ms(void) {
     return (uint64_t)esp_timer_get_time() / 1000ULL;
+}
+
+static bool before_deadline(uint32_t time_ms, uint32_t deadline_ms) {
+    return (int32_t)(time_ms - deadline_ms) < 0;
+}
+
+static uint32_t max_u32(uint32_t a, uint32_t b) {
+    return a > b ? a : b;
+}
+
+static void mic_detector_task(void *arg) {
+    (void)arg;
+    int16_t samples[MIC_FRAME_SAMPLES];
+    uint32_t noise_level = MIC_NOISE_FLOOR;
+    uint32_t calibration_frames = 0;
+    uint32_t quiet_frames = 0;
+    uint32_t cooldown_until_ms = 0;
+    uint32_t speaker_guard_until_ms = 0;
+    bool armed = true;
+    bool was_active = false;
+
+    for (;;) {
+        if (!s_mic_active) {
+            s_mic_idle = true;
+            was_active = false;
+            vTaskDelay(pdMS_TO_TICKS(20));
+            continue;
+        }
+        if (!was_active) {
+            noise_level = MIC_NOISE_FLOOR;
+            calibration_frames = 0;
+            quiet_frames = 0;
+            cooldown_until_ms = 0;
+            speaker_guard_until_ms = 0;
+            armed = true;
+            was_active = true;
+        }
+
+        s_mic_idle = false;
+        if (bsp_audio_read(samples, sizeof(samples)) != ESP_OK) {
+            vTaskDelay(pdMS_TO_TICKS(20));
+            continue;
+        }
+        if (!s_mic_active) continue;
+
+        uint64_t absolute_sum = 0;
+        uint32_t peak = 0;
+        for (size_t i = 0; i < MIC_FRAME_SAMPLES; i++) {
+            int32_t sample = samples[i];
+            uint32_t absolute = (uint32_t)(sample < 0 ? -sample : sample);
+            absolute_sum += absolute;
+            if (absolute > peak) peak = absolute;
+        }
+        uint32_t level = (uint32_t)(absolute_sum / MIC_FRAME_SAMPLES);
+        uint32_t time_ms = (uint32_t)now_ms();
+
+        if (rtttl_player_is_playing()) {
+            speaker_guard_until_ms = time_ms + MIC_SPEAKER_GUARD_MS;
+            continue;
+        }
+        if (before_deadline(time_ms, speaker_guard_until_ms) ||
+            before_deadline(time_ms, s_mic_ignore_until_ms)) {
+            continue;
+        }
+
+        if (calibration_frames < MIC_CALIBRATION_FRAMES) {
+            noise_level = (noise_level * calibration_frames + level) /
+                          (calibration_frames + 1U);
+            calibration_frames++;
+            if (calibration_frames == MIC_CALIBRATION_FRAMES) {
+                ESP_LOGI(TAG, "mic ready: noise=%lu", (unsigned long)noise_level);
+            }
+            continue;
+        }
+
+        uint32_t trigger_level = max_u32(noise_level * 4U, MIC_MIN_AVG_LEVEL);
+        uint32_t trigger_peak = max_u32(noise_level * 9U, MIC_MIN_PEAK_LEVEL);
+        uint32_t quiet_level = max_u32(noise_level * 2U, MIC_MIN_AVG_LEVEL / 2U);
+
+        if (level < noise_level * 2U) {
+            noise_level = (noise_level * 31U + level) / 32U;
+            if (noise_level < MIC_NOISE_FLOOR) noise_level = MIC_NOISE_FLOOR;
+        }
+
+        if (armed && !before_deadline(time_ms, cooldown_until_ms) &&
+            level >= trigger_level && peak >= trigger_peak) {
+            tetris_input_t input = { .mic_drop = true };
+            if (s_input_queue && xQueueSend(s_input_queue, &input, 0) == pdTRUE) {
+                ESP_LOGI(TAG, "mic drop: level=%lu peak=%lu noise=%lu",
+                         (unsigned long)level, (unsigned long)peak,
+                         (unsigned long)noise_level);
+                ESP_LOGD(TAG, "mic task stack remaining=%lu",
+                         (unsigned long)uxTaskGetStackHighWaterMark(NULL));
+            }
+            armed = false;
+            quiet_frames = 0;
+            cooldown_until_ms = time_ms + MIC_COOLDOWN_MS;
+        } else if (!armed) {
+            quiet_frames = level <= quiet_level ? quiet_frames + 1U : 0U;
+            if (quiet_frames >= MIC_REARM_FRAMES &&
+                !before_deadline(time_ms, cooldown_until_ms)) {
+                armed = true;
+                quiet_frames = 0;
+            }
+        }
+    }
+}
+
+static void mic_detector_start(void) {
+    if (!s_mic_task &&
+        xTaskCreate(mic_detector_task, "tetris_mic", MIC_TASK_STACK_BYTES, NULL, 4,
+                    &s_mic_task) != pdPASS) {
+        s_mic_task = NULL;
+        ESP_LOGE(TAG, "microphone detector allocation failed");
+        return;
+    }
+    s_mic_ignore_until_ms = (uint32_t)now_ms() + MIC_SPEAKER_GUARD_MS;
+    s_mic_active = true;
+}
+
+static void mic_detector_stop(void) {
+    s_mic_active = false;
+    for (int i = 0; i < 50 && !s_mic_idle; i++) {
+        vTaskDelay(pdMS_TO_TICKS(1));
+    }
+    if (!s_mic_idle) ESP_LOGW(TAG, "microphone detector stop timed out");
 }
 
 static lv_obj_t *label_create(lv_obj_t *parent, const lv_font_t *font,
@@ -124,6 +276,49 @@ static void canvas_px(lv_obj_t *canvas, int x, int y, uint8_t color) {
     if (!data) return;
     uint8_t shift = (uint8_t)(4 - 4 * (x & 1));
     *data = (uint8_t)((*data & ~(0x0FU << shift)) | ((color & 0x0FU) << shift));
+}
+
+static void render_burst(void) {
+    static const char *const sprite[] = {
+        "0001000000100000",
+        "0000100001000000",
+        "0010010010000100",
+        "0000011110001000",
+        "1000123321000001",
+        "0101234432100010",
+        "0012344443210100",
+        "0001234432101000",
+        "1112334433211111",
+        "0001234432101000",
+        "0012344443210100",
+        "0101234432100010",
+        "1000123321000001",
+        "0000011110001000",
+        "0010010010000100",
+        "0100100001001000",
+    };
+
+    lv_canvas_fill_bg(s_burst_canvas, lv_color_hex(0), LV_OPA_TRANSP);
+    for (int sy = 0; sy < 16; sy++) {
+        for (int sx = 0; sx < 16; sx++) {
+            uint8_t color = (uint8_t)(sprite[sy][sx] - '0');
+            if (!color) continue;
+            for (int py = 0; py < BURST_PIXEL; py++) {
+                for (int px = 0; px < BURST_PIXEL; px++) {
+                    canvas_px(s_burst_canvas, sx * BURST_PIXEL + px,
+                              sy * BURST_PIXEL + py, color);
+                }
+            }
+        }
+    }
+    lv_obj_invalidate(s_burst_canvas);
+}
+
+static void show_voice_burst(void) {
+    if (!s_burst_canvas) return;
+    s_burst_until_ms = now_ms() + BURST_VISIBLE_MS;
+    lv_obj_remove_flag(s_burst_canvas, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_move_foreground(s_burst_canvas);
 }
 
 static void canvas_cell(lv_obj_t *canvas, int cell_x, int cell_y, uint8_t color) {
@@ -274,7 +469,7 @@ static void render_next(void) {
 
 static void refresh_status(void) {
     if (s_model.state == TETRIS_PAUSED) {
-        lv_label_set_text(s_status_label, "PAUSED\n\n2x DOWN");
+        lv_label_set_text(s_status_label, "PAUSED\n\nHOLD UP");
         lv_obj_remove_flag(s_status_label, LV_OBJ_FLAG_HIDDEN);
     } else if (s_model.state == TETRIS_GAME_OVER) {
         lv_label_set_text(s_status_label, "GAME OVER\n\nOK RESTART");
@@ -320,10 +515,15 @@ static void timer_cb(lv_timer_t *timer) {
     (void)timer;
     tetris_input_t input;
     while (s_input_queue && xQueueReceive(s_input_queue, &input, 0) == pdTRUE) {
-        handle_key(input.btn, input.ev);
+        if (input.mic_drop) handle_mic_drop();
+        else handle_key(input.btn, input.ev);
+    }
+    uint64_t time_ms = now_ms();
+    if (s_burst_canvas && s_burst_until_ms && time_ms >= s_burst_until_ms) {
+        lv_obj_add_flag(s_burst_canvas, LV_OBJ_FLAG_HIDDEN);
+        s_burst_until_ms = 0;
     }
     if (s_model.state != TETRIS_PLAYING) return;
-    uint64_t time_ms = now_ms();
     uint32_t interval = tetris_model_drop_interval_ms(&s_model);
     if (time_ms - s_last_drop_ms < interval) return;
     s_last_drop_ms = time_ms;
@@ -332,7 +532,6 @@ static void timer_cb(lv_timer_t *timer) {
     if (event == TETRIS_EVENT_MOVED) render_board_incremental();
     else if (event != TETRIS_EVENT_NONE) {
         s_up_press_shifted = false;
-        s_down_press_shifted = false;
         refresh_ui();
     }
 }
@@ -348,11 +547,13 @@ void demo_tetris_enter(void) {
     }
     s_visual.valid = false;
     s_up_press_shifted = false;
-    s_down_press_shifted = false;
-    if (rtttl_player_start() == ESP_OK) {
+    s_burst_until_ms = 0;
+    if (bsp_audio_set_format(MIC_SAMPLE_RATE, 16, 1) == ESP_OK &&
+        rtttl_player_start() == ESP_OK) {
+        mic_detector_start();
         rtttl_player_play(SFX_START);
     } else {
-        ESP_LOGW(TAG, "RTTTL player unavailable");
+        ESP_LOGW(TAG, "game audio or microphone unavailable");
     }
 
     s_scr = lv_obj_create(NULL);
@@ -390,7 +591,7 @@ void demo_tetris_enter(void) {
 
     lv_obj_t *controls = label_create(s_scr, &lv_font_montserrat_14, COLOR_DIM, 143, 227);
     lv_obj_set_style_text_line_space(controls, -1, 0);
-    lv_label_set_text(controls, "UP  LEFT\nDN  RIGHT\nOK  ROT\nHOLD DN DROP\nHOLD UP PAUSE");
+    lv_label_set_text(controls, "UP  LEFT\nDN  RIGHT\nOK  ROT\nVOICE  DROP\nHOLD UP PAUSE");
 
     s_status_label = label_create(s_scr, &lv_font_montserrat_14, COLOR_TEXT, 18, 134);
     lv_obj_set_size(s_status_label, 100, 68);
@@ -400,6 +601,23 @@ void demo_tetris_enter(void) {
     lv_obj_set_style_border_color(s_status_label, lv_color_hex(COLOR_ACCENT), 0);
     lv_obj_set_style_border_width(s_status_label, 2, 0);
     lv_obj_set_style_pad_top(s_status_label, 8, 0);
+
+    LV_DRAW_BUF_INIT_STATIC(burst_buf);
+    s_burst_canvas = lv_canvas_create(s_scr);
+    lv_canvas_set_draw_buf(s_burst_canvas, &burst_buf);
+    lv_canvas_set_palette(s_burst_canvas, 0,
+                          lv_color_to_32(lv_color_hex(0), LV_OPA_TRANSP));
+    lv_canvas_set_palette(s_burst_canvas, 1,
+                          lv_color_to_32(lv_color_hex(0xFF3B30), LV_OPA_COVER));
+    lv_canvas_set_palette(s_burst_canvas, 2,
+                          lv_color_to_32(lv_color_hex(0xFF8A24), LV_OPA_COVER));
+    lv_canvas_set_palette(s_burst_canvas, 3,
+                          lv_color_to_32(lv_color_hex(0xFFD84A), LV_OPA_COVER));
+    lv_canvas_set_palette(s_burst_canvas, 4,
+                          lv_color_to_32(lv_color_hex(0xFFF8D8), LV_OPA_COVER));
+    lv_obj_set_pos(s_burst_canvas, 36, 144);
+    render_burst();
+    lv_obj_add_flag(s_burst_canvas, LV_OBJ_FLAG_HIDDEN);
 
     refresh_ui();
     s_timer = lv_timer_create(timer_cb, 20, NULL);
@@ -412,6 +630,7 @@ void demo_tetris_enter(void) {
 }
 
 void demo_tetris_exit(void) {
+    mic_detector_stop();
     rtttl_player_stop();
     if (s_timer) {
         lv_timer_delete(s_timer);
@@ -426,6 +645,8 @@ void demo_tetris_exit(void) {
         s_input_queue = NULL;
     }
     s_board_canvas = s_next_canvas = s_stats_label = s_status_label = s_input_label = NULL;
+    s_burst_canvas = NULL;
+    s_burst_until_ms = 0;
 }
 
 static void handle_key(bsp_btn_t btn, bsp_btn_ev_t ev) {
@@ -448,16 +669,7 @@ static void handle_key(bsp_btn_t btn, bsp_btn_ev_t ev) {
             rtttl_player_play(SFX_START);
         }
     } else if (ev == BSP_BTN_LONG) {
-        if (btn == BSP_BTN_DOWN && s_model.state == TETRIS_PLAYING) {
-            if (s_down_press_shifted) tetris_model_move(&s_model, -1);
-            tetris_event_t event = tetris_model_hard_drop(&s_model);
-            play_event_sound(event);
-            s_last_drop_ms = time_ms;
-            changed = true;
-            full_refresh = true;
-            s_down_press_shifted = false;
-            show_input("DROP", true);
-        } else if (btn == BSP_BTN_UP) {
+        if (btn == BSP_BTN_UP) {
             if (s_model.state == TETRIS_PLAYING && s_up_press_shifted) {
                 tetris_model_move(&s_model, 1);
             }
@@ -475,7 +687,6 @@ static void handle_key(bsp_btn_t btn, bsp_btn_ev_t ev) {
             board_only = changed;
         } else if (btn == BSP_BTN_DOWN) {
             changed = tetris_model_move(&s_model, 1);
-            s_down_press_shifted = changed;
             show_input("RIGHT", changed);
             board_only = changed;
         } else if (btn == BSP_BTN_OK) {
@@ -493,9 +704,23 @@ static void handle_key(bsp_btn_t btn, bsp_btn_ev_t ev) {
     else if (full_refresh) refresh_ui();
 }
 
+static void handle_mic_drop(void) {
+    if (s_model.state != TETRIS_PLAYING) return;
+    tetris_event_t event = tetris_model_hard_drop(&s_model);
+    play_event_sound(event);
+    s_last_drop_ms = now_ms();
+    s_up_press_shifted = false;
+    show_input("VOICE DROP", true);
+    refresh_ui();
+    show_voice_burst();
+}
+
 void demo_tetris_key(bsp_btn_t btn, bsp_btn_ev_t ev) {
     if (!s_input_queue) return;
-    tetris_input_t input = { .btn = btn, .ev = ev };
+    if (ev == BSP_BTN_PRESS || ev == BSP_BTN_CLICK || ev == BSP_BTN_LONG) {
+        s_mic_ignore_until_ms = (uint32_t)now_ms() + MIC_BUTTON_GUARD_MS;
+    }
+    tetris_input_t input = { .btn = btn, .ev = ev, .mic_drop = false };
     if (xQueueSend(s_input_queue, &input, 0) != pdTRUE) {
         ESP_LOGW(TAG, "input queue full: key=%d event=%d", btn, ev);
     }

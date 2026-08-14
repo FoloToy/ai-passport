@@ -20,6 +20,7 @@ static const char *TAG = "rtttl";
 static QueueHandle_t s_queue;
 static TaskHandle_t s_task;
 static volatile uint32_t s_generation;
+static volatile bool s_playing;
 
 typedef struct {
     const char *song;
@@ -191,7 +192,9 @@ static void player_task(void *arg) {
     rtttl_request_t request;
     for (;;) {
         if (xQueueReceive(s_queue, &request, portMAX_DELAY) == pdTRUE && request.song) {
+            s_playing = true;
             play_song(request.song, request.generation);
+            s_playing = false;
         }
     }
 }
@@ -221,4 +224,8 @@ esp_err_t rtttl_player_play(const char *song) {
     xQueueReset(s_queue);
     rtttl_request_t request = { .song = song, .generation = generation };
     return xQueueSend(s_queue, &request, 0) == pdTRUE ? ESP_OK : ESP_ERR_TIMEOUT;
+}
+
+bool rtttl_player_is_playing(void) {
+    return s_playing;
 }
