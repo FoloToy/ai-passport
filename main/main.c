@@ -1,128 +1,288 @@
-// main/main.c —— FoloToy-Card BSP 驱动参考示例:初始化 + 菜单 + 按键分发。
-//
-// 按键语义(全局统一):
-//   上/下 短按   菜单中=移动选中项;演示页中=该页自定义
-//   确定  短按   菜单中=进入选中项;演示页中=该页自定义
-//   确定  长按   演示页中=返回菜单(由本文件统一拦截)
-#include "bsp_i2c.h"
-#include "bsp_display.h"
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "bsp_button.h"
-#include "bsp_audio.h"
-#include "bsp_battery.h"
-#include "bsp_pins.h"      // 错误日志里要打印 BSP_LCD_* 引脚号
-#include "demo.h"
-#include "ui_pixel.h"
-#include "lvgl.h"
+#include "bsp_display.h"
+#include "bsp_i2c.h"
+#include "bsp_pins.h"
 #include "esp_log.h"
+#include "lvgl.h"
 
-static const char *TAG = "main";
+#define COLOR_SKY        0xBDEBFF
+#define COLOR_GRASS      0x8BD35A
+#define COLOR_GRASS_DARK 0x55A83B
+#define COLOR_INK        0x27313D
+#define COLOR_WHITE      0xFFFDF7
+#define COLOR_PINK       0xFF9FBA
+#define COLOR_ORANGE     0xFF8A2A
+#define COLOR_GREEN      0x4BAE4F
+#define COLOR_PANEL      0xFFF8D9
 
-static const demo_entry_t DEMOS[] = {
-    { "Display", demo_display_enter, demo_display_exit, demo_display_key },
-    { "Button",  demo_button_enter,  demo_button_exit,  demo_button_key  },
-    { "Audio",   demo_audio_enter,   demo_audio_exit,   demo_audio_key   },
-    { "Battery", demo_battery_enter, demo_battery_exit, demo_battery_key },
-};
-#define DEMO_COUNT (sizeof(DEMOS) / sizeof(DEMOS[0]))
+#define RABBIT_BASE_Y  54
+#define HUNGER_START   60
+#define HUNGER_STEP    5
+#define HUNGER_TICK_MS 15000
+#define FEED_AMOUNT    25
 
-// 各外设初始化结果:失败的项在菜单里标 [FAIL] 且不允许进入。
-static bool s_ok[DEMO_COUNT];
+static const char *TAG = "white_rabbit";
 
-static lv_obj_t *s_menu_scr;
-static lv_obj_t *s_cards[DEMO_COUNT];
-static lv_obj_t *s_rows[DEMO_COUNT];
-static lv_obj_t *s_mascot;
-static int  s_sel;                 // 当前选中项
-static int  s_active = -1;         // 当前所在演示页;-1 = 在菜单
+static lv_obj_t *s_rabbit;
+static lv_obj_t *s_carrot;
+static lv_obj_t *s_hunger_bar;
+static lv_obj_t *s_hunger_label;
+static lv_obj_t *s_status_label;
+static lv_timer_t *s_feedback_timer;
+static int s_hunger = HUNGER_START;
 
-static void menu_refresh(void) {
-    for (size_t i = 0; i < DEMO_COUNT; i++) {
-        lv_label_set_text_fmt(s_rows[i], "%s%s",
-                              DEMOS[i].name,
-                              s_ok[i] ? "" : "  [FAIL]");
-        ui_pixel_set_selected(s_cards[i], (int)i == s_sel, s_ok[i]);
-        lv_obj_set_style_text_color(s_rows[i],
-            s_ok[i] ? lv_color_hex(UI_INK) : lv_color_hex(0x7A2020), 0);
+static lv_obj_t *shape(lv_obj_t *parent, int x, int y, int width, int height,
+                       uint32_t color, int radius, int border_width)
+{
+    lv_obj_t *object = lv_obj_create(parent);
+    lv_obj_remove_flag(object, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_pos(object, x, y);
+    lv_obj_set_size(object, width, height);
+    lv_obj_set_style_radius(object, radius, 0);
+    lv_obj_set_style_bg_color(object, lv_color_hex(color), 0);
+    lv_obj_set_style_border_color(object, lv_color_hex(COLOR_INK), 0);
+    lv_obj_set_style_border_width(object, border_width, 0);
+    lv_obj_set_style_pad_all(object, 0, 0);
+    return object;
+}
+
+static lv_obj_t *label_create(lv_obj_t *parent, const char *text,
+                              const lv_font_t *font, uint32_t color)
+{
+    lv_obj_t *label = lv_label_create(parent);
+    lv_label_set_text(label, text);
+    lv_obj_set_style_text_font(label, font, 0);
+    lv_obj_set_style_text_color(label, lv_color_hex(color), 0);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    return label;
+}
+
+static void rabbit_set_y(void *object, int32_t y)
+{
+    lv_obj_set_y((lv_obj_t *)object, y);
+}
+
+static void rabbit_jump(void)
+{
+    lv_anim_t animation;
+
+    lv_anim_delete(s_rabbit, rabbit_set_y);
+    lv_anim_init(&animation);
+    lv_anim_set_var(&animation, s_rabbit);
+    lv_anim_set_exec_cb(&animation, rabbit_set_y);
+    lv_anim_set_values(&animation, RABBIT_BASE_Y, RABBIT_BASE_Y - 12);
+    lv_anim_set_duration(&animation, 130);
+    lv_anim_set_playback_duration(&animation, 180);
+    lv_anim_set_path_cb(&animation, lv_anim_path_ease_out);
+    lv_anim_start(&animation);
+}
+
+static const char *hunger_status(void)
+{
+    if (s_hunger >= 80) {
+        return "HAPPY & FULL!";
+    }
+    if (s_hunger >= 40) {
+        return "I'M OK";
+    }
+    if (s_hunger > 0) {
+        return "I'M HUNGRY...";
+    }
+    return "PLEASE FEED ME!";
+}
+
+static void refresh_hunger(bool animate)
+{
+    lv_bar_set_value(s_hunger_bar, s_hunger,
+                     animate ? LV_ANIM_ON : LV_ANIM_OFF);
+    lv_label_set_text_fmt(s_hunger_label, "FULLNESS  %d%%", s_hunger);
+    lv_label_set_text(s_status_label, hunger_status());
+}
+
+static void feedback_done(lv_timer_t *timer)
+{
+    lv_obj_add_flag(s_carrot, LV_OBJ_FLAG_HIDDEN);
+    s_feedback_timer = NULL;
+    refresh_hunger(false);
+    lv_timer_delete(timer);
+}
+
+static void start_feedback_timer(void)
+{
+    if (s_feedback_timer != NULL) {
+        lv_timer_delete(s_feedback_timer);
+    }
+    s_feedback_timer = lv_timer_create(feedback_done, 850, NULL);
+}
+
+static void feed_rabbit(void)
+{
+    s_hunger += FEED_AMOUNT;
+    if (s_hunger > 100) {
+        s_hunger = 100;
+    }
+
+    lv_obj_remove_flag(s_carrot, LV_OBJ_FLAG_HIDDEN);
+    lv_label_set_text(s_status_label, "YUM! CARROT!");
+    lv_bar_set_value(s_hunger_bar, s_hunger, LV_ANIM_ON);
+    lv_label_set_text_fmt(s_hunger_label, "FULLNESS  %d%%", s_hunger);
+    rabbit_jump();
+    start_feedback_timer();
+}
+
+static void hunger_tick(lv_timer_t *timer)
+{
+    (void)timer;
+    if (s_hunger > 0) {
+        s_hunger -= HUNGER_STEP;
+        if (s_hunger < 0) {
+            s_hunger = 0;
+        }
+        refresh_hunger(true);
     }
 }
 
-static void menu_build(void) {
-    s_menu_scr = ui_pixel_screen_create("FoloToy");
-
-    for (size_t i = 0; i < DEMO_COUNT; i++) {
-        int x = 11 + (int)(i % 2) * 112;
-        int y = 58 + (int)(i / 2) * 86;
-        s_cards[i] = ui_pixel_panel_create(s_menu_scr, x, y, 102, 72, UI_PAPER);
-        s_rows[i] = lv_label_create(s_cards[i]);
-        lv_obj_set_style_text_font(s_rows[i], &lv_font_montserrat_20, 0);
-        lv_obj_set_style_text_align(s_rows[i], LV_TEXT_ALIGN_CENTER, 0);
-        lv_obj_center(s_rows[i]);
-    }
-
-    s_mascot = ui_pixel_mascot_create(s_menu_scr, 101, 238);
-
-    menu_refresh();
-    lv_screen_load(s_menu_scr);
-}
-
-static void enter_menu(void) {
-    s_active = -1;
-    menu_build();
-}
-
-// 按键回调运行在 button 组件的任务里,操作 LVGL 必须加锁。
-static void on_key(bsp_btn_t btn, bsp_btn_ev_t ev, void *user) {
+static void on_button(bsp_btn_t button, bsp_btn_ev_t event, void *user)
+{
     (void)user;
-    if (!bsp_lvgl_lock(500)) return;
-
-    if (s_active >= 0) {
-        if (btn == BSP_BTN_OK && ev == BSP_BTN_LONG) {     // 统一返回
-            DEMOS[s_active].exit();
-            enter_menu();
-        } else {
-            DEMOS[s_active].key(btn, ev);
-        }
-    } else if (ev == BSP_BTN_CLICK) {
-        if (btn == BSP_BTN_UP)   { s_sel = (s_sel + DEMO_COUNT - 1) % DEMO_COUNT; menu_refresh(); }
-        if (btn == BSP_BTN_DOWN) { s_sel = (s_sel + 1) % DEMO_COUNT;              menu_refresh(); }
-        if (btn == BSP_BTN_OK && s_ok[s_sel]) {
-            s_active = s_sel;
-            ui_pixel_mascot_jump(s_mascot);
-            lv_obj_delete(s_menu_scr);
-            s_menu_scr = NULL;
-            s_mascot = NULL;
-            DEMOS[s_active].enter();
-        } else if (btn == BSP_BTN_UP || btn == BSP_BTN_DOWN) {
-            ui_pixel_mascot_jump(s_mascot);
-        }
+    if (event != BSP_BTN_CLICK || !bsp_lvgl_lock(300)) {
+        return;
     }
+
+    if (button == BSP_BTN_OK) {
+        feed_rabbit();
+    } else if (button == BSP_BTN_UP) {
+        lv_label_set_text(s_status_label, "SOFT & HAPPY!");
+        rabbit_jump();
+        start_feedback_timer();
+    }
+
     bsp_lvgl_unlock();
 }
 
-void app_main(void) {
-    ESP_LOGI(TAG, "FoloToy-Card BSP demo 启动");
+static void create_rabbit(lv_obj_t *screen)
+{
+    s_rabbit = lv_obj_create(screen);
+    lv_obj_remove_flag(s_rabbit, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_pos(s_rabbit, 46, RABBIT_BASE_Y);
+    lv_obj_set_size(s_rabbit, 148, 174);
+    lv_obj_set_style_bg_opa(s_rabbit, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(s_rabbit, 0, 0);
+    lv_obj_set_style_pad_all(s_rabbit, 0, 0);
 
+    /* Long ears with pink centers. */
+    shape(s_rabbit, 29, 2, 34, 78, COLOR_WHITE, 18, 4);
+    shape(s_rabbit, 85, 2, 34, 78, COLOR_WHITE, 18, 4);
+    shape(s_rabbit, 39, 14, 14, 48, COLOR_PINK, 8, 0);
+    shape(s_rabbit, 95, 14, 14, 48, COLOR_PINK, 8, 0);
+
+    /* Body, head, paws, and tail. */
+    shape(s_rabbit, 24, 101, 100, 66, COLOR_WHITE, 33, 4);
+    shape(s_rabbit, 12, 55, 124, 92, COLOR_WHITE, 46, 4);
+    shape(s_rabbit, 13, 133, 42, 27, COLOR_WHITE, 14, 4);
+    shape(s_rabbit, 93, 133, 42, 27, COLOR_WHITE, 14, 4);
+    shape(s_rabbit, 123, 115, 24, 24, COLOR_WHITE, 12, 4);
+
+    /* Face. */
+    shape(s_rabbit, 42, 91, 10, 15, COLOR_INK, 5, 0);
+    shape(s_rabbit, 96, 91, 10, 15, COLOR_INK, 5, 0);
+    shape(s_rabbit, 68, 109, 12, 9, COLOR_PINK, 5, 0);
+    shape(s_rabbit, 28, 112, 20, 9, COLOR_PINK, 5, 0);
+    shape(s_rabbit, 100, 112, 20, 9, COLOR_PINK, 5, 0);
+
+    lv_obj_t *mouth = label_create(s_rabbit, "w", &lv_font_montserrat_20,
+                                   COLOR_INK);
+    lv_obj_set_pos(mouth, 64, 116);
+    lv_obj_set_width(mouth, 22);
+
+    /* A tiny carrot appears while feeding. */
+    s_carrot = lv_obj_create(s_rabbit);
+    lv_obj_remove_flag(s_carrot, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_pos(s_carrot, 112, 83);
+    lv_obj_set_size(s_carrot, 28, 54);
+    lv_obj_set_style_bg_opa(s_carrot, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(s_carrot, 0, 0);
+    lv_obj_set_style_pad_all(s_carrot, 0, 0);
+    shape(s_carrot, 8, 17, 13, 30, COLOR_ORANGE, 6, 0);
+    shape(s_carrot, 2, 4, 8, 19, COLOR_GREEN, 4, 0);
+    shape(s_carrot, 16, 1, 8, 21, COLOR_GREEN, 4, 0);
+    lv_obj_add_flag(s_carrot, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void create_ui(void)
+{
+    lv_obj_t *screen = lv_obj_create(NULL);
+    lv_obj_remove_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(screen, lv_color_hex(COLOR_SKY), 0);
+    lv_obj_set_style_border_width(screen, 0, 0);
+    lv_obj_set_style_pad_all(screen, 0, 0);
+
+    shape(screen, 0, 214, 240, 106, COLOR_GRASS, 0, 0);
+    shape(screen, 0, 214, 240, 5, COLOR_GRASS_DARK, 0, 0);
+
+    lv_obj_t *title = label_create(screen, "BIG WHITE RABBIT",
+                                   &lv_font_montserrat_20, COLOR_INK);
+    lv_obj_set_pos(title, 8, 10);
+    lv_obj_set_width(title, 224);
+
+    create_rabbit(screen);
+
+    lv_obj_t *panel = shape(screen, 15, 224, 210, 58, COLOR_PANEL, 12, 3);
+    s_hunger_label = label_create(panel, "", &lv_font_montserrat_14,
+                                  COLOR_INK);
+    lv_obj_set_pos(s_hunger_label, 8, 5);
+    lv_obj_set_width(s_hunger_label, 188);
+
+    s_hunger_bar = lv_bar_create(panel);
+    lv_obj_set_pos(s_hunger_bar, 13, 29);
+    lv_obj_set_size(s_hunger_bar, 178, 15);
+    lv_bar_set_range(s_hunger_bar, 0, 100);
+    lv_obj_set_style_bg_color(s_hunger_bar, lv_color_hex(0xD8D4B8), 0);
+    lv_obj_set_style_bg_color(s_hunger_bar, lv_color_hex(COLOR_ORANGE),
+                              LV_PART_INDICATOR);
+
+    s_status_label = label_create(screen, "", &lv_font_montserrat_14,
+                                  COLOR_INK);
+    lv_obj_set_pos(s_status_label, 15, 287);
+    lv_obj_set_width(s_status_label, 210);
+
+    lv_obj_t *hint = label_create(screen, "OK: FEED   UP: PET",
+                                  &lv_font_montserrat_14, COLOR_INK);
+    lv_obj_set_pos(hint, 15, 304);
+    lv_obj_set_width(hint, 210);
+
+    refresh_hunger(false);
+    lv_timer_create(hunger_tick, HUNGER_TICK_MS, NULL);
+    lv_screen_load(screen);
+}
+
+void app_main(void)
+{
+    ESP_LOGI(TAG, "Starting the white rabbit pet");
     bsp_i2c_init();
-    bsp_i2c_scan();
 
-    // 屏幕是本 demo 的 UI 载体,失败就没有菜单可言 —— 打清楚日志后退出,
-    // 不做"串口菜单"降级(那会让本文件复杂一倍,违背参考示例的初衷)。
-    if (bsp_display_init() != ESP_OK || !bsp_lvgl_init()) {
-        ESP_LOGE(TAG, "显示/LVGL 初始化失败,demo 无法继续。"
-                      "检查 SPI 接线(MOSI=%d SCLK=%d CS=%d DC=%d BL=%d)",
-                 BSP_LCD_MOSI, BSP_LCD_SCLK, BSP_LCD_CS, BSP_LCD_DC, BSP_LCD_BL);
+    if (bsp_display_init() != ESP_OK || bsp_lvgl_init() == NULL) {
+        ESP_LOGE(TAG, "Display initialization failed (MOSI=%d SCLK=%d CS=%d)",
+                 BSP_LCD_MOSI, BSP_LCD_SCLK, BSP_LCD_CS);
         return;
     }
     bsp_display_backlight(100);
 
-    // 其余外设单项失败不阻塞:菜单里标 [FAIL],其他项照常可测。
-    s_ok[0] = true;                                   // Display 已确认可用
-    s_ok[1] = (bsp_button_init(on_key, NULL) == ESP_OK);
-    s_ok[2] = (bsp_audio_init() == ESP_OK);
-    s_ok[3] = (bsp_battery_init() == ESP_OK);
+    if (!bsp_lvgl_lock(1000)) {
+        ESP_LOGE(TAG, "Could not lock LVGL");
+        return;
+    }
+    create_ui();
+    bsp_lvgl_unlock();
 
-    if (bsp_lvgl_lock(1000)) { enter_menu(); bsp_lvgl_unlock(); }
-
-    ESP_LOGI(TAG, "就绪:Display=%d Button=%d Audio=%d Battery=%d",
-             s_ok[0], s_ok[1], s_ok[2], s_ok[3]);
+    if (bsp_button_init(on_button, NULL) != ESP_OK) {
+        ESP_LOGE(TAG, "Button initialization failed");
+        if (bsp_lvgl_lock(300)) {
+            lv_label_set_text(s_status_label, "BUTTON ERROR");
+            bsp_lvgl_unlock();
+        }
+    }
 }
