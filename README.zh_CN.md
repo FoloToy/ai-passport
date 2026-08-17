@@ -14,6 +14,15 @@ FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，�
 
 理想的使用方式是：把仓库和一句应用需求交给 agent。agent 先从这里识别能力与限制，再选择相关示例、实现、构建，并给出可在真机上执行的验收清单。
 
+## 本分支：Tamagezi 电子宠物
+
+`demo/tamagezi` 用完整的离线电子宠物固件替换了硬件演示菜单，专门适配 Passport 的 240 × 320 屏幕和三个实体按键。固件包括 12 只原创可选宠物、照料与健康、按有效开机时间推进的成长、锻炼与教育小游戏、四类工作、金币与商店、资料、传承与合体、带 CRC 的双槽 NVS 存档、电池显示，以及后台运行的 16 kHz 实时合成音效。由于当前硬件能力契约中没有已确认的独立 RTC，设备断电期间宠物状态会有意冻结。
+
+操作方式为：`UP` / `DOWN` 移动，短按 `OK` 选择或行动，长按 `OK` 返回；在首页长按 `OK` 可循环切换 `静音 / 低 / 中 / 高`。完整玩法与角色规格见 [`docs/TAMAGEZI_GAME_AND_CHARACTER_DESIGN.md`](docs/TAMAGEZI_GAME_AND_CHARACTER_DESIGN.md)，视觉概念图位于 [`assets/tamagezi/concepts/`](assets/tamagezi/concepts/)。
+真机验证项目记录在 [`docs/TAMAGEZI_DEVICE_ACCEPTANCE.md`](docs/TAMAGEZI_DEVICE_ACCEPTANCE.md)。
+
+开发时可在 `Component config > Tamagezi > Active-time simulation multiplier` 中把全部模型时间最高加速到 120 倍；生产固件应保持默认值 `1`。
+
 ## 给 AI agent 的入口
 
 开始开发前，按以下顺序建立上下文：
@@ -95,6 +104,7 @@ FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，�
 | `demo/rock-paper-scissors` | 石头剪刀布 | RGB565 图片资产、素材生成脚本、Flash 资源权衡 |
 | `demo/tetris-game` | 三键俄罗斯方块 | 实时游戏循环、低延迟 `PRESS` 输入、局部刷新、纯游戏模型、音效与麦克风交互 |
 | `demo/claude-buddy-port` | 桌面 AI 硬件伴侣 | 用完整应用替换 demo 菜单、加密 BLE、协议解析、状态归约、任务通信和较完整的主机测试 |
+| `demo/tamagezi` | 离线电子宠物 | 纯照料/成长模型、三键 LVGL 成品界面、小游戏、经济系统、双槽 NVS、合成音效和单机基因传承 |
 
 查看示例而不切换当前工作区：
 
@@ -164,6 +174,15 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
+本分支还提供完整宠物模型的主机测试：
+
+```bash
+cc -std=c11 -Wall -Wextra -Werror -Imain \
+  tests/test_tamagezi_model.c main/tamagezi_model.c \
+  -o /tmp/test_tamagezi_model
+/tmp/test_tamagezi_model
+```
+
 不同示例分支可能提供自己的 host test 命令，应以该分支 README 为准。
 
 ## 验收与交付格式
@@ -193,7 +212,7 @@ Unverified: 仍需板卡、仪器或用户确认的事项
 ```text
 components/bsp/include/  BSP 公开 API 与 bsp_pins.h 硬件事实
 components/bsp/src/      显示、按键、音频、电池、共享 I2C 实现
-main/                    最小菜单、LVGL UI 与独立硬件演示页
+main/                    Tamagezi 模型、LVGL 成品界面、音效、存档与启动入口
 tests/                   可脱离硬件运行的轻量逻辑测试源
 docs/                    agent 硬件开发指南与扩展文档
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置

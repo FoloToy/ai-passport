@@ -14,6 +14,15 @@ The repository is organized around the following principles:
 
 The intended workflow is simple: give an agent this repository and an application requirement. The agent identifies the available capabilities and constraints, selects relevant examples, implements and builds the application, and returns an acceptance checklist that can be executed on the physical device.
 
+## This branch: Tamagezi virtual pet
+
+`demo/tamagezi` replaces the hardware-demo menu with a complete offline virtual-pet firmware designed for the Passport's 240 × 320 display and three physical buttons. It includes 12 original selectable pets, care and health, active-time growth, training and learning games, four jobs, coins and a shop, profiles, legacy/fusion, double-slot CRC-protected NVS saves, battery display, and asynchronous 16 kHz synthesized sounds. Power-off time is intentionally frozen because this hardware contract does not include a confirmed external RTC.
+
+Controls are `UP`/`DOWN` to move, short `OK` to select or act, and long `OK` to return. Long `OK` on the home screen cycles `MUTE / LOW / MID / HIGH`. The detailed game and character specification is in [`docs/TAMAGEZI_GAME_AND_CHARACTER_DESIGN.md`](docs/TAMAGEZI_GAME_AND_CHARACTER_DESIGN.md), and the visual concept sheet is in [`assets/tamagezi/concepts/`](assets/tamagezi/concepts/).
+Physical-device validation is tracked by [`docs/TAMAGEZI_DEVICE_ACCEPTANCE.md`](docs/TAMAGEZI_DEVICE_ACCEPTANCE.md).
+
+For development, `Component config > Tamagezi > Active-time simulation multiplier` can accelerate all model time up to 120×. Production builds should keep the default value of `1`.
+
 ## Entry point for AI agents
 
 Before starting development, establish context in this order:
@@ -96,6 +105,7 @@ Each `demo/*` branch evolves the baseline into an independent application. The b
 | `demo/rock-paper-scissors` | Rock paper scissors | RGB565 image assets, asset-generation scripts, and Flash resource tradeoffs |
 | `demo/tetris-game` | Three-button Tetris | Real-time game loop, low-latency `PRESS` input, partial refresh, a pure game model, audio, and microphone interaction |
 | `demo/claude-buddy-port` | Desktop AI hardware companion | Replacing the demo menu with a complete application, encrypted BLE, protocol parsing, state reduction, task communication, and extensive host tests |
+| `demo/tamagezi` | Offline virtual pet | Pure care/growth model, three-button LVGL product UI, minigames, economy, double-slot NVS, synthesized audio, and single-device genetic legacy |
 
 Inspect an example without switching the current working tree:
 
@@ -165,6 +175,15 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
+This branch also provides a host-side test for the complete pet model:
+
+```bash
+cc -std=c11 -Wall -Wextra -Werror -Imain \
+  tests/test_tamagezi_model.c main/tamagezi_model.c \
+  -o /tmp/test_tamagezi_model
+/tmp/test_tamagezi_model
+```
+
 Different example branches may provide their own host-test commands; follow the README on that branch.
 
 ## Acceptance and delivery format
@@ -194,7 +213,7 @@ See the [AI Hardware Development Guide](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md) f
 ```text
 components/bsp/include/  Public BSP APIs and bsp_pins.h hardware facts
 components/bsp/src/      Display, button, audio, battery, and shared-I2C implementations
-main/                    Minimal menu, LVGL UI, and independent hardware demo pages
+main/                    Tamagezi model, LVGL product UI, audio, storage, and startup
 tests/                   Lightweight logic tests that can run without hardware
 docs/                    Agent hardware development guide and extension documentation
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults

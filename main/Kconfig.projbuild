@@ -1,0 +1,12 @@
+menu "Tamagezi"
+
+config TAMAGEZI_TIME_SCALE
+    int "Active-time simulation multiplier"
+    range 1 120
+    default 1
+    help
+        Multiplies elapsed active time for development and hardware acceptance.
+        Keep this at 1 for normal play. Values such as 60 allow growth, care,
+        illness, cooldown, and pet-day boundaries to be tested quickly.
+
+endmenu
