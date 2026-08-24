@@ -6,31 +6,30 @@ on:
       - "**"
     tags:
       - "**"
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: "${{ github.ref }}"
-          fetch-depth: 0
 
-      - name: Build firmware (ESP-IDF 5.5.3 / esp32c3)
+      - name: Build firmware & merge full bin (ESP-IDF 5.5.3 / esp32c3)
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.5.3
           target: esp32c3
-
-      - name: List build artifacts
-        run: |
-          echo "=== build dir ==="
-          ls -la build/
-          echo "=== bins ==="
-          find build -name '*.bin' -o -name '*.elf' | head -50
+          command: >-
+            idf.py set-target esp32c3 &&
+            idf.py build &&
+            idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin
 
       - name: Set artifact name
         run: echo "ARTIFACT_NAME=passport-${GITHUB_REF_NAME//\//-}" >> "$GITHUB_ENV"
@@ -41,8 +40,11 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: |
-            build/**/*.bin
-            build/*.bin
+            build/FoloToy-AI-Passport-full.bin
+            build/FoloToy-AI-Passport.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+          if-no-files-found: error
 
       - name: Create release (tag push)
         if: github.ref_type == 'tag'
@@ -50,5 +52,8 @@ jobs:
         with:
           name: "${{ github.ref_name }}"
           files: |
-            build/**/*.bin
-            build/*.bin
+            build/FoloToy-AI-Passport-full.bin
+            build/FoloToy-AI-Passport.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+          if-no-files-found: error
