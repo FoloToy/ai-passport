@@ -21,15 +21,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Build firmware & merge full bin (ESP-IDF 5.5.3 / esp32c3)
+      - name: Build firmware (ESP-IDF 5.5.3 / esp32c3)
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.5.3
           target: esp32c3
           command: >-
-
             idf.py build &&
-            idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin
+            python "$IDF_PATH/components/esptool_py/esptool/esptool.py" merge_bin
+            -f raw --flash_mode dio --flash_freq 80m --flash_size 8MB
+            -o build/FoloToy-AI-Passport-full.bin
+            0x0 build/bootloader/bootloader.bin
+            0x8000 build/partition_table/partition-table.bin
+            0x10000 build/FoloToy-AI-Passport.bin
 
       - name: Set artifact name
         run: echo "ARTIFACT_NAME=passport-${GITHUB_REF_NAME//\//-}" >> "$GITHUB_ENV"
