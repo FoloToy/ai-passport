@@ -2,8 +2,6 @@ name: Build firmware
 
 on:
   push:
-    branches:
-      - "**"
     tags:
       - "**"
   workflow_dispatch:
@@ -21,11 +19,23 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ github.ref_type }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ github.ref_type }}-${{ github.ref_name }}-
+            ccache-
+
       - name: Build firmware (ESP-IDF 5.5.3 / esp32c3)
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.5.3
           target: esp32c3
+          extra_docker_args: >-
+            -e CCACHE_DIR=/app/Shinku-Chen/ai-passport/.ccache
+            -e IDF_CCACHE_ENABLE=1
           command: >-
             idf.py build &&
             python "$IDF_PATH/components/esptool_py/esptool/esptool.py" --chip esp32c3
