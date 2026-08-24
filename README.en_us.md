@@ -9,7 +9,7 @@ The repository is organized around the following principles:
 - `main` is the smallest complete runnable baseline and an executable description of the current hardware capabilities.
 - `components/bsp` isolates board-level details and exposes stable APIs to applications.
 - `demo/*` branches show different paths from a product requirement to a working implementation.
-- `AGENTS.md` defines how an agent should work in the repository, while `docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md` contains the complete hardware context and troubleshooting knowledge.
+- `AGENTS.md` defines how an agent should work in the repository, while `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md` contains the complete hardware context and troubleshooting knowledge.
 - Build results and physical-device results are reported separately. A successful build must never be presented as successful hardware validation.
 
 The intended workflow is simple: give an agent this repository and an application requirement. The agent identifies the available capabilities and constraints, selects relevant examples, implements and builds the application, and returns an acceptance checklist that can be executed on the physical device.
@@ -18,7 +18,7 @@ The intended workflow is simple: give an agent this repository and an applicatio
 
 Before starting development, establish context in this order:
 
-1. Read `AGENTS.md`, this README, and [`docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+1. Read `AGENTS.md`, this README, and [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
 2. Run `git status --short --branch` and preserve all existing user changes.
 3. Read the affected `components/bsp/include/*.h` headers and their implementations. Do not infer board behavior from common chip or development-board configurations.
 4. Use `git branch -r --list 'origin/demo/*'` to find examples close to the requirement. Reuse only the relevant design patterns; do not merge an entire demo branch by default.
@@ -33,7 +33,7 @@ When information conflicts, use this priority order:
 Schematic / PCB / board revision / physical measurement
     > components/bsp/include/bsp_pins.h
     > BSP public headers and implementations
-    > docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md
+    > docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md
     > README and example applications
 ```
 
@@ -52,7 +52,7 @@ The table below describes the application capabilities implemented by the curren
 | Shared bus | ES8311 and CW2017 share I2C0 | `bsp_i2c_*` | Every device must reuse the bus owned by the BSP; do not create another bus on the same port for scanning or a new device |
 | Logging and flashing | Native ESP32-C3 USB Serial/JTAG | ESP-IDF console | GPIO18/19 are reserved for USB; the default UART0 TX on GPIO21 conflicts with the backlight |
 
-All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
+All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
 
 Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. The ESP32-C3 supports 2.4 GHz Wi-Fi and Bluetooth LE, but the current BSP does not wrap either radio and `main` does not initialize a wireless stack. `demo/claude-buddy-port` is a BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior. Every FoloToy AI Passport has 8 MB of Flash, and the default firmware configuration targets 8 MB.
 
@@ -69,7 +69,7 @@ A simple request can be given directly to an agent:
 ```text
 On the main branch, build an offline habit-tracking application for FoloToy AI Passport.
 Use the three physical buttons and the 240×320 display, and preserve records across power loss.
-Follow AGENTS.md and AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches first,
+Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches first,
 keep hardware logic in components/bsp and application logic in main, deliver a runnable
 implementation with tests, and report the build result, unexecuted device checks, and exact
 on-device acceptance steps separately.
@@ -187,7 +187,7 @@ Device tests: PASS / FAIL / NOT RUN
 Unverified: items that still require a board, instrument, or user confirmation
 ```
 
-See the [AI Hardware Development Guide](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the acceptance matrix by change type—including pins, LCD, ADC, codec, I2C, and DMA—and the troubleshooting reference.
+See the [AI Hardware Development Guide](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the acceptance matrix by change type—including pins, LCD, ADC, codec, I2C, and DMA—and the troubleshooting reference.
 
 ## Project structure
 
@@ -198,5 +198,5 @@ main/                    Minimal menu, LVGL UI, and independent hardware demo pa
 tests/                   Lightweight logic tests that can run without hardware
 docs/                    Agent hardware development guide and extension documentation
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
-AGENTS.md                Coding, validation, and contribution rules for agents
+AGENTS.md        Coding, validation, and contribution rules for agents
 ```
