@@ -21,11 +21,11 @@ docs/
     AI_HARDWARE_DEVELOPMENT_GUIDE.md   完整硬件开发指南与排障参考（上游）
 components/bsp/               板级支持包：显示、按键、音频、电池、I2C（稳定 API 与 bsp_pins.h 硬件事实）
 main/                         设备固件应用：LVGL 菜单、demo 页面、生字卡片
-assets/                       预置资源：fonts/ images/ music/（各含 readme.md）
+assets/                       预置资源：fonts/ images/ music/（各含 README.md）
 skills/                       可复用技能目录（每个 skill 独立子目录）
 tests/                        轻量级逻辑测试（无硬件可运行）
 sdkconfig.defaults            ESP32-C3、USB console、Flash、LVGL 默认配置
-README.en_us.md               上游英文说明（FoloToy AI Passport）
+README.en-US.md               上游英文说明（FoloToy AI Passport）
 README.zh_CN.md               上游中文说明（FoloToy AI Passport）
 ```
 
