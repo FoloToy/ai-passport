@@ -20,7 +20,7 @@ docs/
     README.md                 硬件设计文档子目录骨架
     AI_HARDWARE_DEVELOPMENT_GUIDE.md   完整硬件开发指南与排障参考（上游）
 components/bsp/               板级支持包：显示、按键、音频、电池、I2C（稳定 API 与 bsp_pins.h 硬件事实）
-main/                         设备固件应用：LVGL 菜单、demo 页面
+main/                         设备固件应用：LVGL 菜单 + 独立 demo_*.c 硬件验证页（新 demo 需实现 demo.h 声明的 enter/exit/key 接口）
 assets/                       预置资源：fonts/ images/ music/（各含 README.md）
 skills/                       可复用技能目录（每个 skill 独立子目录）
 tests/                        轻量级逻辑测试（无硬件可运行）
