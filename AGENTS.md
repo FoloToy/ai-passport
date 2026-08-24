@@ -20,7 +20,7 @@ docs/
     README.md                 硬件设计文档子目录骨架
     AI_HARDWARE_DEVELOPMENT_GUIDE.md   完整硬件开发指南与排障参考（上游）
 components/bsp/               板级支持包：显示、按键、音频、电池、I2C（稳定 API 与 bsp_pins.h 硬件事实）
-main/                         设备固件应用：LVGL 菜单、demo 页面、生字卡片
+main/                         设备固件应用：LVGL 菜单、demo 页面
 assets/                       预置资源：fonts/ images/ music/（各含 README.md）
 skills/                       可复用技能目录（每个 skill 独立子目录）
 tests/                        轻量级逻辑测试（无硬件可运行）
@@ -30,6 +30,8 @@ README.zh_CN.md               上游中文说明（FoloToy AI Passport）
 ```
 
 **强约束**：`main` 始终与上游 `FoloToy/ai-passport` 的 `main` 保持同步（最新基线），不承载 fork 特有功能改动；fork 特有的固件功能都在各自功能分支（`feature/*`）开发。
+
+**给 fork 用户**：fork 后，`main` 分支**只允许增加/修改根目录的 `README.md`**（可建自己的说明/README 变体），**不允许改其它任何文件**——这样 fork 的 `main` 与上游保持最新同步、不产生冲突。任何其它修改（固件功能、文档规整等）一律在 `feature/*` 分支进行，用 PR 合并。
 
 ## 构建与验证
 

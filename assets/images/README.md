@@ -5,7 +5,7 @@
 ## 如何使用
 
 - 图片文件复制到本目录，并在本项目 `README.md` 记录分辨率、格式、用途与来源。
-- 与固件集成时，参考 [AGENTS.md](../../AGENTS.md)、`components/bsp` 或相关示例分支的图片资源管线，转换为固件所需格式（如 RGB565 数组）。
+- 与固件集成时，参考 [`components/bsp/include/bsp_display.h`](../../components/bsp/include/bsp_display.h) 与相关示例分支的图片资源管线，转换为固件所需格式（如 RGB565 数组）。
 - 图片资源占用 Flash 与内存，集成前请评估 ESP32-C3 无 PSRAM 的限制。
 
 ## 目录说明

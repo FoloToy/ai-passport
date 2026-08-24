@@ -5,7 +5,7 @@
 ## 如何使用
 
 - 音频文件（如 `.wav`、`.mp3`、固件可用的编码格式）复制到本目录，并在本项目 `README.md` 记录采样率、时长、用途与来源。
-- 与固件集成时，参考 [AGENTS.md](../../AGENTS.md) 与 `components/bsp` 音频接口，确认播放路径、任务上下文与内存占用。
+- 与固件集成时，参考 [`components/bsp/include/bsp_audio.h`](../../components/bsp/include/bsp_audio.h) 音频接口，确认播放路径、任务上下文与内存占用。
 - 音频文件占用 Flash 与内存，集成前请评估 ESP32-C3 无 PSRAM 的限制。
 
 ## 目录说明
