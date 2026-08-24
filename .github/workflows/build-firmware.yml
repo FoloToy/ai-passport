@@ -34,7 +34,7 @@ jobs:
           esp_idf_version: v5.5.3
           target: esp32c3
           extra_docker_args: >-
-            -e CCACHE_DIR=/app/Shinku-Chen/ai-passport/.ccache
+            -e CCACHE_DIR=/app/${{ github.repository }}/.ccache
             -e IDF_CCACHE_ENABLE=1
           command: >-
             idf.py build &&
