@@ -2,6 +2,8 @@
 
 给 AI agent（Claude Code / Codex / Cursor / Cline 等）读的仓库说明。Claude Code 另见 `CLAUDE.md`（薄引用本文件）。
 
+**先读根目录所有 README**：开始工作前，阅读仓库根目录下的**所有** `README*` 文件——包括上游的 `README.en_US.md`、`README.zh_CN.md`，以及 fork 用户可能自行创建的说明文件（如 `README.md` 或自定义 README）。这些文件是重要的 AI 参考（含项目定位、硬件事实、使用约定等），AI 不应只依赖本文件。
+
 ## 项目概述
 
 本仓库是 **FoloToy AI Passport** 的开源硬件开发基线。它是一个面向 AI agent 的开放式可穿戴 AI 硬件：`main` 是最小但完整的可运行基线，集中存放**已确认的硬件事实、稳定接口、资源边界、参考实现与验收方法**，AI agent 可据此识别能力与限制、实现并构建应用。本仓库常被 fork 后二次开发，fork 用户的使用约定见下文「给 fork 用户」。
