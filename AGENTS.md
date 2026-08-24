@@ -25,7 +25,7 @@ assets/                       预置资源：fonts/ images/ music/（各含 READ
 skills/                       可复用技能目录（每个 skill 独立子目录）
 tests/                        轻量级逻辑测试（无硬件可运行）
 sdkconfig.defaults            ESP32-C3、USB console、Flash、LVGL 默认配置
-README.en-US.md               上游英文说明（FoloToy AI Passport）
+README.en_US.md               上游英文说明（FoloToy AI Passport）
 README.zh_CN.md               上游中文说明（FoloToy AI Passport）
 ```
 

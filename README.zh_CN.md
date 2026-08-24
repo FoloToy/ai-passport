@@ -1,6 +1,6 @@
 # FoloToy AI Passport
 
-[English](README.en-US.md) | 简体中文
+[English](README.en_US.md) | 简体中文
 
 FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，本仓库是这款 AI 硬件的开发基线。它不只展示“板子能运行什么”，还把 agent 开发应用所需的**硬件事实、稳定接口、资源边界、参考实现和验收方法**放在同一仓库中。
 
