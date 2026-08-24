@@ -1,0 +1,36 @@
+name: Sync main with upstream
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/FoloToy/ai-passport.git
+
+      - name: Fetch upstream main
+        run: git fetch upstream main
+
+      - name: Merge upstream main into fork main
+        run: |
+          git config user.name "shinku-sync[bot]"
+          git config user.email "sync@shinku.bot"
+          if ! git merge upstream/main --no-edit; then
+            echo "::error::main has conflicts with upstream, resolve manually"
+            exit 1
+          fi
+
+      - name: Push fork main
+        run: git push origin main
