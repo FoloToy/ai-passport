@@ -24,6 +24,14 @@
 - `FoloToy-AI-Passport.bin`：应用固件。
 - `bootloader.bin`、`partition-table.bin`：分区组件。
 
+## 在线烧录
+
+使用浏览器在本机完成写入与校验，固件不会上传服务器。打开 **在线刷机工具**：
+
+`https://ai-passport.folotoy.cn/tools/web-flasher/`
+
+步骤：连接设备（USB JTAG/serial debug unit）→ 选择本 Release 的合并固件 `FoloToy-AI-Passport-full.bin` → 选择波特率（如 460800）→ 开始写入。目标是 8MB Flash 板卡，无需其它参数。
+
 ## 相关文件
 
 - `.github/workflows/build-firmware.yml`：本流水线定义。
