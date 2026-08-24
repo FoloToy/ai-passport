@@ -2,11 +2,9 @@
 
 给 AI agent（Claude Code / Codex / Cursor / Cline 等）读的仓库说明。Claude Code 另见 `CLAUDE.md`（薄引用本文件）。
 
-> 注：本文件是**本 fork（Shinku-Chen/ai-passport）自己的 AI 说明主体**，与上游 `FoloToy/ai-passport` 仓库的 `AGENTS.md` 是**两份同名但内容独立**的文件。本 fork 的 `main` 会经 sync-main 自动 merge 上游，上游的 `AGENTS.md` 与本文件在合并时会冲突，届时需人工裁决；本文件不随上游改动，属于 fork 自有内容。上游的板级/硬件规则仍在 `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md` 与 `README.en_us.md`/`README.zh_CN.md`。
-
 ## 项目概述
 
-本仓库是 **FoloToy AI Passport** 的开源硬件开发基线（`Shinku-Chen/ai-passport`，`FoloToy/ai-passport` 的个人 fork）。它是一个面向 AI agent 的开放式可穿戴 AI 硬件：`main` 是最小但完整的可运行基线，集中存放**已确认的硬件事实、稳定接口、资源边界、参考实现与验收方法**，AI agent 可据此识别能力与限制、实现并构建应用。
+本仓库是 **FoloToy AI Passport** 的开源硬件开发基线（fork 自 `FoloToy/ai-passport`）。它是一个面向 AI agent 的开放式可穿戴 AI 硬件：`main` 是最小但完整的可运行基线，集中存放**已确认的硬件事实、稳定接口、资源边界、参考实现与验收方法**，AI agent 可据此识别能力与限制、实现并构建应用。
 
 - **平台**：ESP32-C3（32 位 RISC-V，无 PSRAM，8MB Flash），ESP-IDF 5.5.x（已知开发环境 5.5.3）。
 - **屏**：ST7789P3，240×320 竖屏 RGB565，SPI2 40MHz，LVGL。
