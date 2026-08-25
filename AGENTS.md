@@ -13,10 +13,13 @@
 - **交互**：`UP`/`DOWN`/`OK` 三键（GPIO0 ADC 电阻梯）；音频 ES8311（I2S0 全双工）；电池 CW2017；I2C0 共享总线。
 - **协议**：MIT LICENCE，仓库根许可证文件为准。
 
-## 必读文档（按顺序阅读）
+## 规则索引（按触发场景阅读）
 
-1. [docs/contribution/doc-conventions.md](docs/contribution/doc-conventions.md) —— **最先读**：先读根目录所有 README、文档生成规范、文档分类规范（公共/特定项目）。
-2. [docs/fork-guide.md](docs/fork-guide.md) —— 目录结构、fork 工作流、`main` 保持干净的原因与例外、`assets/docs` 使用约定。
-3. [docs/development/build-and-test.md](docs/development/build-and-test.md) —— 构建与验证命令、改动验证要求。
-4. [docs/development/coding-conventions.md](docs/development/coding-conventions.md) —— 代码约定（语言风格、复用、注释、测试同步、资源约束等）。
-5. [docs/contribution/commit-and-pr.md](docs/contribution/commit-and-pr.md) —— 提交规范与 PR 约定。
+开始任何工作前，先读 `docs/contribution/doc-conventions.md`（文档生成规范与分类）。此后按触发场景读取对应规则：
+
+- **首次接触本仓库 / 需要定位功能或新增代码前**，先读 [docs/fork-guide.md](docs/fork-guide.md)（目录结构、`main` 保持干净、fork 约定、`assets/docs` 使用）。
+- **构建、烧录或验证改动前**，先读 [docs/development/build-and-test.md](docs/development/build-and-test.md)（ESP-IDF 命令、逻辑测试、编译与真机验证分开）。
+- **编写代码前**，先读 [docs/development/coding-conventions.md](docs/development/coding-conventions.md)（语言风格、复用、注释、测试同步、资源约束）。
+- **提交或创建 PR 前**，先读 [docs/contribution/commit-and-pr.md](docs/contribution/commit-and-pr.md)（commit 格式、push、PR 说明要求）。
+
+完整文档导航见 [docs/README.md](docs/README.md)。
