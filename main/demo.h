@@ -23,3 +23,6 @@ void demo_audio_key(bsp_btn_t btn, bsp_btn_ev_t ev);
 
 void demo_battery_enter(void); void demo_battery_exit(void);
 void demo_battery_key(bsp_btn_t btn, bsp_btn_ev_t ev);
+
+void demo_pet_enter(void); void demo_pet_exit(void);
+void demo_pet_key(bsp_btn_t btn, bsp_btn_ev_t ev);
