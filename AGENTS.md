@@ -17,7 +17,7 @@
 
 开始任何工作前，先读 `docs/contribution/doc-conventions.md`（文档生成规范与分类）。此后按触发场景读取对应规则：
 
-- **首次接触本仓库 / 需要定位功能或新增代码前**，先读 [docs/fork-guide.md](docs/fork-guide.md)（目录结构、`main` 保持干净、fork 约定、`assets/docs` 使用）。
+- **首次接触本仓库 / 需要定位功能或新增代码前**，先读 [docs/fork-guide.md](docs/fork-guide.md)（目录结构、`main` 保持干净、fork 约定、`docs/assets` 使用）。
 - **构建、烧录或验证改动前**，先读 [docs/development/build-and-test.md](docs/development/build-and-test.md)（ESP-IDF 命令、逻辑测试、编译与真机验证分开）。
 - **编写代码前**，先读 [docs/development/coding-conventions.md](docs/development/coding-conventions.md)（语言风格、复用、注释、测试同步、资源约束）。
 - **提交或创建 PR 前**，先读 [docs/contribution/commit-and-pr.md](docs/contribution/commit-and-pr.md)（commit 格式、push、PR 说明要求）。

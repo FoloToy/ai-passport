@@ -4,7 +4,7 @@
 
 **先读全部 README**：开始工作前，阅读仓库的**全部** `README*` 说明——包括上游英文 `docs/README.md`、中文 `docs/README.zh_CN.md`，以及 fork 用户可能自行创建的根目录 `README.md` 或自定义 README。这些文件是重要的 AI 参考（含项目定位、硬件事实、使用约定等），AI 不应只依赖本文件。
 
-**文档生成规范**：本仓库的说明文档（`AGENTS.md`、`CLAUDE.md`、`CHANGELOG.md`、`docs/**`、`assets/**`、`skills/**` 等）均为 AI 生成。请**勿手动输入或修改**这些文档内容——需要更新时，通过 AI agent 按本项目规范重新生成/改写，保持文档与代码、与约定一致；手动改动会造成不一致或被后续流程覆盖。例外：`assets/docs/` 是 fork 用户保存 README 补充文档与素材的目录，其内容由 fork 用户按 `assets/docs/readme.md` 约定管理，不属于上游同步的 AI 生成文档。
+**文档生成规范**：本仓库的说明文档（`AGENTS.md`、`CLAUDE.md`、`CHANGELOG.md`、`docs/**`、`assets/**`、`skills/**` 等）均为 AI 生成。请**勿手动输入或修改**这些文档内容——需要更新时，通过 AI agent 按本项目规范重新生成/改写，保持文档与代码、与约定一致；手动改动会造成不一致或被后续流程覆盖。例外：`docs/assets/` 是 fork 用户保存 README 补充文档与素材的目录，其内容由 fork 用户按 `docs/assets/readme.md` 约定管理，不属于上游同步的 AI 生成文档。
 
 **文档分类规范**：文档分为两类，提交到上游的 PR 里**只允许包含公共文档**：
 

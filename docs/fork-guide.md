@@ -15,11 +15,11 @@ docs/
   README.md                   上游英文说明（FoloToy AI Passport；GitHub 主 README）
   README.zh_CN.md             上游中文说明（FoloToy AI Passport）
   INDEX.md                    仓库根总索引（各目录索引表格 + 根治理文档）
+  assets/                     fork 补充文档素材目录（README 不足以说明项目时存放补充文档与素材；上游 main 只保留空目录 `.gitkeep`，内容文件仅存在于 fork）
   fork-guide.md               本文档：fork 工作流与约定
 components/bsp/               板级支持包：显示、按键、音频、电池、I2C（稳定 API 与 bsp_pins.h 硬件事实）
 main/                         设备固件应用：LVGL 菜单 + 独立 demo_*.c 硬件验证页（新 demo 需实现 demo.h 声明的 enter/exit/key 接口）
 assets/                       预置资源：fonts/ images/ music/（各含 README.md）
-  docs/                        fork 补充文档目录（README 不足以说明项目时存放补充文档与素材；上游 main 只保留空目录 `.gitkeep`，内容文件仅存在于 fork）
 skills/                       可复用技能目录（每个 skill 独立子目录）
 tests/                        轻量级逻辑测试（无硬件可运行）
 sdkconfig.defaults            ESP32-C3、USB console、Flash、LVGL 默认配置
@@ -37,13 +37,13 @@ sdkconfig.defaults            ESP32-C3、USB console、Flash、LVGL 默认配置
 
 ## 给 fork 用户
 
-fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `assets/docs/` 目录**（可建自己的说明/README 变体），**不允许改其它任何文件**——这样 fork 的 `main` 与上游保持最新同步、不产生冲突。任何其它修改（固件功能、文档规整等）一律在 `feature/*` 分支进行，用 PR 合并。
+fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `docs/assets/` 目录**（可建自己的说明/README 变体），**不允许改其它任何文件**——这样 fork 的 `main` 与上游保持最新同步、不产生冲突。任何其它修改（固件功能、文档规整等）一律在 `feature/*` 分支进行，用 PR 合并。
 
 > **README 显示说明**：上游 README 位于 `docs/README.md`（根目录已无上游 README）。GitHub 显示优先级为根目录 `README.md` > `docs/README.md`，因此 fork 用户在根目录自建 `README.md` 即可覆盖上游显示——这正契合上面的 fork 约定。
 
-## assets/docs 使用约定
+## docs/assets 使用约定
 
-个人项目可能 `README.md` 不足以完整说明项目，`assets/docs/` 正是用于在 fork 下保存 README 的**补充文档与素材**（架构说明、产品设计、图片素材等）。`assets/docs/` 在**上游 main 上必须为空**（仅保留 `.gitkeep` 占位），因此 fork 用户应在该目录下自行创建 `readme.md` 说明使用方式。建议 `assets/docs/readme.md` 包含：
+个人项目可能 `README.md` 不足以完整说明项目，`docs/assets/` 正是用于在 fork 下保存 README 的**补充文档与素材**（架构说明、产品设计、图片素材等）。`docs/assets/` 在**上游 main 上必须为空**（仅保留 `.gitkeep` 占位），因此 fork 用户应在该目录下自行创建 `readme.md` 说明使用方式。建议 `docs/assets/readme.md` 包含：
 
 - 本目录用途：README 的补充文档与素材所在。
 - 目录结构约定：如何组织文档与素材子目录。
