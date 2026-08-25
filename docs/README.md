@@ -196,7 +196,8 @@ components/bsp/include/  Public BSP APIs and bsp_pins.h hardware facts
 components/bsp/src/      Display, button, audio, battery, and shared-I2C implementations
 main/                    Minimal menu, LVGL UI, and independent hardware demo pages
 tests/                   Lightweight logic tests that can run without hardware
-docs/                    Engineering/contribution conventions, design docs, and READMEs (README.md / README.zh_CN.md / INDEX.md)
+docs/                    Engineering/contribution conventions, design docs, CI docs, and READMEs (README.md / README.zh_CN.md / INDEX.md)
+.github/workflows/       CI workflows (build-firmware.yml, sync-main.yml)
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
 AGENTS.md        Coding, validation, and contribution rules for agents
 CONTRIBUTING.md  Contribution guide

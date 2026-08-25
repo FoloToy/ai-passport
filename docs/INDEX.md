@@ -12,6 +12,8 @@
 | [development/README.md](./development/README.md) | 工程规范索引 | authoritative | 通用工程开发规范（构建验证、代码约定） |
 | [development/build-and-test.md](./development/build-and-test.md) | 工程规范 | authoritative | 构建与验证（ESP-IDF 命令、逻辑测试、改动验证要求） |
 | [development/coding-conventions.md](./development/coding-conventions.md) | 工程规范 | authoritative | 代码约定（语言风格、复用、注释、测试同步、资源约束） |
+| [development/CI-build-and-release.md](./development/CI-build-and-release.md) | CI 文档 | authoritative | 自动构建与发布说明（tag 触发自动编译固件并发布 Release） |
+| [development/CI-sync-main.md](./development/CI-sync-main.md) | CI 文档 | authoritative | 上游同步说明（定期同步上游 main 到 fork） |
 | [fork-guide.md](./fork-guide.md) | fork 工作流 | authoritative | 目录结构、main 保持干净、fork 约定、docs/assets 使用 |
 | [software-design/README.md](./software-design/README.md) | 软件设计索引 | 参考 | 软件设计文档子目录骨架 |
 | [hardware-design/README.md](./hardware-design/README.md) | 硬件设计索引 | 参考 | 硬件设计文档子目录骨架 |
