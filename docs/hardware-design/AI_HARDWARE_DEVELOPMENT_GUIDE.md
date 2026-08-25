@@ -8,7 +8,7 @@
 
 AI 应先完成以下检查：
 
-1. 阅读 `AGENTS.md`、本文件、`README.md` 和将要修改的 BSP 头文件/实现。
+1. 阅读 `AGENTS.md`、本文件、`docs/README.md`、`docs/README.zh_CN.md` 和将要修改的 BSP 头文件/实现。
 2. 执行 `git status --short`，保留用户已有改动，不覆盖、不清理无关文件。
 3. 判断修改属于哪一层：可复用硬件能力放入 `components/bsp`；菜单、动画、业务交互和验证页面放入 `main`。
 4. 以 `bsp_pins.h` 为当前板卡引脚和面板参数的单一事实来源，不在 `.c` 文件重复写 GPIO、I2C 地址或屏幕尺寸。

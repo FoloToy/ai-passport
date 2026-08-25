@@ -1,0 +1,59 @@
+name: Feature request / 功能建议
+description: Suggest an improvement to the firmware, BSP, hardware, or documentation.
+title: "[Feature] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement. Do not include credentials, private device links, or personal data.
+        感谢你的建议。请勿提交凭证、私密设备链接或个人数据。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case / 问题或使用场景
+      description: What problem should this feature solve, and who benefits from it?
+      placeholder: Describe the current limitation and the intended use case.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior / 期望行为
+      description: Describe the expected user-visible behavior and acceptance criteria.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area / 涉及范围
+      options:
+        - Firmware or demo / 固件或示例
+        - BSP or hardware interface / BSP 或硬件接口
+        - Documentation or tooling / 文档或工具
+        - Hardware revision / 硬件版本
+        - Not sure / 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered / 已考虑的替代方案
+      description: List any workarounds or alternative designs you considered.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context / 补充信息
+      description: Add sanitized logs, diagrams, or links if useful.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety check / 安全确认
+      options:
+        - label: I removed credentials, private device links, and personal data. / 我已移除凭证、私密设备链接和个人数据。
+          required: true

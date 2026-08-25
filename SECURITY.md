@@ -14,11 +14,9 @@ The preferred channel is GitHub's private vulnerability reporting form:
 
 <https://github.com/FoloToy/ai-passport/security/advisories/new>
 
-If that form is unavailable, email the FoloToy maintainers at the contact address
-listed in the repository. We recommend using `[AI Passport Security]` in the
-subject. If reproduction materials contain sensitive information, tell us in the
-email and wait for the maintainers to provide an appropriate secure transfer
-method. Do not send sensitive materials through a public channel.
+If that form is unavailable, open a public issue containing only a request for a
+private security contact. Do not include vulnerability details or reproduction
+materials in that issue; wait for a maintainer to provide a private channel.
 
 ## What to include
 

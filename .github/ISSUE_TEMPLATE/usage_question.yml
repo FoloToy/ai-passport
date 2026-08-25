@@ -1,0 +1,65 @@
+name: Usage question / 使用问题
+description: Ask for help building, flashing, configuring, or using AI Passport.
+title: "[Question] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search existing issues first. Security vulnerabilities must be reported through SECURITY.md, not here.
+        请先搜索已有 issue。安全漏洞必须按 SECURITY.md 私密报告，不要填写在这里。
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question / 问题
+      description: What are you trying to do, and where are you blocked?
+    validations:
+      required: true
+
+  - type: input
+    id: board
+    attributes:
+      label: Board revision / 板卡版本
+      placeholder: For example, production board or PCB revision; write Unknown if unsure.
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version / 固件版本
+      description: Provide a release version, branch name, or commit SHA.
+      placeholder: For example, v1.0.0 or ea9c823
+    validations:
+      required: true
+
+  - type: input
+    id: idf
+    attributes:
+      label: ESP-IDF version / ESP-IDF 版本
+      placeholder: For example, v5.5.3
+
+  - type: textarea
+    id: attempts
+    attributes:
+      label: Steps tried and observed result / 已尝试步骤与结果
+      description: Include commands, expected behavior, and actual behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs / 已脱敏日志
+      description: Paste relevant logs after removing Wi-Fi credentials, tokens, device secrets, and personal data.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist / 确认项
+      options:
+        - label: I searched existing issues and documentation. / 我已搜索已有 issue 和文档。
+          required: true
+        - label: I removed credentials, private device links, and personal data. / 我已移除凭证、私密设备链接和个人数据。
+          required: true
