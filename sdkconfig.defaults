@@ -5,8 +5,8 @@ CONFIG_IDF_TARGET="esp32c3"
 # --- Flash ---
 # FoloToy AI Passport 的所有硬件批次均使用 8MB Flash。
 CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
-# 烧录时按实际探测容量回写镜像头。
-CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE=y
+# 固定 8MB 镜像头，关闭 detect，便于 idf.py merge-bin。
+CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE=n
 # 无 OTA 的硬件演示固件；3MB app 分区给 Wi-Fi/NimBLE 留出升级余量。
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"

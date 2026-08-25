@@ -8,7 +8,7 @@
 
 AI 应先完成以下检查：
 
-1. 阅读 `AGENTS.md`、本文件、`README.md` 和将要修改的 BSP 头文件/实现。
+1. 阅读 `AGENTS.md`、本文件、`docs/README.md`、`docs/README.zh_CN.md` 和将要修改的 BSP 头文件/实现。
 2. 执行 `git status --short`，保留用户已有改动，不覆盖、不清理无关文件。
 3. 判断修改属于哪一层：可复用硬件能力放入 `components/bsp`；菜单、动画、业务交互和验证页面放入 `main`。
 4. 以 `bsp_pins.h` 为当前板卡引脚和面板参数的单一事实来源，不在 `.c` 文件重复写 GPIO、I2C 地址或屏幕尺寸。
@@ -195,7 +195,7 @@ SOC 准确度取决于电芯与 profile 的匹配程度。本驱动给出的是�
 
 ## 10. Flash、控制台和资源预算
 
-FoloToy AI Passport 的所有硬件批次均使用 8 MB Flash，`sdkconfig.defaults` 因此固定使用 8 MB Flash 镜像配置；`partitions.csv` 提供 24 KB NVS、4 KB PHY data 和 3 MB factory app 分区，无 OTA 槽。烧录时仍允许按实际探测容量更新镜像头。若实机探测结果不是 8 MB，应视为硬件、料号或连接异常并先确认，不能为了让未知板卡启动而把项目默认值降为 4 MB。
+FoloToy AI Passport 的所有硬件批次均使用 8 MB Flash，`sdkconfig.defaults` 因此固定使用 8 MB Flash 镜像配置，并关闭 `CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE`（不按探测容量回写镜像头，便于 `idf.py merge-bin`）；`partitions.csv` 提供 24 KB NVS、4 KB PHY data 和 3 MB factory app 分区，无 OTA 槽。若实机探测结果不是 8 MB，应视为硬件、料号或连接异常并先确认，不能为了让未知板卡启动而把项目默认值降为 4 MB。
 
 控制台固定为 USB Serial/JTAG，不使用 UART0 默认输出，因为其 TX GPIO21 与背光冲突。任何日志接口修改都必须同时检查引脚占用。
 

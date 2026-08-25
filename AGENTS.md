@@ -1,39 +1,27 @@
-# Repository Guidelines
+# AGENTS.md
 
-## Project Structure & Module Organization
+给 AI agent（Claude Code / Codex / Cursor / Cline 等）读的仓库说明。Claude Code 另见 `CLAUDE.md`（薄引用本文件）。
 
-This repository is an ESP-IDF BSP and hardware demonstration for the ESP32-C3-based FoloToy AI Passport.
+本文件是仓库权威 AI 规范的**入口与索引**，具体规则已按主题拆分到 `docs/` 下公共文档。规则有更新时改对应 `docs/` 文件，不要在本文件另起一套，以免两份文档 drift。
 
-- `components/bsp/include/`: public BSP APIs and the hardware pin/configuration source of truth (`bsp_pins.h`).
-- `components/bsp/src/`: display, button, audio, battery, and shared-I2C implementations.
-- `main/`: the LVGL menu and independent `demo_*.c` hardware validation pages. New demos should implement the `enter`, `exit`, and `key` interface declared in `demo.h`.
-- `sdkconfig.defaults`: reproducible target, console, LVGL, and memory defaults.
-- `README.md`: wiring, known hardware traps, and the required on-device acceptance checklist.
+## 项目概述
 
-Keep reusable hardware logic in `components/bsp`; keep board demonstration and UI behavior in `main`.
+本仓库是 **FoloToy AI Passport** 的开源硬件开发基线。它是一个面向 AI agent 的开放式可穿戴 AI 硬件：`main` 是最小但完整的可运行基线，集中存放**已确认的硬件事实、稳定接口、资源边界、参考实现与验收方法**，AI agent 可据此识别能力与限制、实现并构建应用。本仓库常被 fork 后二次开发，fork 用户的使用约定见 [docs/fork-guide.md](docs/fork-guide.md)。
 
-## Build, Test, and Development Commands
+- **平台**：ESP32-C3（32 位 RISC-V，无 PSRAM，8MB Flash），ESP-IDF 5.5.x（已知开发环境 5.5.3）。
+- **屏**：ST7789P3，240×320 竖屏 RGB565，SPI2 40MHz，LVGL。
+- **交互**：`UP`/`DOWN`/`OK` 三键（GPIO0 ADC 电阻梯）；音频 ES8311（I2S0 全双工）；电池 CW2017；I2C0 共享总线。
+- **协议**：MIT LICENCE，仓库根许可证文件为准。
 
-Use ESP-IDF 5.5.x:
+## 规则索引（按触发场景阅读）
 
-```bash
-get_idf553                    # Enter the repository's ESP-IDF 5.5.3 environment
-idf.py set-target esp32c3     # Configure a fresh checkout
-idf.py build                  # Compile firmware and validate dependencies
-idf.py flash monitor          # Flash the connected board and open logs
-idf.py fullclean              # Remove generated build state when configuration is stale
-```
+开始任何工作前，先读 `docs/contribution/doc-conventions.md`（文档生成规范与分类）。此后按触发场景读取对应规则：
 
-There is no host-side automated test suite currently. Treat a clean `idf.py build` as the minimum check, then run every applicable item in the README acceptance checklist on real hardware.
+- **首次接触本仓库 / 需要定位功能或新增代码前**，先读 [docs/fork-guide.md](docs/fork-guide.md)（目录结构、`main` 保持干净、fork 约定、`docs/assets` 使用）。
+- **AI 开始开发前（建立上下文、需求拆解、BSP 边界、验收交付格式）**，先读 [docs/development/agent-guide.md](docs/development/agent-guide.md)。
+- **构建、烧录或验证改动前**，先读 [docs/development/build-and-test.md](docs/development/build-and-test.md)（ESP-IDF 命令、逻辑测试、编译与真机验证分开）。
+- **编写代码前**，先读 [docs/development/coding-conventions.md](docs/development/coding-conventions.md)（语言风格、复用、注释、测试同步、资源约束）。
+- **提交或创建 PR 前**，先读 [docs/contribution/commit-and-pr.md](docs/contribution/commit-and-pr.md)（commit 格式、push、PR 说明要求）。
+- **参与社区或贡献代码前**，见根目录 [CONTRIBUTING.md](CONTRIBUTING.md)（贡献指南）、[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)（行为准则）、[SECURITY.md](SECURITY.md)（安全报告）、[SUPPORT.md](SUPPORT.md)（支持渠道）。
 
-## Coding Style & Naming Conventions
-
-Write C using four-space indentation and K&R-style braces, following nearby files. Use `snake_case` for functions and locals, `BSP_*` for public hardware constants, and `s_` for file-local state. Keep BSP APIs prefixed with `bsp_`; name demo entry points `demo_<feature>_<action>`. Prefer `static` for internal symbols. UI text stays English; explanatory comments may be Chinese. Preserve comments documenting hardware-specific register values and memory constraints.
-
-## Testing Guidelines
-
-Before submitting, build from the repository root and inspect warnings. On hardware, verify menu navigation and the affected Display, Button, Audio, or Battery page. For pin, display-rotation, codec-clock, ADC, or DMA changes, explicitly record the observed hardware result in the PR. Do not increase LVGL buffers or audio allocations without checking ESP32-C3 internal RAM usage; the board has no PSRAM.
-
-## Commit & Pull Request Guidelines
-
-History follows Conventional Commit-style subjects such as `feat(bsp): ...`, `feat(demo): ...`, `fix(bsp): ...`, and `docs: ...`. Keep commits focused by subsystem. Pull requests should explain the hardware/revision tested, summarize behavior changes, list build and on-device results, and include photos or screenshots for display changes. Link related issues and call out wiring, pin-map, or compatibility impacts.
+完整文档导航见 [docs/INDEX.md](docs/INDEX.md)。

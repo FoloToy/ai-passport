@@ -1,0 +1,74 @@
+name: Build firmware
+
+on:
+  push:
+    tags:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.artifact_name.outputs.name }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Restore ccache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: .ccache
+          key: ccache-${{ github.ref_type }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ github.ref_type }}-${{ github.ref_name }}-
+            ccache-
+
+      - name: Build firmware (ESP-IDF 5.5.3 / esp32c3)
+        uses: espressif/esp-idf-ci-action@9d38657f3d789ca759b2b37aaf5ceffbc42c4f0d # v1
+        with:
+          esp_idf_version: v5.5.3
+          target: esp32c3
+          extra_docker_args: >-
+            -e CCACHE_DIR=/app/${{ github.repository }}/.ccache
+            -e IDF_CCACHE_ENABLE=1
+          command: >-
+            idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build &&
+            idf.py merge-bin -o "$PWD/build/FoloToy-AI-Passport-full.bin"
+
+      - name: Set artifact name
+        id: artifact_name
+        run: echo "name=passport-${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ${{ steps.artifact_name.outputs.name }}
+          path: build/FoloToy-AI-Passport-full.bin
+          if-no-files-found: error
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download firmware artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: release
+
+      - name: Create release (tag push)
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          name: "${{ github.ref_name }}"
+          files: release/FoloToy-AI-Passport-full.bin
+          if-no-files-found: error

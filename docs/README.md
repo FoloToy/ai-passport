@@ -1,0 +1,119 @@
+# FoloToy AI Passport
+
+English | [简体中文](README.zh_CN.md)
+
+FoloToy AI Passport is open wearable AI hardware. This repository is the development baseline for the device. It keeps the **hardware facts, stable interfaces, resource boundaries, reference implementations, and validation methods** needed to build applications in one place.
+
+The repository is organized around the following principles:
+
+- `main` is the smallest complete runnable baseline and an executable description of the current hardware capabilities.
+- `components/bsp` isolates board-level details and exposes stable APIs to applications.
+- `demo/*` branches show different paths from a product requirement to a working implementation.
+- Development conventions for AI assistants live in [`AGENTS.md`](../AGENTS.md) and [`docs/development/agent-guide.md`](development/agent-guide.md); the complete hardware context and troubleshooting knowledge is in [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+- Build results and physical-device results are reported separately. A successful build must never be presented as successful hardware validation.
+
+## Hardware capability contract
+
+The table below describes the application capabilities implemented by the current `main` branch. It is not a list of everything that might be possible according to the chip datasheet.
+
+| Capability | Confirmed implementation | Application interface | Boundaries that must be respected |
+| --- | --- | --- | --- |
+| Display | ST7789P3, 240 × 320 portrait RGB565, SPI2 at 40 MHz; LEDC backlight | `bsp_display_*`, `bsp_lvgl_*` | The ESP32-C3 has no PSRAM; the current design uses a small single DMA buffer; no LCD MISO, touch, or known TE interface |
+| Input | `UP`, `DOWN`, and `OK` share an ADC resistor ladder on GPIO0 | `bsp_button_init()`, `bsp_button_read_mv()` | Callbacks run in the button component task and must not block; do not create a second ADC1 unit |
+| Audio | ES8311 with full-duplex PCM over I2S0, supporting playback and microphone capture | `bsp_audio_*` | PCM reads and writes block and belong in a worker task; format changes must retain the BSP close/open sequence |
+| Battery | CW2017 state-of-charge and voltage readings | `bsp_battery_*` | This capability is optional at runtime; accuracy depends on the cell and battery profile and is not equivalent to a calibrated result |
+| Wi-Fi | On-demand 2.4 GHz STA scan demo | `main/demo_wifi.c` | Scans only; it does not connect, store credentials, or validate antenna/RF performance |
+| Bluetooth LE | On-demand non-connectable NimBLE advertising as `FoloPassport` | `main/demo_ble.c` | ESP32-C3 does not support Bluetooth Classic; radio range, coexistence, and power draw require device measurements |
+| Low power | Two-second light sleep and five-second deep sleep, both with RTC timer wakeup | `main/demo_low_power.c` | Deep sleep restarts the application; external/button wakeup and board-level power consumption remain unverified |
+| Shared bus | ES8311 and CW2017 share I2C0 | `bsp_i2c_*` | Every device must reuse the bus owned by the BSP; do not create another bus on the same port for scanning or a new device |
+| Logging and flashing | Native ESP32-C3 USB Serial/JTAG | ESP-IDF console | GPIO18/19 are reserved for USB; the default UART0 TX on GPIO21 conflicts with the backlight |
+
+All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](../components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
+
+Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. Wi-Fi and Bluetooth LE remain ESP-IDF application services rather than BSP APIs: their menu pages initialize each stack only while open and release it on exit. `demo/claude-buddy-port` remains a fuller BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior. Every FoloToy AI Passport has 8 MB of Flash, and the default firmware configuration targets 8 MB with a 3 MB factory-app partition.
+
+### Capabilities outside the current contract
+
+The repository does not currently provide enough evidence to guarantee touch input, display readback, an IMU, external storage, charging control, USB insertion detection, controllable power-amplifier enable, external/button deep-sleep wakeup, arbitrary “free GPIOs,” exact battery capacity, or production-grade power specifications. A capability being present in the ESP32-C3 silicon does not mean that it is connected, powered correctly, or validated on this board.
+
+Requirements involving these capabilities must begin with a schematic, board revision, component documentation, or physical measurements. Only then should the BSP and its acceptance criteria be extended.
+
+## Start development with one requirement
+
+A simple request can be given directly to an AI assistant:
+
+```text
+On the main branch, build an offline habit-tracking application for FoloToy AI Passport.
+Use the three physical buttons and the 240×320 display, and preserve records across power loss.
+Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches first,
+keep hardware logic in components/bsp and application logic in main, deliver a runnable
+implementation with tests, and report the build result, unexecuted device checks, and exact
+on-device acceptance steps separately.
+```
+
+The more specific the requirement, the more likely the assistant is to implement it correctly in one pass. Useful details include:
+
+- User flow: what each page displays and what short press, double press, and long press do for each button.
+- State and data: whether the application needs timing, persistence across power loss, networking, recording, or communication with a computer.
+- Experience goals: fonts, colors, animation, sound, response time, and error states.
+- Constraints: whether the main menu may be replaced, dependencies added, Flash used, or default interactions changed.
+- Acceptance criteria: which behaviors require automated tests and which must be observed on real hardware.
+
+When details are omitted, the assistant may choose conservative defaults that do not change the product direction, but it must list those assumptions in the delivery. Decisions involving new wiring, electrical safety, board revisions, or irreversible data formats require confirmation first.
+
+## Demo branches are design cases, not a feature pile
+
+Each `demo/*` branch evolves the baseline into an independent application. The branches demonstrate how specific problems were solved. New applications should normally branch from `main` and consult relevant examples instead of merging multiple demos wholesale.
+
+| Branch | Application | Patterns worth reusing |
+| --- | --- | --- |
+| `demo/stopwatch` | Stopwatch | Minimal timer application, separation of pure logic from LVGL, host-side logic tests |
+| `demo/cat-themed-pomodoro-timer` | Cat-themed Pomodoro timer | Monotonic time, pause/resume, NVS persistence, a detailed PRD, and a state model |
+| `demo/rock-paper-scissors` | Rock paper scissors | RGB565 image assets, asset-generation scripts, and Flash resource tradeoffs |
+| `demo/tetris-game` | Three-button Tetris | Real-time game loop, low-latency `PRESS` input, partial refresh, a pure game model, audio, and microphone interaction |
+| `demo/claude-buddy-port` | Desktop AI hardware companion | Replacing the demo menu with a complete application, encrypted BLE, protocol parsing, state reduction, task communication, and extensive host tests |
+
+Inspect an example without switching the current working tree:
+
+```bash
+git branch -r --list 'origin/demo/*'
+git diff main...origin/demo/tetris-game -- main components tests
+git show origin/demo/tetris-game:main/demo_tetris.c
+```
+
+Start a new application:
+
+```bash
+git switch main
+git switch -c feature/my-passport-app
+```
+
+Example branches may change the same menu, configuration, or driver in incompatible ways. Understand the differences before extracting a state model, asset pipeline, or concurrency pattern. Code appearing in an example branch is not automatically part of the current `main` BSP contract.
+
+## Project structure
+
+```text
+components/bsp/include/  Public BSP APIs and bsp_pins.h hardware facts
+components/bsp/src/      Display, button, audio, battery, and shared-I2C implementations
+main/                    Minimal menu, LVGL UI, and independent hardware demo pages
+tests/                   Lightweight logic tests that can run without hardware
+docs/                    Engineering/contribution conventions, design docs, CI docs, and READMEs (README.md / README.zh_CN.md / INDEX.md)
+.github/workflows/       CI workflows (build-firmware.yml, sync-main.yml)
+sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
+partitions.csv           NVS, PHY data, and 3 MB factory application layout
+AGENTS.md                Coding, validation, and contribution rules for agents
+CONTRIBUTING.md  Contribution guide
+CODE_OF_CONDUCT.md  Code of conduct
+SECURITY.md      Security vulnerability reporting
+SUPPORT.md       Support channels
+```
+
+## Documentation
+
+- [`docs/INDEX.md`](INDEX.md) — 全部文档索引（协作规范、工程规范、fork 工作流、软硬件设计）。
+- [`docs/development/agent-guide.md`](development/agent-guide.md) — AI 开发工作流（面向 AI 编程助手：上下文建立、事实来源优先级、BSP 边界、运行时规则、交付格式）。
+- [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) — 硬件开发指南（引脚表、验收矩阵、故障速查）。
+- [`AGENTS.md`](../AGENTS.md) — AI 协作规范入口。
+- [`docs/fork-guide.md`](fork-guide.md) — fork 工作流。
+
+> 注：本 README 只描述产品与仓库，不含给 AI 的执行说明；AI 开始开发前请先读 `docs/development/agent-guide.md`。
