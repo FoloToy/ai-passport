@@ -41,7 +41,7 @@ jobs:
             cd build &&
             python -m esptool --chip esp32c3 merge_bin
             -o FoloToy-AI-Passport-full.bin
-            @flash_args --flash_size 8MB
+            --flash_size 8MB @flash_args
 
       - name: Set artifact name
         run: echo "ARTIFACT_NAME=passport-${GITHUB_REF_NAME//\//-}" >> "$GITHUB_ENV"
