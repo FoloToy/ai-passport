@@ -47,7 +47,7 @@ README.zh_CN.md               上游中文说明（FoloToy AI Passport）
 
 **例外**：如果用户**执意要在 `main` 分支直接开发**，需要**停用/关闭 CI 的自动同步任务**（见 `ci/sync-main` 分支的同步 workflow），否则自动同步会把上游改动强行合入，产生冲突或覆盖本地开发内容。
 
-**fork 用户注意**：fork 默认的 GitHub Actions 是**关闭**的，需要**手动打开启用**（GitHub 仓库 Actions 页面 → 找到同步 workflow → Enable）后，CI 自动同步才会生效。
+**fork 用户注意（整个 CI 通用）**：fork 默认的 GitHub Actions 是**关闭**的，需要**手动打开启用**（GitHub 仓库 Actions 页面 → 找到需要的 workflow，如 CI 自动同步 → Enable）后，对应的 CI 才会生效。
 
 **给 fork 用户**：fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `assets/docs/` 目录**（可建自己的说明/README 变体），**不允许改其它任何文件**——这样 fork 的 `main` 与上游保持最新同步、不产生冲突。任何其它修改（固件功能、文档规整等）一律在 `feature/*` 分支进行，用 PR 合并。
 
