@@ -38,12 +38,7 @@ jobs:
             -e IDF_CCACHE_ENABLE=1
           command: >-
             idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build &&
-            python -m esptool --chip esp32c3 merge_bin -f raw
-            --flash_mode dio --flash_freq 80m --flash_size 8MB
-            -o build/FoloToy-AI-Passport-full.bin
-            0x0 build/bootloader/bootloader.bin
-            0x8000 build/partition_table/partition-table.bin
-            0x10000 build/FoloToy-AI-Passport.bin
+            idf.py merge-bin -o "$PWD/build/FoloToy-AI-Passport-full.bin"
 
       - name: Set artifact name
         run: echo "ARTIFACT_NAME=passport-${GITHUB_REF_NAME//\//-}" >> "$GITHUB_ENV"
