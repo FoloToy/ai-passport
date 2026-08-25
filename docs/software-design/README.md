@@ -17,6 +17,5 @@
 ## 现有文档索引
 
 - [AGENTS.md](../../AGENTS.md)：面向 AI agent 的编码、命名、构建与协作规范（仓库根的权威 AI 说明）。
-- [CI.md](CI.md)：自动构建与发布说明（tag 触发自动编译固件并发布 Release）。
 
-> 注：`docs/software-design` 为本次仓库规范化目录，用于容纳软件设计文档。
+> 注：`docs/software-design` 为本次仓库规范化目录，用于容纳软件设计文档。CI/构建发布说明迁移至 `ci/build-firmware` 分支的 `docs/software-design/CI-build-and-release.md`。
