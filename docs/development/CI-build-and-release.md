@@ -15,7 +15,7 @@
 
 1. **ccache 缓存恢复**：使用 `actions/cache@v5`（Node.js 24 runtime）缓存编译中间产物（`.ccache`），二次编译大幅提速。缓存 key 含 ref 与 commit sha，7 天保留（GitHub Actions 默认策略）。
 2. **编译**（ESP-IDF 5.5.3 / esp32c3）：`idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build`。由 `sdkconfig.defaults` 启用自定义分区表（`CONFIG_PARTITION_TABLE_CUSTOM=y`、`CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"`、`CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"`），编译时读取 `partitions.csv`。
-3. **合并完整固件**：用 `idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin` 把 bootloader + partition-table + app 按本次构建的 `flash_args` 合并为**可直刷的完整固件**。
+3. **合并完整固件**：用 `idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin` 把 bootloader + partition-table + app 按本次构建的 `flash_args` 合并为**可直刷的完整固件**。`sdkconfig.defaults` 保持与 main 一致（含 `HEADER_FLASHSIZE_UPDATE`），因此 merge 前把 `flash_args` 里的 `--flash_size detect` 替换为 `--flash_size 8MB`，避免 esptool 拒绝 `detect`。
 4. **发布**：
    - **tag 触发** → 用 `softprops/action-gh-release@v2` 创建 GitHub Release，附带产物 `FoloToy-AI-Passport-full.bin`。
    - 分支触发 → 上传为 Actions artifact（不创建 Release）。
