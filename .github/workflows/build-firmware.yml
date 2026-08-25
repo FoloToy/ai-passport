@@ -37,7 +37,7 @@ jobs:
             -e CCACHE_DIR=/app/${{ github.repository }}/.ccache
             -e IDF_CCACHE_ENABLE=1
           command: >-
-            idf.py build &&
+            idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build &&
             idf.py merge-bin -o "$PWD/build/FoloToy-AI-Passport-full.bin" --fill-flash-size 8MB
 
       - name: Set artifact name
