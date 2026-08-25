@@ -97,16 +97,14 @@ components/bsp/src/      显示、按键、音频、电池、共享 I2C 实现
 main/                    最小菜单、LVGL UI 与独立硬件演示页
 tests/                   可脱离硬件运行的轻量逻辑测试源
 tools/                   本地与 CI 共用的验证及固件校验脚本
-docs/                    工程/协作规范、设计文档、CI 文档与 README（README.md / README.zh_CN.md / INDEX.md）
-.github/workflows/       CI 工作流（build-firmware.yml、sync-main.yml）
+docs/                    项目说明、变更记录、工程/协作规范与设计参考
+.github/                 GitHub 社区文档、PR 模板、Issue Form 与 CI 工作流
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
 partitions.csv           NVS、PHY data 与 3 MB factory-app 分区布局
 dependencies.lock        可复现的 ESP-IDF Managed Component 解析结果
-AGENTS.md                agent 在本仓库的编码、验证和提交规则
-CONTRIBUTING.md  贡献指南
-CODE_OF_CONDUCT.md  贡献者公约行为准则
-SECURITY.md      安全漏洞报告
-SUPPORT.md       使用支持渠道
+AGENTS.md                AI agent 必读入口（与 AGENTS.zh_CN.md 配对）
+CLAUDE.md                Claude Code 指向 AGENTS.md 的入口（含中文配对）
+LICENSE                  仓库许可证
 ```
 
 ## 文档索引
@@ -117,4 +115,4 @@ SUPPORT.md       使用支持渠道
 - [`AGENTS.zh_CN.md`](../AGENTS.zh_CN.md) — AI 协作规范入口。
 - [`docs/fork-guide.zh_CN.md`](fork-guide.zh_CN.md) — fork 工作流。
 
-> 注：本 README 只描述产品与仓库，不含给 AI 的执行说明；AI 开始开发前请先读 `docs/development/agent-guide.md`。
+> 注：本 README 只描述产品与仓库，不含给 AI 的执行说明；AI 开始开发前请先读根目录 `AGENTS.zh_CN.md`，再按任务路由读取相关文档。

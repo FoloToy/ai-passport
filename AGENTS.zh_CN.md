@@ -52,6 +52,6 @@ Device tests: PASS / FAIL / NOT RUN
 Unverified: 仍需板卡、仪器或用户确认的事项
 ```
 
-仅在用户请求或当前工作流明确要求时创建 commit 和 push。用户可见变化记录到 `CHANGELOG.md`；内部重构、CI 维护、拼写修复和生成文件刷新无需记录。
+仅在用户请求或当前工作流明确要求时创建 commit 和 push。用户可见变化记录到 `docs/CHANGELOG.zh_CN.md`；内部重构、CI 维护、拼写修复和生成文件刷新无需记录。
 
-社区规范见 `CONTRIBUTING.zh_CN.md`、`CODE_OF_CONDUCT.zh_CN.md`、`SECURITY.zh_CN.md` 与 `SUPPORT.zh_CN.md`。
+社区规范见 `.github/CONTRIBUTING.zh_CN.md`、`.github/CODE_OF_CONDUCT.zh_CN.md`、`.github/SECURITY.zh_CN.md` 与 `.github/SUPPORT.zh_CN.md`。

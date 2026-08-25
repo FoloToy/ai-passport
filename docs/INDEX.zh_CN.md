@@ -10,6 +10,7 @@
 
 | 文档 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
+| [CHANGELOG.zh_CN.md](./CHANGELOG.zh_CN.md) | 变更记录 | authoritative | 用户可见行为、兼容性与发布流程历史 |
 | [brand-and-product.zh_CN.md](./brand-and-product.zh_CN.md) | 品牌与产品说明 | authoritative | 品牌与产品定位、官方入口、开源与授权、产品规格引用 |
 | [contribution/README.zh_CN.md](./contribution/README.zh_CN.md) | 协作规范索引 | authoritative | 通用协作规范（文档规范、提交与 PR 约定） |
 | [contribution/doc-conventions.zh_CN.md](./contribution/doc-conventions.zh_CN.md) | 文档规范 | authoritative | 按任务加载上下文、文档职责、写作维护和内容安全 |
@@ -27,11 +28,11 @@
 | [hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md](./hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md) | 硬件指南 | authoritative | 完整硬件开发指南与排障参考（上游） |
 | [hardware-design/specifications.zh_CN.md](./hardware-design/specifications.zh_CN.md) | 产品规格 | authoritative | 产品规格（尺寸、重量、电池、充电、NFC、按键等对外口径） |
 
-## 仓库根治理文档
+## GitHub 社区治理文档
 
-以下社区治理文档位于仓库根目录（GitHub 自动识别）：
+以下社区治理文档位于 `.github/`（GitHub 自动识别）：
 
-- [CONTRIBUTING.zh_CN.md](../CONTRIBUTING.zh_CN.md)：贡献指南（开发验证、PR 流程、许可）。
-- [CODE_OF_CONDUCT.zh_CN.md](../CODE_OF_CONDUCT.zh_CN.md)：贡献者公约行为准则。
-- [SECURITY.zh_CN.md](../SECURITY.zh_CN.md)：安全漏洞报告流程。
-- [SUPPORT.zh_CN.md](../SUPPORT.zh_CN.md)：使用支持与问题反馈渠道。
+- [CONTRIBUTING.zh_CN.md](../.github/CONTRIBUTING.zh_CN.md)：贡献指南（开发验证、PR 流程、许可）。
+- [CODE_OF_CONDUCT.zh_CN.md](../.github/CODE_OF_CONDUCT.zh_CN.md)：贡献者公约行为准则。
+- [SECURITY.zh_CN.md](../.github/SECURITY.zh_CN.md)：安全漏洞报告流程。
+- [SUPPORT.zh_CN.md](../.github/SUPPORT.zh_CN.md)：使用支持与问题反馈渠道。

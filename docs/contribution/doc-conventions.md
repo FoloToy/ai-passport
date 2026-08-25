@@ -28,12 +28,20 @@ These rules apply equally to human contributors and AI agents. Documentation is 
 - Shared contribution and engineering documents cover code style, testing, commits, CI, and AI workflows grounded in this repository's real tools.
 - Fork-only product requirements, business logic, or assets stay in the fork's root README or `docs/assets/`.
 
+## Placement
+
+- Keep the tracked repository root limited to tool-discovery files (`AGENTS.md`, `CLAUDE.md` and their translations), an optional fork README pair, license/build manifests, and ESP-IDF configuration.
+- Put project documentation and history in `docs/`, grouped by contribution, development, hardware, and software responsibility.
+- Put GitHub-recognized community files, templates, issue forms, and workflows in `.github/`.
+- Put reusable binary/source assets in `assets/`, project skills in `skills/`, and automation in `tools/`.
+- Repository checks reject additional root Markdown. Do not add a root document merely for visibility; link it from `docs/INDEX.md` instead.
+
 Do not create empty document scaffolding without a concrete purpose. Register added documents in `docs/INDEX.md` or their directory index and update links when moving or deleting files.
 
 ## Writing, safety, and file operations
 
 - Explain rationale, boundaries, failure modes, and validation instead of restating source code.
 - Enforce automatable rules in `tools/` and CI as well as documentation.
-- Record user-visible behavior, compatibility, and release-flow changes in `CHANGELOG.md`.
+- Record user-visible behavior, compatibility, and release-flow changes in `docs/CHANGELOG.md`.
 - Never commit credentials, tokens, keys, authorization files, private keys, personal data, internal endpoints, or unsanitized device QR parameters. Run `./tools/validate.sh --static` before committing.
 - Preserve existing user changes and untracked files. Use recoverable deletion for user files, and confirm intent before deleting branches, tags, or remote references.

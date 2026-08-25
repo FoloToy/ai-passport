@@ -5,8 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please search existing issues first. Security vulnerabilities must be reported through SECURITY.md, not here.
-        请先搜索已有 issue。安全漏洞必须按 SECURITY.md 私密报告，不要填写在这里。
+        Please search existing issues first. Security vulnerabilities must be reported through .github/SECURITY.md, not here.
+        请先搜索已有 issue。安全漏洞必须按 .github/SECURITY.zh_CN.md 私密报告，不要填写在这里。
 
   - type: textarea
     id: question

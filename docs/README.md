@@ -98,16 +98,14 @@ components/bsp/src/      Display, button, audio, battery, and shared-I2C impleme
 main/                    Minimal menu, LVGL UI, and independent hardware demo pages
 tests/                   Lightweight logic tests that can run without hardware
 tools/                   Shared local/CI validation and firmware verification scripts
-docs/                    Engineering/contribution conventions, design docs, CI docs, and READMEs (README.md / README.zh_CN.md / INDEX.md)
-.github/workflows/       CI workflows (build-firmware.yml, sync-main.yml)
+docs/                    Project docs, changelog, engineering/contribution rules, and design references
+.github/                 GitHub community files, PR template, issue forms, and CI workflows
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
 partitions.csv           NVS, PHY data, and 3 MB factory application layout
 dependencies.lock        Reproducible ESP-IDF Managed Component resolution
-AGENTS.md                Coding, validation, and contribution rules for agents
-CONTRIBUTING.md  Contribution guide
-CODE_OF_CONDUCT.md  Code of conduct
-SECURITY.md      Security vulnerability reporting
-SUPPORT.md       Support channels
+AGENTS.md                Mandatory AI-agent entry point (paired with AGENTS.zh_CN.md)
+CLAUDE.md                Claude Code pointer to AGENTS.md (paired Chinese version)
+LICENSE                  Repository license
 ```
 
 ## Documentation

@@ -9,9 +9,9 @@ FoloToy AI Passport 是开源硬件与固件。社区可以帮助确认可复现
 
 ## 先查什么
 
-- 硬件事实、接线和已知陷阱：先看 [`README.zh_CN.md`](docs/README.zh_CN.md) 和
-  [AI 硬件开发指南](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
-- AI agent 工作流和工程规则：先看 [`AGENTS.md`](AGENTS.md) 及其规则索引。
+- 硬件事实、接线和已知陷阱：先看 [`README.zh_CN.md`](../docs/README.zh_CN.md) 和
+  [AI 硬件开发指南](../docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md)。
+- AI agent 工作流和工程规则：先看 [`AGENTS.zh_CN.md`](../AGENTS.zh_CN.md) 及其规则索引。
 - 安全漏洞、凭证或可利用细节：按照 [`SECURITY.md`](SECURITY.md) 私下报告。
 - 普通 Bug：提交 GitHub issue，并提供板卡版本、固件版本和复现步骤。
 - 功能建议：提交 feature request，说明使用场景和期望结果。

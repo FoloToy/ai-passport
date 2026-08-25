@@ -9,6 +9,7 @@ Use this page to discover repository documentation. `authoritative` documents de
 | Document | Purpose | Status |
 | --- | --- | --- |
 | [README.md](README.md) | Project overview and capability contract | authoritative |
+| [CHANGELOG.md](CHANGELOG.md) | User-visible behavior, compatibility, and release history | authoritative |
 | [brand-and-product.md](brand-and-product.md) | Brand, positioning, official links, and product facts | authoritative |
 | [contribution/README.md](contribution/README.md) | Contribution-document index | authoritative |
 | [contribution/doc-conventions.md](contribution/doc-conventions.md) | Documentation language, ownership, safety, and maintenance | authoritative |
@@ -26,4 +27,4 @@ Use this page to discover repository documentation. `authoritative` documents de
 | [hardware-design/specifications.md](hardware-design/specifications.md) | User-facing product specifications | authoritative |
 | [software-design/README.md](software-design/README.md) | Software-design document index | reference |
 
-Root community documents: [CONTRIBUTING.md](../CONTRIBUTING.md), [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md), [SECURITY.md](../SECURITY.md), and [SUPPORT.md](../SUPPORT.md).
+GitHub community documents: [CONTRIBUTING.md](../.github/CONTRIBUTING.md), [CODE_OF_CONDUCT.md](../.github/CODE_OF_CONDUCT.md), [SECURITY.md](../.github/SECURITY.md), and [SUPPORT.md](../.github/SUPPORT.md).
