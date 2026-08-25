@@ -107,7 +107,7 @@ SUPPORT.md       Support channels
 ## Documentation
 
 - [`docs/INDEX.md`](INDEX.md) — 全部文档索引（协作规范、工程规范、fork 工作流、软硬件设计）。
-- [`docs/development/agent-guide.md`](development/agent-guide.md) — AI 开发工作流（面向 AI 编程助手：上下文建立、需求拆解、BSP 边界、验收交付格式）。
+- [`docs/development/agent-guide.md`](development/agent-guide.md) — AI 开发工作流（面向 AI 编程助手：上下文建立、事实来源优先级、BSP 边界、运行时规则、交付格式）。
 - [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) — 硬件开发指南（引脚表、验收矩阵、故障速查）。
 - [`AGENTS.md`](../AGENTS.md) — AI 协作规范入口。
 - [`docs/fork-guide.md`](fork-guide.md) — fork 工作流。
