@@ -32,17 +32,28 @@ run_static_checks() {
     echo "Host tests: PASS"
 }
 
-run_firmware_checks() {
+run_firmware_checks() (
+    local validation_build_dir
+
     if ! command -v idf.py >/dev/null 2>&1; then
         echo "ERROR: idf.py is not available; activate ESP-IDF 5.5.3 first." >&2
         return 1
     fi
 
-    idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build
-    idf.py merge-bin -o "${repo_root}/build/FoloToy-AI-Passport-full.bin"
-    python3 tools/verify_firmware.py build
+    validation_build_dir="$(mktemp -d /tmp/ai-passport-firmware.XXXXXX)"
+    trap 'case "${validation_build_dir}" in /tmp/ai-passport-firmware.*) rm -rf -- "${validation_build_dir}" ;; esac' EXIT
+
+    SDKCONFIG_DEFAULTS="${repo_root}/sdkconfig.defaults" \
+        idf.py -B "${validation_build_dir}" \
+        -D "SDKCONFIG=${validation_build_dir}/sdkconfig" build
+    idf.py -B "${validation_build_dir}" merge-bin \
+        -o "${validation_build_dir}/FoloToy-AI-Passport-full.bin"
+    python3 tools/verify_firmware.py "${validation_build_dir}"
+    install -D -m 0644 \
+        "${validation_build_dir}/FoloToy-AI-Passport-full.bin" \
+        "${repo_root}/build/FoloToy-AI-Passport-full.bin"
     echo "Firmware build: PASS"
-}
+)
 
 cd "${repo_root}"
 case "${mode}" in
