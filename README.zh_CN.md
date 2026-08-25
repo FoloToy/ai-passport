@@ -195,7 +195,7 @@ components/bsp/include/  BSP 公开 API 与 bsp_pins.h 硬件事实
 components/bsp/src/      显示、按键、音频、电池、共享 I2C 实现
 main/                    最小菜单、LVGL UI 与独立硬件演示页
 tests/                   可脱离硬件运行的轻量逻辑测试源
-docs/                    agent 硬件开发指南与扩展文档
+docs/                    工程/协作规范与设计文档
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
 AGENTS.md        agent 在本仓库的编码、验证和提交规则
 ```

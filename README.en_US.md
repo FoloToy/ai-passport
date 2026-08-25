@@ -196,7 +196,7 @@ components/bsp/include/  Public BSP APIs and bsp_pins.h hardware facts
 components/bsp/src/      Display, button, audio, battery, and shared-I2C implementations
 main/                    Minimal menu, LVGL UI, and independent hardware demo pages
 tests/                   Lightweight logic tests that can run without hardware
-docs/                    Agent hardware development guide and extension documentation
+docs/                    Engineering/contribution conventions and design documentation
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
 AGENTS.md        Coding, validation, and contribution rules for agents
 ```
