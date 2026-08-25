@@ -3,7 +3,7 @@
 ## Unreleased
 
 - 语言规范变更：commit 标题、PR 标题与 body 由"默认中文"改为**使用英文**（`docs/contribution/commit-and-pr.md` 更新）；中文写作规范（全角标点）适用范围剔除 PR/MR 描述（`doc-conventions.md` 更新）。
-- CI 构建改造：`build-firmware.yml` 显式传入 `SDKCONFIG_DEFAULTS=sdkconfig.defaults` 再 `idf.py build`，由 defaults 启用自定义分区表（`CONFIG_PARTITION_TABLE_CUSTOM=y`，文件名为 `partitions.csv`）；再用 `idf.py merge-bin` 合并可直刷完整固件 `build/FoloToy-AI-Passport-full.bin`（`--fill-flash-size 8MB`，固定 8MB）；产物精简为仅 full.bin；sdkconfig 去掉 `HEADER_FLASHSIZE_UPDATE` 的 detect 模式（固定 8MB）以兼容 merge；`actions/cache` 升级到 v5 以消除 GitHub Actions Node.js 20 弃用警告；CI 文档同步更新。
+- CI 构建改造：`build-firmware.yml` 显式传入 `SDKCONFIG_DEFAULTS=sdkconfig.defaults` 再 `idf.py build`，由 defaults 启用自定义分区表（`CONFIG_PARTITION_TABLE_CUSTOM=y`，文件名为 `partitions.csv`）；再用 `esptool merge_bin --flash_size 8MB` 合并可直刷完整固件 `build/FoloToy-AI-Passport-full.bin`（不填充整片 8MB）；产物精简为仅 full.bin；sdkconfig 去掉 `HEADER_FLASHSIZE_UPDATE` 的 detect 模式（固定 8MB）；`actions/cache` 升级到 v5 以消除 GitHub Actions Node.js 20 弃用警告；CI 文档同步更新。
 - 合并上游 PR #6（wireless-low-power-demos）以解决 PR #4 冲突：引入无线/低功耗 demo（`main/demo_wifi.c`、`demo_ble.c`、`demo_radio.c`、`demo_low_power.c`）、`partitions.csv`（NVS/PHY/3 MB factory-app 分区）、`main/CMakeLists.txt`/`main.c`/`demo.h`/`sdkconfig.defaults` 更新；同步硬件指南的 Wi-Fi/BLE/低功耗章节；README 能力契约表补充 Wi-Fi/Bluetooth LE/Low power 三项（中英双语）。
 - 提交规范补充：`docs/contribution/commit-and-pr.md` 明确 PR 标题与 commit 标题同规范（`type(scope): 简述`、祈使句、默认中文），不用名词短语当标题。
 - CI 与文档清理：`sync-main.yml` 移除 `test_mode` 残留模板注释；`docs/development/coding-conventions.md` 将「Redis TTL」条目泛化为「缓存组件」条目（当前固件无 TTL 约束需求，消除从模板带入的无关约定）。
