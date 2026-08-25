@@ -18,10 +18,11 @@
 static const char *TAG = "main";
 
 static const demo_entry_t DEMOS[] = {
-    { "Display", demo_display_enter, demo_display_exit, demo_display_key },
-    { "Button",  demo_button_enter,  demo_button_exit,  demo_button_key  },
-    { "Audio",   demo_audio_enter,   demo_audio_exit,   demo_audio_key   },
-    { "Battery", demo_battery_enter, demo_battery_exit, demo_battery_key },
+    { "Black",   demo_black_enter,      demo_black_exit,      demo_black_key      },
+    { "Display", demo_display_enter,    demo_display_exit,    demo_display_key    },
+    { "Button",  demo_button_enter,     demo_button_exit,     demo_button_key     },
+    { "Audio",   demo_audio_enter,      demo_audio_exit,      demo_audio_key      },
+    { "Battery", demo_battery_enter,    demo_battery_exit,    demo_battery_key    },
 };
 #define DEMO_COUNT (sizeof(DEMOS) / sizeof(DEMOS[0]))
 
@@ -51,7 +52,7 @@ static void menu_build(void) {
 
     for (size_t i = 0; i < DEMO_COUNT; i++) {
         int x = 11 + (int)(i % 2) * 112;
-        int y = 58 + (int)(i / 2) * 86;
+        int y = 48 + (int)(i / 2) * 78;
         s_cards[i] = ui_pixel_panel_create(s_menu_scr, x, y, 102, 72, UI_PAPER);
         s_rows[i] = lv_label_create(s_cards[i]);
         lv_obj_set_style_text_font(s_rows[i], &lv_font_montserrat_20, 0);
@@ -59,7 +60,7 @@ static void menu_build(void) {
         lv_obj_center(s_rows[i]);
     }
 
-    s_mascot = ui_pixel_mascot_create(s_menu_scr, 101, 238);
+    s_mascot = ui_pixel_mascot_create(s_menu_scr, 101, 282);
 
     menu_refresh();
     lv_screen_load(s_menu_scr);
@@ -116,13 +117,14 @@ void app_main(void) {
     bsp_display_backlight(100);
 
     // 其余外设单项失败不阻塞:菜单里标 [FAIL],其他项照常可测。
-    s_ok[0] = true;                                   // Display 已确认可用
-    s_ok[1] = (bsp_button_init(on_key, NULL) == ESP_OK);
-    s_ok[2] = (bsp_audio_init() == ESP_OK);
-    s_ok[3] = (bsp_battery_init() == ESP_OK);
+    s_ok[0] = true;                                   // Black (动画猫) 无外设依赖
+    s_ok[1] = true;                                   // Display 已确认可用
+    s_ok[2] = (bsp_button_init(on_key, NULL) == ESP_OK);
+    s_ok[3] = (bsp_audio_init() == ESP_OK);
+    s_ok[4] = (bsp_battery_init() == ESP_OK);
 
     if (bsp_lvgl_lock(1000)) { enter_menu(); bsp_lvgl_unlock(); }
 
-    ESP_LOGI(TAG, "就绪:Display=%d Button=%d Audio=%d Battery=%d",
-             s_ok[0], s_ok[1], s_ok[2], s_ok[3]);
+    ESP_LOGI(TAG, "就绪:Black=%d Display=%d Button=%d Audio=%d Battery=%d",
+             s_ok[0], s_ok[1], s_ok[2], s_ok[3], s_ok[4]);
 }
