@@ -23,4 +23,4 @@
 - **提交或创建 PR 前**，先读 [docs/contribution/commit-and-pr.md](docs/contribution/commit-and-pr.md)（commit 格式、push、PR 说明要求）。
 - **参与社区或贡献代码前**，见根目录 [CONTRIBUTING.md](CONTRIBUTING.md)（贡献指南）、[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)（行为准则）、[SECURITY.md](SECURITY.md)（安全报告）、[SUPPORT.md](SUPPORT.md)（支持渠道）。
 
-完整文档导航见 [docs/README.md](docs/README.md)。
+完整文档导航见 [docs/INDEX.md](docs/INDEX.md)。

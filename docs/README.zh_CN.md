@@ -1,6 +1,6 @@
 # FoloToy AI Passport
 
-[English](README.en_US.md) | 简体中文
+[English](README.md) | 简体中文
 
 FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，本仓库是这款 AI 硬件的开发基线。它不只展示“板子能运行什么”，还把 agent 开发应用所需的**硬件事实、稳定接口、资源边界、参考实现和验收方法**放在同一仓库中。
 
@@ -18,7 +18,7 @@ FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，�
 
 开始开发前，按以下顺序建立上下文：
 
-1. 阅读 `AGENTS.md`、本 README 和 [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
+1. 阅读 `AGENTS.md`、本 README 和 [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
 2. 执行 `git status --short --branch`，保留用户已有改动。
 3. 阅读需求会触及的 `components/bsp/include/*.h` 及其实现，不根据芯片或开发板的常见配置猜测本板行为。
 4. 用 `git branch -r --list 'origin/demo/*'` 查找接近需求的示例，只复用相关设计，不默认合并整个示例分支。
@@ -52,7 +52,7 @@ FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，�
 | 共享总线 | ES8311 与 CW2017 共用 I2C0 | `bsp_i2c_*` | 所有设备复用 BSP 持有的总线；不能为扫描或新设备再创建同端口总线 |
 | 日志与烧录 | ESP32-C3 原生 USB Serial/JTAG | ESP-IDF console | GPIO18/19 保留给 USB；UART0 默认 TX GPIO21 与背光冲突 |
 
-所有引脚、地址、面板参数和按键电压窗口只在 [`components/bsp/include/bsp_pins.h`](components/bsp/include/bsp_pins.h) 定义。应用代码不得复制这些常量。完整引脚表、面板初始化、ADC 阈值、I2C 地址规则、音频时钟和内存说明见 [AI 硬件开发指南](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
+所有引脚、地址、面板参数和按键电压窗口只在 [`components/bsp/include/bsp_pins.h`](../components/bsp/include/bsp_pins.h) 定义。应用代码不得复制这些常量。完整引脚表、面板初始化、ADC 阈值、I2C 地址规则、音频时钟和内存说明见 [AI 硬件开发指南](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
 
 应用也可以使用 ESP-IDF 提供的定时器、FreeRTOS 任务和内部 Flash/NVS；番茄钟分支提供了 NVS 示例。ESP32-C3 芯片支持 2.4 GHz Wi-Fi 和 Bluetooth LE，但当前 BSP 没有为无线能力提供封装，`main` 也不初始化无线栈；`demo/claude-buddy-port` 只能作为 BLE 应用架构参考，不能替代对当前板卡天线、射频表现、功耗和共存行为的实测。所有 FoloToy AI Passport 均配备 8 MB Flash，默认固件配置也以 8 MB 为准。
 
@@ -186,7 +186,7 @@ Device tests: PASS / FAIL / NOT RUN
 Unverified: 仍需板卡、仪器或用户确认的事项
 ```
 
-按引脚、LCD、ADC、codec、I2C、DMA 等修改类型展开的验收矩阵和故障速查表见 [AI 硬件开发指南](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
+按引脚、LCD、ADC、codec、I2C、DMA 等修改类型展开的验收矩阵和故障速查表见 [AI 硬件开发指南](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
 
 ## 项目结构
 
@@ -195,7 +195,7 @@ components/bsp/include/  BSP 公开 API 与 bsp_pins.h 硬件事实
 components/bsp/src/      显示、按键、音频、电池、共享 I2C 实现
 main/                    最小菜单、LVGL UI 与独立硬件演示页
 tests/                   可脱离硬件运行的轻量逻辑测试源
-docs/                    工程/协作规范与设计文档
+docs/                    工程/协作规范、设计文档与 README（README.md / README.zh_CN.md / INDEX.md）
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
 AGENTS.md        agent 在本仓库的编码、验证和提交规则
 CONTRIBUTING.md  贡献指南

@@ -14,7 +14,7 @@ second development; the fork conventions are in
 
 - Read [`AGENTS.md`](AGENTS.md): it is the authoritative entry and index for the
   rules an AI agent should follow. It is not a replacement for this guide.
-- Read [`README.en_US.md`](README.en_US.md) for the hardware capability contract,
+- Read [`README.md`](docs/README.md) for the hardware capability contract,
   and the [AI Hardware Development Guide](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)
   for the complete hardware context.
 - Follow [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) when participating in the

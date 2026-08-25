@@ -11,7 +11,7 @@
 ## 开始之前
 
 - 先读 [`AGENTS.md`](AGENTS.md)：它是 AI agent 应遵循规则的权威入口与索引，不是本指南的替代品。
-- 先读 [`README.zh_CN.md`](README.zh_CN.md) 的硬件能力契约，以及
+- 先读 [`README.zh_CN.md`](docs/README.zh_CN.md) 的硬件能力契约，以及
   [AI 硬件开发指南](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) 的完整硬件上下文。
 - 参与社区时请遵守 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)；普通使用问题见 [`SUPPORT.md`](SUPPORT.md)。
 - 不要提交凭证、令牌、授权文件或个人数据。

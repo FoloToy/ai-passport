@@ -12,7 +12,7 @@ guaranteed.
 ## Where to start
 
 - Hardware facts, wiring, and known traps: read
-  [`README.en_US.md`](README.en_US.md) and the
+  [`README.md`](docs/README.md) and the
   [AI Hardware Development Guide](docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
 - AI agent workflow and engineering rules: read
   [`AGENTS.md`](AGENTS.md) and its rule index.
