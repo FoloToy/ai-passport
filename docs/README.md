@@ -35,6 +35,29 @@ The repository does not currently provide enough evidence to guarantee touch inp
 
 Requirements involving these capabilities must begin with a schematic, board revision, component documentation, or physical measurements. Only then should the BSP and its acceptance criteria be extended.
 
+## Start development with one requirement
+
+A simple request can be given directly to an AI assistant:
+
+```text
+On the main branch, build an offline habit-tracking application for FoloToy AI Passport.
+Use the three physical buttons and the 240×320 display, and preserve records across power loss.
+Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches first,
+keep hardware logic in components/bsp and application logic in main, deliver a runnable
+implementation with tests, and report the build result, unexecuted device checks, and exact
+on-device acceptance steps separately.
+```
+
+The more specific the requirement, the more likely the assistant is to implement it correctly in one pass. Useful details include:
+
+- User flow: what each page displays and what short press, double press, and long press do for each button.
+- State and data: whether the application needs timing, persistence across power loss, networking, recording, or communication with a computer.
+- Experience goals: fonts, colors, animation, sound, response time, and error states.
+- Constraints: whether the main menu may be replaced, dependencies added, Flash used, or default interactions changed.
+- Acceptance criteria: which behaviors require automated tests and which must be observed on real hardware.
+
+When details are omitted, the assistant may choose conservative defaults that do not change the product direction, but it must list those assumptions in the delivery. Decisions involving new wiring, electrical safety, board revisions, or irreversible data formats require confirmation first.
+
 ## Demo branches are design cases, not a feature pile
 
 Each `demo/*` branch evolves the baseline into an independent application. The branches demonstrate how specific problems were solved. New applications should normally branch from `main` and consult relevant examples instead of merging multiple demos wholesale.

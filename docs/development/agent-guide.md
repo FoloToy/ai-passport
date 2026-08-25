@@ -39,30 +39,7 @@
 
 > 硬件指南有同义说明；以本文档与硬件指南为准，README 不再重复。
 
-## 3. 向 agent 提出需求
-
-简单需求可以直接这样交给 agent：
-
-```text
-On the main branch, build an offline habit-tracking application for FoloToy AI Passport.
-Use the three physical buttons and the 240×320 display, and preserve records across power loss.
-Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches first,
-keep hardware logic in components/bsp and application logic in main, deliver a runnable
-implementation with tests, and report the build result, unexecuted device checks, and exact
-on-device acceptance steps separately.
-```
-
-需求越具体，agent 越容易一次实现正确。建议说明：
-
-- 用户流程：每个页面显示什么，三个按键的短按、双击、长按分别做什么；
-- 状态与数据：是否计时、断电保存、联网、录音或与电脑通信；
-- 体验目标：字体、颜色、动画、声音、响应时间和异常状态；
-- 限制条件：是否允许替换主菜单、增加依赖、使用 Flash 或改变默认交互；
-- 验收标准：哪些行为必须自动测试，哪些必须在真实硬件观察。
-
-若需求没有给出所有细节，agent 可以在不改变产品方向的范围内采用保守默认值，但应在交付中列出这些假设。涉及新接线、电源安全、硬件版本或不可恢复数据格式的决定必须先确认。
-
-## 4. 应用与 BSP 的边界
+## 3. 应用与 BSP 的边界
 
 ```text
 Natural-language requirement
@@ -81,7 +58,7 @@ Natural-language requirement
 
 只有多个应用都会使用的硬件能力才进入 `components/bsp`。BSP API 需要说明阻塞性、线程上下文、内存所有权、失败值和初始化顺序；引脚或 I2C 地址只能加入 `bsp_pins.h`。
 
-## 5. 运行时不可破坏的规则（Runtime invariants）
+## 4. 运行时不可破坏的规则（Runtime invariants）
 
 - LVGL 不是线程安全的；非 LVGL 上下文操作 `lv_*` 对象必须持有 `bsp_lvgl_lock()`。
 - 按键回调只派发轻量事件；录音、播放、存储和其他慢操作放到工作任务。
@@ -90,7 +67,7 @@ Natural-language requirement
 - 新图片、字体、网络栈、音频缓存、LVGL buffer 或任务栈都要评估内部 RAM；总空闲堆足够不代表存在足够大的连续内存块。
 - 可测试的状态机、协议、计时和布局计算应与 ESP-IDF/LVGL 分离，优先加入主机逻辑测试。
 
-## 6. 验收与交付格式
+## 5. 验收与交付格式
 
 `idf.py build` 是最低自动检查，不是硬件验收。agent 的最终交付应明确区分：
 
@@ -103,7 +80,7 @@ Unverified: 仍需板卡、仪器或用户确认的事项
 
 上板验收矩阵按修改类型（引脚、LCD、ADC、codec、I2C、DMA 等）见 [AI 硬件开发指南 §构建与验证](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md#构建与验证)，本文档不重复完整验收清单。真机结果要与"编译通过"分开记录。
 
-## 7. 相关文档
+## 6. 相关文档
 
 - 构建与验证命令：[build-and-test.md](build-and-test.md)
 - 代码约定：[coding-conventions.md](coding-conventions.md)
