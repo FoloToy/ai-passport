@@ -75,45 +75,6 @@ scope and compatibility.
 This repository is licensed under [MIT](LICENSE). By contributing, you agree that
 your contribution is submitted under the MIT license terms of the repository.
 
-### Developer Certificate of Origin (DCO)
-
-We require every commit to carry a
-[Developer Certificate of Origin](https://developercertificate.org/) sign-off:
-commit with `git commit -s`, which appends a
-`Signed-off-by: Your Name <your@email>` trailer stating that you have the right
-to submit the contribution. Both the name and the address in the trailer must
-match the commit's author (or committer). Do not submit code you are not
-entitled to license.
-
-The **DCO check** on every pull request (the
-[DCO GitHub App](https://github.com/apps/dco)) validates each commit; merge
-commits and bot commits are exempt. If a commit is missing its sign-off:
-
-```bash
-# only the most recent commit is missing a sign-off
-git commit --amend -s --no-edit
-
-# several commits are missing sign-offs (<base> is the pull request base commit)
-git rebase --signoff <base>
-
-# update the pull request afterwards
-git push --force-with-lease
-```
-
-If you would rather not rewrite history, push a **remediation commit** instead.
-Its message must contain the following line verbatim, where the sha is the full
-40-character sha of the commit being signed off, and the remediation commit
-itself must also carry your sign-off:
-
-```text
-I, Your Name <your@email>, hereby add my Signed-off-by to this commit: <full 40-char sha>
-
-Signed-off-by: Your Name <your@email>
-```
-
-The DCO configuration lives in `.github/dco.yml`; remediation commits are
-enabled (`allowRemediationCommits`).
-
 ## Security issues
 
 Do not disclose vulnerabilities, credentials, or exploitable details in public

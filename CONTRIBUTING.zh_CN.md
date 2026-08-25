@@ -60,39 +60,6 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 
 本仓库使用 [MIT](LICENSE) 许可证。提交贡献即表示你同意按本仓库的 MIT 条款并入你的贡献。
 
-### Developer Certificate of Origin（DCO）
-
-我们要求每个 commit 都带 [Developer Certificate of Origin](https://developercertificate.org/)
-签名：用 `git commit -s` 提交，会在 message 末尾生成
-`Signed-off-by: 你的名字 <你的邮箱>` 行，表示你有权按本仓库条款提交这份贡献。签名里的
-名字和邮箱都必须与该 commit 的 author（或 committer）一致；不要提交你无权授权的代码。
-
-每个 PR 上的 **DCO check**（[DCO GitHub App](https://github.com/apps/dco)）会校验
-每个 commit；merge commit 与 bot 提交豁免。漏签时补签：
-
-```bash
-# 只有最新一个 commit 漏签
-git commit --amend -s --no-edit
-
-# 多个 commit 漏签（<base> 用 PR 的 base commit）
-git rebase --signoff <base>
-
-# 之后更新 PR
-git push --force-with-lease
-```
-
-如果不愿改写历史，可以推一个 **remediation commit** 代替。它的 message 必须逐字包含
-下面这一行（sha 为被补签 commit 的完整 40 位 sha），且 remediation commit 本身也要带
-你的签名：
-
-```text
-I, Your Name <your@email>, hereby add my Signed-off-by to this commit: <full 40-char sha>
-
-Signed-off-by: Your Name <your@email>
-```
-
-DCO 配置在 `.github/dco.yml`，已启用 remediation commit（`allowRemediationCommits`）。
-
 ## 安全漏洞
 
 不要在公开 issue、Pull Request 或讨论中披露漏洞、凭证或可利用细节。请按
