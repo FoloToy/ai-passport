@@ -16,4 +16,4 @@
 
 ## 现有文档索引
 
-- [CI-sync-main.md](CI-sync-main.md)：上游同步说明（定期把上游 `FoloToy/ai-passport` 的 `main` 同步到本 fork 的 `main`）。
+> 当前暂无软件设计文档；上游同步 CI 说明见 `docs/development/CI-sync-main.md`。
