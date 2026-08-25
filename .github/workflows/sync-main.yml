@@ -17,12 +17,14 @@ jobs:
     steps:
       # Step 1: run a standard checkout action
       - name: Checkout target repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
       # Step 2: run the sync action
       - name: Sync upstream changes
         id: sync
-        uses: aormsby/fork-sync-with-upstream-action@v3.4.3
+        uses: aormsby/fork-sync-with-upstream-action@83d78e8c4bf524e79b091cf257deba4dee9e60df # v3.4.3
         with:
           upstream_sync_repo: FoloToy/ai-passport
           upstream_sync_branch: main
@@ -32,6 +34,6 @@ jobs:
       - name: Sync check
         if: failure()
         run: |
-          echo "[Error] 由于上游仓库的 workflow 文件变更，导致 GitHub 自动暂停了本次自动更新，你需要手动 Sync Fork 一次，详细教程请查看项目README.md "
-          echo "[Error] Due to a change in the workflow file of the upstream repository, GitHub has automatically suspended the scheduled automatic update. You need to manually sync your fork. Please refer to the project README.md for instructions. "
+          echo "[Error] 由于上游仓库的 workflow 文件变更，GitHub 可能暂停本次自动更新。请手动 Sync Fork，详见 docs/development/CI-sync-main.md。"
+          echo "[Error] An upstream workflow change may have paused automatic synchronization. Sync the fork manually; see docs/development/CI-sync-main.md."
           exit 1

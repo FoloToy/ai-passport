@@ -2,7 +2,7 @@
 
 本仓库提供一套基于 GitHub Actions 的自动构建与发布流水线，用于在打 tag 时自动编译固件并发布 Release。
 
-> 本文件随 CI 工作流维护在 `ci/build-firmware` 分支，与上游 main 的软件设计文档分开管理。
+本文件与 `.github/workflows/build-firmware.yml` 一同维护，工作流行为变化时必须同步更新。
 
 ## 触发条件
 
@@ -13,12 +13,13 @@
 
 ## 流水线做了什么
 
-1. **ccache 缓存恢复**：使用 `actions/cache@v5`（Node.js 24 runtime）缓存编译中间产物（`.ccache`），二次编译大幅提速。缓存 key 含 ref 与 commit sha，7 天保留（GitHub Actions 默认策略）。
+1. **ccache 缓存恢复**：使用 `actions/cache` 缓存编译中间产物（`.ccache`），二次编译大幅提速。缓存 key 含 ref 与 commit SHA；缓存保留时间以仓库的 GitHub Actions 设置为准。
 2. **编译**（ESP-IDF 5.5.3 / esp32c3）：`idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build`。由 `sdkconfig.defaults` 启用自定义分区表（`CONFIG_PARTITION_TABLE_CUSTOM=y`、`CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"`、`CONFIG_PARTITION_TABLE_FILENAME="partitions.csv"`），编译时读取 `partitions.csv`。
 3. **合并完整固件**：用 `idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin` 把 bootloader + partition-table + app 按本次构建的 `flash_args` 合并为**可直刷的完整固件**。`sdkconfig.defaults` 关闭 `CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE`，使 `flash_args` 使用 `--flash_size 8MB` 而不是 `detect`。
-4. **发布**：
-   - **tag 触发** → 用 `softprops/action-gh-release@v2` 创建 GitHub Release，附带产物 `FoloToy-AI-Passport-full.bin`。
-   - 分支触发 → 上传为 Actions artifact（不创建 Release）。
+4. **上传 artifact**：每次成功构建都上传 `FoloToy-AI-Passport-full.bin`。普通分支只有从该分支手动运行 `workflow_dispatch` 才会构建；普通 push 不触发。
+5. **发布 tag**：tag 构建完成后，独立 release job 下载上述 artifact，并创建 GitHub Release。
+
+构建 job 只有 `contents: read` 权限；仅 release job 在 tag 发布时获得 `contents: write`。所有 Action 均固定到完整 commit SHA，行尾注释保留对应发布版本，升级时需同时核对 SHA 与版本。
 
 ## 产物
 
