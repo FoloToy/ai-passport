@@ -39,7 +39,14 @@ sdkconfig.defaults            ESP32-C3、USB console、Flash、LVGL 默认配置
 
 fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `docs/assets/` 目录**（可建自己的说明/README 变体），**不允许改其它任何文件**——这样 fork 的 `main` 与上游保持最新同步、不产生冲突。任何其它修改（固件功能、文档规整等）一律在 `feature/*` 分支进行，用 PR 合并。
 
-> **README 显示说明**：上游 README 位于 `docs/README.md`（根目录已无上游 README）。GitHub 显示优先级为根目录 `README.md` > `docs/README.md`，因此 fork 用户在根目录自建 `README.md` 即可覆盖上游显示——这正契合上面的 fork 约定。
+### 为什么根目录不放置 README
+
+**根目录的 `README.md` 是预留给开发者自行放置的，因此上游留空**：
+
+- 上游 main 的根目录**故意不放 README**，把这一位置预留给 fork 开发者。上游项目说明位于 `docs/README.md`（GitHub 从 docs/ 识别主 README），不占用根目录。
+- 开发者 fork 项目后，可将**自己的内容**写到根目录的 `README.md`，以介绍 fork 后的项目——例如改动来源、二次开发说明、自定义用法等。这样 fork 的根目录 README 与上游互不冲突，也无需覆盖上游文档。
+
+> **GitHub 显示行为**：GitHub 显示优先级为根目录 `README.md` > `docs/README.md`，因此 fork 用户在根目录自建 `README.md` 后即覆盖 `docs/README.md` 的显示——正契合上面"根目录 README 预留给开发者"的设计意图。
 
 ## docs/assets 使用约定
 
