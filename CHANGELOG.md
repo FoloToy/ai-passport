@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- 语言规范变更：commit 标题、PR 标题与 body 由"默认中文"改为**使用英文**（`docs/contribution/commit-and-pr.md` 更新）；中文写作规范（全角标点）适用范围剔除 PR/MR 描述（`doc-conventions.md` 更新）。
 - CI 构建改造：`build-firmware.yml` 改用 `idf.py merge-bin` 合并完整固件（自动读取 `partitions.csv` 布局，含 nvs/phy_init 分区，无需手工指定偏移）；产物精简为仅 `FoloToy-AI-Passport-full.bin`（不再产出 app/bootloader/partition-table 单独固件）；CI 文档同步更新。
 - 合并上游 PR #6（wireless-low-power-demos）以解决 PR #4 冲突：引入无线/低功耗 demo（`main/demo_wifi.c`、`demo_ble.c`、`demo_radio.c`、`demo_low_power.c`）、`partitions.csv`（NVS/PHY/3 MB factory-app 分区）、`main/CMakeLists.txt`/`main.c`/`demo.h`/`sdkconfig.defaults` 更新；同步硬件指南的 Wi-Fi/BLE/低功耗章节；README 能力契约表补充 Wi-Fi/Bluetooth LE/Low power 三项（中英双语）。
 - 提交规范补充：`docs/contribution/commit-and-pr.md` 明确 PR 标题与 commit 标题同规范（`type(scope): 简述`、祈使句、默认中文），不用名词短语当标题。
