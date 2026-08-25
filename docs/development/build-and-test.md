@@ -1,7 +1,5 @@
 # 构建与验证（Build & Test）
 
-> 定位：公共文档，适用于任何项目，可提上游。
-
 使用 ESP-IDF 5.5.x（已知开发环境 5.5.3）：
 
 ```bash
@@ -12,6 +10,8 @@ idf.py flash monitor          # 烧录并打开日志
 idf.py fullclean              # 配置过期时清空生成状态（勿用于清理用户源码改动）
 ```
 
+仓库提交 `dependencies.lock` 以固定 ESP-IDF Managed Components 的解析结果。修改 `idf_component.yml` 后必须使用 ESP-IDF 5.5.3 重新生成锁文件、review 版本变化并与 manifest 一起提交；普通构建不应产生未提交的锁文件差异。
+
 当前基线含一个可独立运行的纯逻辑测试：
 
 ```bash
@@ -21,4 +21,14 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
-改动后至少跑 `idf.py build`（最小自动化检查）+ 适用逻辑测试；涉及物理外设的改动必须在真机运行 README 验收清单，并把"编译通过"与"硬件验证通过"分开记录（禁止把编译通过描述成硬件验证通过）。
+统一验证入口：
+
+```bash
+./tools/validate.sh --static    # 仓库一致性、workflow、文档链接、敏感信息、host tests
+./tools/validate.sh --firmware  # ESP-IDF build、merge-bin、固件偏移校验
+./tools/validate.sh             # 完整验证
+```
+
+完整验证要求预先激活 ESP-IDF 5.5.3。CI 与本地使用同一脚本；若 CI 和本地行为不同，应先修复脚本或环境，而不是维护两份命令。
+
+涉及物理外设的改动必须在真机运行硬件指南验收清单，并把“编译通过”与“硬件验证通过”分开记录。

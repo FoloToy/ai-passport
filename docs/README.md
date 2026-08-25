@@ -97,10 +97,12 @@ components/bsp/include/  Public BSP APIs and bsp_pins.h hardware facts
 components/bsp/src/      Display, button, audio, battery, and shared-I2C implementations
 main/                    Minimal menu, LVGL UI, and independent hardware demo pages
 tests/                   Lightweight logic tests that can run without hardware
+tools/                   Shared local/CI validation and firmware verification scripts
 docs/                    Engineering/contribution conventions, design docs, CI docs, and READMEs (README.md / README.zh_CN.md / INDEX.md)
 .github/workflows/       CI workflows (build-firmware.yml, sync-main.yml)
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
 partitions.csv           NVS, PHY data, and 3 MB factory application layout
+dependencies.lock        Reproducible ESP-IDF Managed Component resolution
 AGENTS.md                Coding, validation, and contribution rules for agents
 CONTRIBUTING.md  Contribution guide
 CODE_OF_CONDUCT.md  Code of conduct

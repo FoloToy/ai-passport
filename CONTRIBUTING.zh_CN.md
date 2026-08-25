@@ -38,6 +38,14 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
+本仓库为本地开发和 CI 提供同一个验证入口：
+
+```bash
+./tools/validate.sh --static
+./tools/validate.sh --firmware  # 需要先激活 ESP-IDF 5.5.3 环境
+./tools/validate.sh             # 完整门禁
+```
+
 遵守 [`docs/development/build-and-test.md`](docs/development/build-and-test.md) 的
 验证要求：干净的 `idf.py build` 是最低自动检查，不是硬件验收；构建结果与真机结果
 分开记录，禁止把编译通过描述成硬件验证通过。

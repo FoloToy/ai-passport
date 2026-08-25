@@ -38,9 +38,7 @@ jobs:
           extra_docker_args: >-
             -e CCACHE_DIR=/app/${{ github.repository }}/.ccache
             -e IDF_CCACHE_ENABLE=1
-          command: >-
-            idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build &&
-            idf.py merge-bin -o "$PWD/build/FoloToy-AI-Passport-full.bin"
+          command: ./tools/validate.sh --firmware
 
       - name: Set artifact name
         id: artifact_name

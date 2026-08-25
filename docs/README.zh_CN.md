@@ -96,10 +96,12 @@ components/bsp/include/  BSP 公开 API 与 bsp_pins.h 硬件事实
 components/bsp/src/      显示、按键、音频、电池、共享 I2C 实现
 main/                    最小菜单、LVGL UI 与独立硬件演示页
 tests/                   可脱离硬件运行的轻量逻辑测试源
+tools/                   本地与 CI 共用的验证及固件校验脚本
 docs/                    工程/协作规范、设计文档、CI 文档与 README（README.md / README.zh_CN.md / INDEX.md）
 .github/workflows/       CI 工作流（build-firmware.yml、sync-main.yml）
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
 partitions.csv           NVS、PHY data 与 3 MB factory-app 分区布局
+dependencies.lock        可复现的 ESP-IDF Managed Component 解析结果
 AGENTS.md                agent 在本仓库的编码、验证和提交规则
 CONTRIBUTING.md  贡献指南
 CODE_OF_CONDUCT.md  贡献者公约行为准则

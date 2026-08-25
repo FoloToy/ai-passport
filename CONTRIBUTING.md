@@ -44,6 +44,14 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 /tmp/test_ui_pixel_math
 ```
 
+The repository provides one validation entry point for local development and CI:
+
+```bash
+./tools/validate.sh --static
+./tools/validate.sh --firmware  # requires an activated ESP-IDF 5.5.3 environment
+./tools/validate.sh             # complete gate
+```
+
 Follow the verification requirements in
 [`docs/development/build-and-test.md`](docs/development/build-and-test.md):
 a clean `idf.py build` is the minimum automated check, not hardware validation.
