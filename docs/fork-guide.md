@@ -11,7 +11,7 @@ docs/
     README.md                 硬件设计文档子目录骨架
     AI_HARDWARE_DEVELOPMENT_GUIDE.md   完整硬件开发指南与排障参考（上游）
   contribution/               协作规范（doc-conventions.md、commit-and-pr.md，见 README.md 索引）
-  development/                工程规范（build-and-test.md、coding-conventions.md，见 README.md 索引）
+  development/                工程规范与 AI 开发工作流（build-and-test.md、coding-conventions.md、agent-guide.md，见 README.md 索引）
   README.md                   上游英文说明（FoloToy AI Passport；GitHub 主 README）
   README.zh_CN.md             上游中文说明（FoloToy AI Passport）
   INDEX.md                    仓库根总索引（各目录索引表格 + 根治理文档）
