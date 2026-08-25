@@ -6,7 +6,7 @@
 
 | 文档 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| [repo-info.md](./repo-info.md) | 仓库说明 | authoritative | 产品与仓库、产品定位、官方入口、仓库协议、隐私与安全门限（链接到规格与入仓红线） |
+| [brand-and-product.md](./brand-and-product.md) | 品牌与产品说明 | authoritative | 品牌与产品定位、官方入口、开源与授权、产品规格引用 |
 | [contribution/README.md](./contribution/README.md) | 协作规范索引 | authoritative | 通用协作规范（文档规范、提交与 PR 约定） |
 | [contribution/doc-conventions.md](./contribution/doc-conventions.md) | 文档规范 | authoritative | 先读所有 README、文档生成规范、文档分类规范（公共/特定项目） |
 | [contribution/commit-and-pr.md](./contribution/commit-and-pr.md) | 协作规范 | authoritative | 提交规范 + 提交与 PR 约定 |

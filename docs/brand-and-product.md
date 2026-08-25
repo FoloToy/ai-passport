@@ -1,19 +1,18 @@
-# 仓库说明（Repo Info）
+# 品牌与产品说明（Brand & Product Info）
 
-> **面向读者**：AI agent、开发者、fork 用户以及任何想了解本仓库背景的人
-> **读取时机**：首次接触本仓库、需要了解产品名称 / 官网入口 / 仓库协议，或准备引用官方链接之前
+> **面向读者**：用户、开发者、AI agent 以及任何想了解 AI Passport 品牌与产品的人
+> **读取时机**：首次接触本产品、需要了解品牌定位 / 产品名称 / 官方入口 / 产品规格，或准备对外引用产品信息之前
 > **关联文档**：设备硬件规格见 [hardware-design/specifications.md](hardware-design/specifications.md)；凭证与隐私入仓红线见 [contribution/doc-conventions.md](contribution/doc-conventions.md)。
 
 ---
 
-## 1. 产品与仓库
+## 1. 品牌与产品
 
 - **产品名**：**AI Passport**（英文全称 *FoloToy AI Passport*，官网英文名 "AI Passport | Open Wearable AI Agent"）。
   - 名称统一写 `AI Passport`，不翻译、不加后缀、不派生变体；中文语境同样用「AI Passport」，不另造译名。
-- **开发组织**：**FoloToy**。
+- **品牌主体**：**FoloToy**（"We are creating AI toys"，创造 AI 玩具）。
   - GitHub 组织：`github.com/FoloToy`
-  - 组织定位："We are creating AI toys"（创造 AI 玩具）
-- **本仓库**：`github.com/FoloToy/ai-passport`，是 AI Passport 的开源**开发基线**——集中存放已确认的硬件事实、稳定接口、资源边界、参考实现与验收方法，供 AI agent 与开发者实现并构建应用。
+- **产品开源仓库**：`github.com/FoloToy/ai-passport`——AI Passport 的开源**开发基线**，集中存放已确认的硬件事实、稳定接口、资源边界、参考实现与验收方法。
 
 ## 2. 产品定位
 
@@ -62,25 +61,25 @@ FoloToy 提供两处浏览器刷机入口，均可安全写入本地固件，固
 
 引用"在线刷机 / 浏览器刷机"入口时，产品官网场景优先用官网内置入口；需要给用户通用刷机工具时用 `tool.folotoy.cn`。
 
-## 4. 仓库与开源
+## 4. 产品规格
 
-- 开源仓库：`github.com/FoloToy/ai-passport`
-- 协议：**MIT License**（Copyright (c) 2026 FoloToy）
+设备产品规格见 [hardware-design/specifications.md](hardware-design/specifications.md)（尺寸、重量、电池、充电、NFC、按键等）。
+
+## 5. 开源与授权
+
+- 产品开源仓库：`github.com/FoloToy/ai-passport`。
+- 协议：**MIT License**（Copyright (c) 2026 FoloToy）。
 - 仓库常被 fork 后二次开发；fork 约定见仓库 `docs/fork-guide.md`。
 
-## 5. 命名与多语言
+## 6. 命名与多语言
 
 - 名称 `AI Passport` 在官网中 / 英双版保持一致，不翻译。
 - 官网提供中文（`/`）与英文（`/en/`）两版。
-- 本仓库 README 提供中英双版（`README.md` / `README.zh_CN.md`）；本说明若落仓，建议同样提供 `.zh_CN.md` 或按仓库文档语言约定处理。
+- 本仓库 README 提供中英双版（`README.md` / `README.zh_CN.md`）；本文档若落仓，建议同样提供 `.zh_CN.md` 或按仓库文档语言约定处理。
 
-## 6. 与工程事实源的关系
+## 7. 与工程事实源的关系
 
-- 本文档是**仓库级**的元信息说明，承载对外展示口径（名称、定位、官网、协议）。
+- 本文档是**品牌与产品层**的说明，承载对外展示口径（名称、定位、官方入口、规格引用）。
 - 设备产品规格见 [hardware-design/specifications.md](hardware-design/specifications.md)。
 - 硬件引脚、资源边界等工程事实以仓库 `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md` 与 `components/bsp/include/bsp_pins.h` 为准，本文档不替代工程文档。
 - 网站入口以官网实际页面为准；如官网结构变化，优先更新官网并回同步本文档。
-
-## 7. 隐私与安全门限
-
-设备二维码链接等含隐私参数的敏感内容**禁止写入代码 / 仓库**，规则见 [`docs/contribution/doc-conventions.md`](contribution/doc-conventions.md)「内容安全（凭证不入仓）」与「设备二维码链接」两条。
