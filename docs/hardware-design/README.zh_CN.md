@@ -4,23 +4,21 @@
 
 # 硬件设计（Hardware Design）
 
-本目录用于存放本仓库的硬件设计文档，包括板级事实、引脚映射、硬件约束、验收矩阵与排障知识。
+本目录维护产品规格、固件可见的板级事实、资源约束、验收矩阵与排障知识。
 
 ## 目录约定
 
-- 硬件事实以 `components/bsp/include/bsp_pins.h` 为准，属于该文件的范围在此处只作引用，不重复。
-- 硬件文档应区分「已确认事实」与「未知项」；未知项需明确报告并请求证据，不要用其它型号板子的参数补位。
-- 每次修改硬件映射（引脚、I2C、ADC、屏参、音频时钟等）需同步更新本文档并记录实机结果。
+- 固件引脚和板级常量以 `components/bsp/include/bsp_pins.h` 为准。
+- 产品规格维护在 `specifications.zh_CN.md`；固件行为与约束维护在硬件指南中。
+- 不得根据 ESP32-C3 通用能力或其他开发板推断本板接口。
+- 修改引脚、I2C、ADC、屏参或音频时钟等映射时，必须同步文档并记录实机结果。
 
-## 如何添加一篇硬件设计文档
+## 文档地图
 
-1. 在本目录下新建一个描述性文件（如 `xxx-hw.md`）或子目录。
-2. 文档顶部写明适用板卡/版本与日期。
-3. 与软件接口相关的结论引用 `docs/software-design/` 与仓库根 `AGENTS.md`。
+| 文档 | 读者与权威范围 |
+| --- | --- |
+| [AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md](AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md) | BSP 行为、资源所有权、约束、验收与排障参考。 |
+| [specifications.zh_CN.md](specifications.zh_CN.md) | 对外产品规格。 |
+| `components/bsp/include/bsp_pins.h` | 固件引脚、总线实例、地址、屏参和按键窗口的单一事实来源。 |
 
-## 现有文档索引
-
-- [AI_HARDWARE_DEVELOPMENT_GUIDE.md](AI_HARDWARE_DEVELOPMENT_GUIDE.md)：完整的硬件开发指南与排障参考（上游已有，已归位到本目录）。
-- [specifications.md](specifications.md)：产品规格（面向用户与产品的设备规格：尺寸、重量、电池、充电、NFC、按键等）。
-
-> 注：`docs/hardware-design` 为本次仓库规范化目录，用于容纳硬件设计文档。上游既有硬件指南 `AI_HARDWARE_DEVELOPMENT_GUIDE.md` 已归入本目录。
+新文档需写明适用范围，通过链接引用软件接口以避免复制常量，并将构建结果与实机结果分开记录。

@@ -3,7 +3,7 @@ CONFIG_IDF_TARGET="esp32c3"
 # 注:ESP32-C3 无 PSRAM,故不设 CONFIG_SPIRAM。
 
 # --- Flash ---
-# FoloToy AI Passport 的所有硬件批次均使用 8MB Flash。
+# FoloToy AI Passport 当前产品/固件基线使用 8MB Flash。
 CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
 # 固定 8MB 镜像头，关闭 detect，便于 idf.py merge-bin。
 CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE=n

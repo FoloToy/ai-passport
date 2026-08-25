@@ -1,5 +1,5 @@
 // components/bsp/include/bsp_pins.h
-// FoloToy-Card 硬件引脚与参数的【单一事实来源】。换板/改硬件只需改这一个文件。
+// FoloToy AI Passport 硬件引脚与参数的【单一事实来源】。换板/改硬件只需改这一个文件。
 // 每项都注明"为什么是这个值",便于二次开发时判断能不能改。
 #pragma once
 

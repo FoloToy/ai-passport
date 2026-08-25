@@ -32,14 +32,14 @@
 发生冲突时，使用以下优先级：
 
 ```text
-原理图 / PCB / 板卡版本 / 实机测量
+产品规格 / 实机测量
     > components/bsp/include/bsp_pins.h
     > BSP 公开头文件与实现
     > docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md
     > README 与示例应用
 ```
 
-当前仓库尚未包含原理图和 PCB 源文件。遇到板卡版本、接线、极性、寄存器或未使用 GPIO 等未知信息时，明确报告未知项并请求证据，不能用其他 ESP32-C3 开发板的参数补全答案。
+任务所需板卡版本、接线、极性、寄存器或 GPIO 分配未在这些来源中定义时，直接询问用户，不能用其他 ESP32-C3 开发板的参数补全答案。
 
 > 硬件指南有同义说明；以本文档与硬件指南为准，README 不再重复。
 

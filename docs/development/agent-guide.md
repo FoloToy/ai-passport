@@ -18,14 +18,14 @@ This guide is for AI coding assistants. `AGENTS.md` is the only mandatory starti
 ## Source-of-truth priority
 
 ```text
-schematic / PCB / board revision / measurement
+product specification / measurement
   > components/bsp/include/bsp_pins.h
   > BSP public headers and implementation
   > docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md
   > README and demo applications
 ```
 
-The repository does not currently contain schematic or PCB source. Report unknown revisions, wiring, polarity, registers, and unused GPIO connections; request evidence instead of substituting another board's values.
+If a task requires a board revision, wiring, polarity, register value, or GPIO assignment not defined by these sources, ask the user. Never substitute values from another ESP32-C3 board.
 
 ## Application/BSP boundary
 

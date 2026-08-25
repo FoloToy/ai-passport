@@ -6,7 +6,13 @@
 
 This is the board-level context for AI coding assistants and new developers. It records confirmed hardware facts, software architecture, invariants, extension points, and acceptance methods; it does not replace component datasheets.
 
-> Evidence priority: schematic/PCB and measurements > `components/bsp/include/bsp_pins.h` > BSP implementation and this guide > README/demo code. Report conflicts and request the board revision or measurements instead of guessing.
+> For firmware behavior, use `components/bsp/include/bsp_pins.h` and the BSP implementation as the source of truth. Do not copy assumptions from a generic ESP32-C3 board.
+
+Document scope:
+
+- Applicable target: the ESP32-C3 FoloToy AI Passport mapping implemented by this repository.
+- Product specifications are in [specifications.md](specifications.md); firmware behavior follows `bsp_pins.h`, BSP implementations, `sdkconfig.defaults`, `partitions.csv`, and the demo code.
+- Code audit date: 2026-08-26.
 
 ## 1. Before changing hardware-facing code
 
@@ -14,28 +20,28 @@ This is the board-level context for AI coding assistants and new developers. It 
 2. Run `git status --short --branch` and preserve unrelated changes.
 3. Put reusable hardware behavior in `components/bsp`; keep menu, animation, product interaction, and validation pages in `main`.
 4. Keep pins, I2C addresses, and panel dimensions in `bsp_pins.h` only.
-5. Mark unknown board revisions, polarity, registers, and wiring as unverified.
+5. Keep hardware-facing changes within the product specification and explicit BSP definitions.
 
 ## 2. Board overview
 
 The target is the ESP32-C3 FoloToy AI Passport with ESP-IDF 5.5.3. It has 8 MB Flash and no PSRAM; display, audio, radio, tasks, and DMA compete for internal RAM.
 
-| Subsystem | Device or mode | Resource | Status |
+| Subsystem | Device or mode | Resource | Firmware support |
 | --- | --- | --- | --- |
-| MCU | ESP32-C3 | 8 MB Flash | Implemented |
-| Display | ST7789P3, 240 × 320, RGB565 | SPI2, 40 MHz, mode 0 | Implemented |
-| Backlight | LCD LED | GPIO21, LEDC 5 kHz/10 bit | Implemented |
-| Buttons | UP/DOWN/OK resistor ladder | GPIO0 / ADC1_CH0 | Implemented |
-| Audio | ES8311 playback and microphone | shared I2C + I2S0 full duplex | Implemented |
-| Battery | CW2017 fuel gauge | shared I2C0, address `0x63` | Optional |
-| Wi-Fi | 2.4 GHz station | initialized by the demo | Scan demo |
-| Bluetooth LE | NimBLE peripheral | initialized by the demo | advertising demo |
-| Low power | light/deep sleep | RTC timer wake | 2 s light and 5 s deep sleep demos |
+| MCU | ESP32-C3 | 8 MB Flash, no PSRAM | Configured |
+| Display | ST7789P3, 240 × 320, RGB565 | SPI2, 40 MHz, mode 0 | Driver and validation page |
+| Backlight | LCD LED | GPIO21, LEDC 5 kHz/10 bit | PWM brightness control |
+| Buttons | UP/DOWN/OK resistor ladder | GPIO0 / ADC1_CH0 | Events and live-voltage page |
+| Audio | ES8311 playback and microphone | shared I2C + I2S0 full duplex | Playback and recording page |
+| Battery | CW2017 fuel gauge | shared I2C0, address `0x63` | Optional SOC and voltage driver |
+| Wi-Fi | 2.4 GHz station | initialized by the demo | Scan page |
+| Bluetooth LE | NimBLE peripheral | initialized by the demo | Non-connectable advertising page |
+| Low power | light/deep sleep | RTC timer wake | 2 s light and 5 s deep-sleep modes |
 | Console | USB Serial/JTAG | native USB GPIO18/19 | Configured |
 
-The repository does not include schematic, PCB, BOM, battery model, charge-controller details, LCD TE connection, or board revision. Do not claim charging control, USB detection, unverified external wake, display readback, touch, or unused-GPIO availability.
+## 3. Pin map and resource ownership
 
-## 3. Pin map
+This table describes the signals allocated by the current BSP and build configuration.
 
 | GPIO | Function | Direction/peripheral | Notes |
 | ---: | --- | --- | --- |
@@ -54,7 +60,30 @@ The repository does not include schematic, PCB, BOM, battery model, charge-contr
 | 20 | LCD DC | output | command/data select |
 | 21 | backlight PWM | LEDC output | conflicts with common UART0 default TX |
 
-LCD reset and amplifier enable are `-1`: display reset uses software reset, and the amplifier is treated as always enabled. Confirm the real GPIO and active level before changing these values. A GPIO absent from this table is not automatically free.
+LCD reset and amplifier enable are `-1`: display reset uses software reset, and the amplifier is treated as always enabled. A GPIO absent from this table is not automatically free.
+
+### 3.1 Peripheral ownership and coexistence
+
+| Resource | Owner | Sharing rule or conflict |
+| --- | --- | --- |
+| SPI2 | display BSP | Dedicated to the ST7789P3 in current firmware; no MISO is configured. |
+| LEDC low-speed timer 0/channel 0 | backlight BSP | New PWM users must select a non-conflicting timer/channel and recheck clock changes. |
+| ADC1 / channel 0 | button BSP | One oneshot unit is shared by button decoding and live-voltage reads; do not create a second ADC1 owner. |
+| I2C0 | `bsp_i2c` | ES8311 and CW2017 share the single bus handle; clients must not recreate the bus. |
+| I2S0 | audio BSP | TX and RX are full duplex and share MCLK/BCLK/WS. |
+| USB Serial/JTAG | console configuration | GPIO18/19 are part of the selected console path. |
+| Internal RAM/DMA | display, LVGL, audio, radio, tasks | No PSRAM exists; total free heap and largest contiguous block both matter. |
+| NVS/network event loop | `demo_radio.c` | Prepared once for Wi-Fi/BLE demos; do not erase unrelated NVS data on initialization errors. |
+| Wi-Fi/BLE stacks | individual demo pages | Current demos start on page entry and deinitialize on exit; the stacks do not remain active together. |
+
+GPIO0 is both the button ADC node and an ESP32-C3 boot-related pin. GPIO21 is the backlight output and conflicts with the commonly used UART0 TX mapping. Pin reassignment requires boot/programming-path review and on-device acceptance.
+
+### 3.2 Product interfaces outside the BSP
+
+- USB Type-C 2.0 accepts 5 V input; firmware flashing and logs use the ESP32-C3 USB Serial/JTAG interface.
+- The dedicated power button controls hardware power and is separate from the three ADC function buttons exposed by the BSP.
+- The NTAG213 is a passive NFC tag and has no MCU-facing BSP API.
+- LCD reset uses the controller's software-reset path, and amplifier enable is not controlled by an MCU GPIO.
 
 ## 4. Architecture and lifecycle
 
@@ -138,7 +167,7 @@ Accurate production SOC requires the cell parameters, CW2017 datasheet/vendor pr
 
 ## 10. Flash, console, and memory
 
-All AI Passport hardware revisions use 8 MB Flash. `sdkconfig.defaults` fixes the image to 8 MB and disables automatic flash-size header rewriting. `partitions.csv` defines 24 KB NVS, 4 KB PHY data, and one 3 MB factory application without OTA slots. A detected non-8-MB device is a hardware/material/connection anomaly to investigate, not a reason to lower the project default.
+The current product and firmware baseline uses 8 MB Flash. `sdkconfig.defaults` fixes the image to 8 MB and disables automatic flash-size header rewriting. `partitions.csv` defines 24 KB NVS, 4 KB PHY data, and one 3 MB factory application without OTA slots. A detected non-8-MB device does not match this baseline; identify the board and flash part before changing the project default.
 
 The console is USB Serial/JTAG. Do not switch to the UART0 default output without resolving its GPIO21 conflict with the backlight.
 
@@ -229,11 +258,5 @@ General board acceptance:
 - [ ] Audio format changes retain close/open and required codec settings.
 - [ ] Memory review includes LVGL, LCD DMA, I2S DMA, task stacks, and largest block.
 - [ ] Automated validation passed or the actual failure is reported.
-- [ ] Hardware checks remain listed as unverified until observed.
+- [ ] Build results and observed device results are reported separately.
 - [ ] The diff contains only task-scoped changes and preserves user work.
-
-## 16. Missing production evidence
-
-A production hardware specification still requires board revision and schematic, PCB/BOM, complete LCD module identification and sequence source, battery model/capacity, CW2017 profile, charge and power path, speaker/microphone and amplifier details, external I2C pull-up values, power-domain/current limits, unused-GPIO connectivity, and temperature/voltage/EMC results.
-
-Until those are available, development is limited to capabilities covered by the existing BSP and timer-based light/deep sleep. External wake, board power figures, charging, unused-pin reuse, audio power, and battery accuracy require hardware evidence first.

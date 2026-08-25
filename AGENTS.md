@@ -10,7 +10,7 @@ This file is the only mandatory entry point for AI-assisted work in this reposit
 
 - Target: ESP32-C3, 8 MB Flash, no PSRAM, ESP-IDF 5.5.3.
 - Preserve existing user changes. Start with `git status --short --branch`; never overwrite or clean unrelated files.
-- Hardware facts follow this priority: schematic/PCB and measured results → `components/bsp/include/bsp_pins.h` → BSP headers and implementation → hardware guide → README/demo code. Report unknown hardware facts instead of guessing.
+- Hardware facts follow this priority: product specifications and measured results → `components/bsp/include/bsp_pins.h` → BSP headers and implementation → hardware guide → README/demo code. If a task requires a hardware detail not defined by these sources, ask the user instead of guessing.
 - Reusable board logic belongs in `components/bsp`; pages, state machines, animations, and application tasks belong in `main`.
 - LVGL is not thread-safe. Code outside the LVGL task must hold `bsp_lvgl_lock()` while accessing LVGL objects.
 - Button callbacks must stay non-blocking. Audio, storage, networking, and other slow operations belong in worker tasks.

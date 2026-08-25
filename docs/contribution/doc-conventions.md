@@ -41,6 +41,7 @@ Do not create empty document scaffolding without a concrete purpose. Register ad
 ## Writing, safety, and file operations
 
 - Explain rationale, boundaries, failure modes, and validation instead of restating source code.
+- State product facts and public hardware interfaces directly; omit provenance and source-availability commentary.
 - Enforce automatable rules in `tools/` and CI as well as documentation.
 - Record user-visible behavior, compatibility, and release-flow changes in `docs/CHANGELOG.md`.
 - Never commit credentials, tokens, keys, authorization files, private keys, personal data, internal endpoints, or unsanitized device QR parameters. Run `./tools/validate.sh --static` before committing.
