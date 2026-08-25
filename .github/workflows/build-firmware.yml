@@ -38,7 +38,7 @@ jobs:
             -e IDF_CCACHE_ENABLE=1
           command: >-
             idf.py build &&
-            idf.py merge-bin -o "$PWD/build/FoloToy-AI-Passport-full.bin"
+            idf.py merge-bin -o "$PWD/build/FoloToy-AI-Passport-full.bin" --flash-size 8MB --flash-mode dio --flash-freq 80m
 
       - name: Set artifact name
         run: echo "ARTIFACT_NAME=passport-${GITHUB_REF_NAME//\//-}" >> "$GITHUB_ENV"
