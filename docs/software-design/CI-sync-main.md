@@ -20,7 +20,6 @@
 ## 注意事项
 
 - 同步目标与上游分支均为 `main`，与 fork 用户约定（`main` 仅允许修改 `README.md` 与 `assets/docs/`）配合使用：`main` 保持与上游最新基线同步、不产生冲突。
-- **fork 默认 action 是关闭的**：fork 后本 workflow 默认不运行，需在 GitHub 仓库 **Actions 页面手动启用**（找到本 workflow → Enable）。启用后每日自动同步才生效。
 - **在 `main` 直接开发的例外**：如果用户执意要在 `main` 分支直接开发，必须**停用/关闭本 workflow**（Actions 页面 → Disable），否则每日自动同步会把上游改动强行合入 `main`，产生冲突或覆盖本地开发内容。
 - 若同步失败，查看 Actions 日志确认是否为上游 workflow 文件变更所致；必要时按提示手动在 GitHub 页面 Sync Fork。
 
