@@ -38,7 +38,7 @@ jobs:
             -e IDF_CCACHE_ENABLE=1
           command: >-
             idf.py -D SDKCONFIG_DEFAULTS=sdkconfig.defaults build &&
-            python3 -c "from pathlib import Path; p=Path('build/flash_args'); p.write_text(p.read_text().replace('--flash_size detect','--flash_size 8MB'))" &&
+            sed -i 's/--flash_size detect/--flash_size 8MB/g' build/flash_args &&
             idf.py merge-bin -o "$PWD/build/FoloToy-AI-Passport-full.bin"
 
       - name: Set artifact name
