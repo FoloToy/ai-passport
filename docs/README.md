@@ -16,3 +16,12 @@
 | [software-design/README.md](./software-design/README.md) | 软件设计索引 | 参考 | 软件设计文档子目录骨架 |
 | [hardware-design/README.md](./hardware-design/README.md) | 硬件设计索引 | 参考 | 硬件设计文档子目录骨架 |
 | [hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md](./hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) | 硬件指南 | authoritative | 完整硬件开发指南与排障参考（上游） |
+
+## 仓库根治理文档
+
+以下社区治理文档位于仓库根目录（GitHub 自动识别）：
+
+- [CONTRIBUTING.md](../CONTRIBUTING.md)：贡献指南（开发验证、PR 流程、许可）。
+- [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md)：贡献者公约行为准则。
+- [SECURITY.md](../SECURITY.md)：安全漏洞报告流程。
+- [SUPPORT.md](../SUPPORT.md)：使用支持与问题反馈渠道。

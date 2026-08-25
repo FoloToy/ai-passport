@@ -21,5 +21,6 @@
 - **构建、烧录或验证改动前**，先读 [docs/development/build-and-test.md](docs/development/build-and-test.md)（ESP-IDF 命令、逻辑测试、编译与真机验证分开）。
 - **编写代码前**，先读 [docs/development/coding-conventions.md](docs/development/coding-conventions.md)（语言风格、复用、注释、测试同步、资源约束）。
 - **提交或创建 PR 前**，先读 [docs/contribution/commit-and-pr.md](docs/contribution/commit-and-pr.md)（commit 格式、push、PR 说明要求）。
+- **参与社区或贡献代码前**，见根目录 [CONTRIBUTING.md](CONTRIBUTING.md)（贡献指南）、[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)（行为准则）、[SECURITY.md](SECURITY.md)（安全报告）、[SUPPORT.md](SUPPORT.md)（支持渠道）。
 
 完整文档导航见 [docs/README.md](docs/README.md)。

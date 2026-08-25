@@ -198,4 +198,8 @@ tests/                   可脱离硬件运行的轻量逻辑测试源
 docs/                    工程/协作规范与设计文档
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
 AGENTS.md        agent 在本仓库的编码、验证和提交规则
+CONTRIBUTING.md  贡献指南
+CODE_OF_CONDUCT.md  贡献者公约行为准则
+SECURITY.md      安全漏洞报告
+SUPPORT.md       使用支持渠道
 ```

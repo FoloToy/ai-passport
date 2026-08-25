@@ -199,4 +199,8 @@ tests/                   Lightweight logic tests that can run without hardware
 docs/                    Engineering/contribution conventions and design documentation
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
 AGENTS.md        Coding, validation, and contribution rules for agents
+CONTRIBUTING.md  Contribution guide
+CODE_OF_CONDUCT.md  Code of conduct
+SECURITY.md      Security vulnerability reporting
+SUPPORT.md       Support channels
 ```
