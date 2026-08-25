@@ -43,6 +43,12 @@ README.zh_CN.md               上游中文说明（FoloToy AI Passport）
 
 **强约束**：`main` 始终与上游 `FoloToy/ai-passport` 的 `main` 保持同步（最新基线），不承载 fork 特有功能改动；fork 特有的固件功能都在各自功能分支（`feature/*`）开发。
 
+**为什么 `main` 保持干净**：有两个原因——(1) **随时与上游保持一致、无冲突**，给多任务并行开发提供最新基线；(2) **默认用户会开发很多小项目**，为了便于整理，通过分支（`feature/*`）保存每个项目，`main` 只作为同步基线不混入具体项目改动。
+
+**例外**：如果用户**执意要在 `main` 分支直接开发**，需要**停用/关闭 CI 的自动同步任务**（见 `ci/sync-main` 分支的同步 workflow），否则自动同步会把上游改动强行合入，产生冲突或覆盖本地开发内容。
+
+**fork 用户注意**：fork 默认的 GitHub Actions 是**关闭**的，需要**手动打开启用**（GitHub 仓库 Actions 页面 → 找到同步 workflow → Enable）后，CI 自动同步才会生效。
+
 **给 fork 用户**：fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `assets/docs/` 目录**（可建自己的说明/README 变体），**不允许改其它任何文件**——这样 fork 的 `main` 与上游保持最新同步、不产生冲突。任何其它修改（固件功能、文档规整等）一律在 `feature/*` 分支进行，用 PR 合并。
 
 **assets/docs 使用约定**：个人项目可能 `README.md` 不足以完整说明项目，`assets/docs/` 正是用于在 fork 下保存 README 的**补充文档与素材**（架构说明、产品设计、图片素材等）。`assets/docs/` 在**上游 main 上必须为空**（仅保留 `.gitkeep` 占位），因此 fork 用户应在该目录下自行创建 `readme.md` 说明使用方式。建议 `assets/docs/readme.md` 包含：
