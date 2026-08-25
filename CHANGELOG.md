@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- CI 构建改造：`build-firmware.yml` 改用 `idf.py merge-bin` 合并完整固件（自动读取 `partitions.csv` 布局，含 nvs/phy_init 分区，无需手工指定偏移）；产物精简为仅 `FoloToy-AI-Passport-full.bin`（不再产出 app/bootloader/partition-table 单独固件）；CI 文档同步更新。
 - 合并上游 PR #6（wireless-low-power-demos）以解决 PR #4 冲突：引入无线/低功耗 demo（`main/demo_wifi.c`、`demo_ble.c`、`demo_radio.c`、`demo_low_power.c`）、`partitions.csv`（NVS/PHY/3 MB factory-app 分区）、`main/CMakeLists.txt`/`main.c`/`demo.h`/`sdkconfig.defaults` 更新；同步硬件指南的 Wi-Fi/BLE/低功耗章节；README 能力契约表补充 Wi-Fi/Bluetooth LE/Low power 三项（中英双语）。
 - 提交规范补充：`docs/contribution/commit-and-pr.md` 明确 PR 标题与 commit 标题同规范（`type(scope): 简述`、祈使句、默认中文），不用名词短语当标题。
 - CI 与文档清理：`sync-main.yml` 移除 `test_mode` 残留模板注释；`docs/development/coding-conventions.md` 将「Redis TTL」条目泛化为「缓存组件」条目（当前固件无 TTL 约束需求，消除从模板带入的无关约定）。
