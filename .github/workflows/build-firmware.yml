@@ -1,0 +1,73 @@
+name: Build firmware
+
+on:
+  push:
+    tags:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ github.ref_type }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ github.ref_type }}-${{ github.ref_name }}-
+            ccache-
+
+      - name: Build firmware (ESP-IDF 5.5.3 / esp32c3)
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.5.3
+          target: esp32c3
+          extra_docker_args: >-
+            -e CCACHE_DIR=/app/${{ github.repository }}/.ccache
+            -e IDF_CCACHE_ENABLE=1
+          command: >-
+            idf.py build &&
+            python "$IDF_PATH/components/esptool_py/esptool/esptool.py" --chip esp32c3
+            merge_bin -f raw --flash_mode dio --flash_freq 80m --flash_size 8MB
+            -o build/FoloToy-AI-Passport-full.bin
+            0x0 build/bootloader/bootloader.bin
+            0x8000 build/partition_table/partition-table.bin
+            0x10000 build/FoloToy-AI-Passport.bin
+
+      - name: Set artifact name
+        run: echo "ARTIFACT_NAME=passport-${GITHUB_REF_NAME//\//-}" >> "$GITHUB_ENV"
+
+      - name: Upload artifact (branch push)
+        if: github.ref_type == 'branch'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            build/FoloToy-AI-Passport-full.bin
+            build/FoloToy-AI-Passport.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+          if-no-files-found: error
+
+      - name: Create release (tag push)
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "${{ github.ref_name }}"
+          files: |
+            build/FoloToy-AI-Passport-full.bin
+            build/FoloToy-AI-Passport.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+          if-no-files-found: error

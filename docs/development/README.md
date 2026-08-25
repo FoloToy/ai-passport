@@ -14,3 +14,4 @@
 
 - [build-and-test.md](build-and-test.md)：构建与验证（ESP-IDF 命令、逻辑测试、改动验证要求）。
 - [coding-conventions.md](coding-conventions.md)：代码约定（语言风格、复用、注释、测试同步、资源约束等）。
+- [CI-build-and-release.md](CI-build-and-release.md)：自动构建与发布说明（tag 触发自动编译固件并发布 Release）。
