@@ -18,4 +18,4 @@
 
 - [AGENTS.md](../../AGENTS.md)：仓库权威 AI 规范的入口与索引。
 
-> 注：`docs/software-design` 为本次仓库规范化目录，用于容纳软件设计文档。协作规范见 `docs/contribution/`、工程规范见 `docs/development/`、fork 工作流见 `docs/fork-guide.md`（均由 AGENTS.md 索引）。CI/构建发布说明迁移至 `ci/build-firmware` 分支的 `docs/software-design/CI-build-and-release.md`。
+> 注：`docs/software-design` 为本次仓库规范化目录，用于容纳软件设计文档。协作规范见 `docs/contribution/`、工程规范见 `docs/development/`、fork 工作流见 `docs/fork-guide.md`（均由 AGENTS.md 索引）。CI/构建发布说明迁移至 `ci/build-firmware` 分支的 `docs/development/CI-build-and-release.md`；上游同步说明在 `ci/sync-main` 分支的 `docs/development/CI-sync-main.md`。
