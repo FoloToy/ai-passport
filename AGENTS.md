@@ -1,27 +1,52 @@
-# AGENTS.md
+# Repository Guidelines for AI Agents
 
-给 AI agent（Claude Code / Codex / Cursor / Cline 等）读的仓库说明。Claude Code 另见 `CLAUDE.md`（薄引用本文件）。
+This file is the only mandatory entry point for AI-assisted work in this repository. Read task-specific documents from the routing table below; do not load every README by default.
 
-本文件是仓库权威 AI 规范的**入口与索引**，具体规则已按主题拆分到 `docs/` 下公共文档。规则有更新时改对应 `docs/` 文件，不要在本文件另起一套，以免两份文档 drift。
+## Project and safety baseline
 
-## 项目概述
+- Target: ESP32-C3, 8 MB Flash, no PSRAM, ESP-IDF 5.5.3.
+- Preserve existing user changes. Start with `git status --short --branch`; never overwrite or clean unrelated files.
+- Hardware facts follow this priority: schematic/PCB and measured results → `components/bsp/include/bsp_pins.h` → BSP headers and implementation → hardware guide → README/demo code. Report unknown hardware facts instead of guessing.
+- Reusable board logic belongs in `components/bsp`; pages, state machines, animations, and application tasks belong in `main`.
+- LVGL is not thread-safe. Code outside the LVGL task must hold `bsp_lvgl_lock()` while accessing LVGL objects.
+- Button callbacks must stay non-blocking. Audio, storage, networking, and other slow operations belong in worker tasks.
+- A demo must stop every task, timer, callback, and event handler that can access its UI before deleting the screen.
+- Keep testable state machines, protocols, timing, and layout calculations independent from ESP-IDF/LVGL and cover them with host tests.
+- Never commit credentials, device QR secrets, private keys, personal data, or unsanitized logs.
 
-本仓库是 **FoloToy AI Passport** 的开源硬件开发基线。它是一个面向 AI agent 的开放式可穿戴 AI 硬件：`main` 是最小但完整的可运行基线，集中存放**已确认的硬件事实、稳定接口、资源边界、参考实现与验收方法**，AI agent 可据此识别能力与限制、实现并构建应用。本仓库常被 fork 后二次开发，fork 用户的使用约定见 [docs/fork-guide.md](docs/fork-guide.md)。
+## Task-specific context routing
 
-- **平台**：ESP32-C3（32 位 RISC-V，无 PSRAM，8MB Flash），ESP-IDF 5.5.x（已知开发环境 5.5.3）。
-- **屏**：ST7789P3，240×320 竖屏 RGB565，SPI2 40MHz，LVGL。
-- **交互**：`UP`/`DOWN`/`OK` 三键（GPIO0 ADC 电阻梯）；音频 ES8311（I2S0 全双工）；电池 CW2017；I2C0 共享总线。
-- **协议**：MIT LICENCE，仓库根许可证文件为准。
+| Task | Read before editing |
+| --- | --- |
+| Any code change | `docs/development/agent-guide.md`, relevant headers and neighboring implementation |
+| BSP, pins, buses, display, audio, battery | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`, `components/bsp/include/bsp_pins.h` |
+| Demo or menu | `main/demo.h`, `main/main.c`, the nearest `main/demo_*.c` implementation |
+| Build, test, dependencies, partitions | `docs/development/build-and-test.md`, `sdkconfig.defaults`, `partitions.csv` |
+| CI or release | the matching file in `docs/development/CI-*.md` and `.github/workflows/` |
+| Documentation | `docs/contribution/doc-conventions.md`, `docs/INDEX.md` |
+| Commit or PR | `docs/contribution/commit-and-pr.md` |
 
-## 规则索引（按触发场景阅读）
+Use `docs/README.md` for the product overview and `docs/INDEX.md` when a task needs additional documentation. Fork-specific workflow is in `docs/fork-guide.md` and is not required for ordinary upstream development.
 
-开始任何工作前，先读 `docs/contribution/doc-conventions.md`（文档生成规范与分类）。此后按触发场景读取对应规则：
+## Required validation and delivery
 
-- **首次接触本仓库 / 需要定位功能或新增代码前**，先读 [docs/fork-guide.md](docs/fork-guide.md)（目录结构、`main` 保持干净、fork 约定、`docs/assets` 使用）。
-- **AI 开始开发前（建立上下文、需求拆解、BSP 边界、验收交付格式）**，先读 [docs/development/agent-guide.md](docs/development/agent-guide.md)。
-- **构建、烧录或验证改动前**，先读 [docs/development/build-and-test.md](docs/development/build-and-test.md)（ESP-IDF 命令、逻辑测试、编译与真机验证分开）。
-- **编写代码前**，先读 [docs/development/coding-conventions.md](docs/development/coding-conventions.md)（语言风格、复用、注释、测试同步、资源约束）。
-- **提交或创建 PR 前**，先读 [docs/contribution/commit-and-pr.md](docs/contribution/commit-and-pr.md)（commit 格式、push、PR 说明要求）。
-- **参与社区或贡献代码前**，见根目录 [CONTRIBUTING.md](CONTRIBUTING.md)（贡献指南）、[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)（行为准则）、[SECURITY.md](SECURITY.md)（安全报告）、[SUPPORT.md](SUPPORT.md)（支持渠道）。
+Run the smallest relevant check while iterating, then run the complete gate before delivery:
 
-完整文档导航见 [docs/INDEX.md](docs/INDEX.md)。
+```bash
+./tools/validate.sh --static    # repository checks + host tests
+./tools/validate.sh --firmware  # ESP-IDF build + merged-image verification
+./tools/validate.sh             # complete gate
+```
+
+The complete gate requires an activated ESP-IDF 5.5.3 environment. Do not describe a successful build as hardware validation. Final delivery must report these fields separately:
+
+```text
+Build: PASS / FAIL / NOT RUN
+Host tests: PASS / FAIL / NOT RUN
+Device tests: PASS / FAIL / NOT RUN
+Unverified: remaining board, instrument, or user checks
+```
+
+Create commits and push only when the user requests them or the active workflow explicitly requires them. Record user-visible changes in `CHANGELOG.md`; internal refactors, CI maintenance, typo fixes, and generated-file refreshes do not require a changelog entry.
+
+Community guidance is in `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, and `SUPPORT.md`.
