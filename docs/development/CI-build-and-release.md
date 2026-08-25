@@ -37,4 +37,4 @@
 ## 相关文件
 
 - `.github/workflows/build-firmware.yml`：本流水线定义。
-- 详见 `docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md`（硬件/烧录细节）。
+- 详见 `docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md`（硬件/烧录细节，仓库根视角路径）。

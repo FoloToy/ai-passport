@@ -16,4 +16,4 @@
 
 ## 现有文档索引
 
-- [CI-build-and-release.md](CI-build-and-release.md)：自动构建与发布说明（tag 触发自动编译固件并发布 Release）。
+> 当前暂无软件设计文档；CI/构建发布说明见 `docs/development/CI-build-and-release.md`。
