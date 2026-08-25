@@ -51,6 +51,7 @@ FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，�
 | 电池 | CW2017 的 SOC 与电压读取 | `bsp_battery_*` | 是可缺省能力；读数精度取决于电芯与 profile，不能等同于已标定结果 |
 | Wi-Fi | 按需启动的 2.4 GHz STA 扫描示例 | `main/demo_wifi.c` | 只扫描，不连接、不保存凭据，也不代表天线/射频性能已验证 |
 | Bluetooth LE | 按需启动 NimBLE，以 `FoloPassport` 做不可连接广播 | `main/demo_ble.c` | ESP32-C3 不支持经典蓝牙；距离、共存和功耗需实机测量 |
+| BLUFI 配网 | 通过安全 BLUFI 传输 Wi-Fi STA 凭据并回报连接状态 | `main/demo_blufi.c` | 凭据持久化到 Wi-Fi NVS；BLUFI 为兼容维护状态，不等于完整量产配网方案 |
 | 低功耗 | 两秒 light sleep 和五秒 deep sleep，均由 RTC timer 唤醒 | `main/demo_low_power.c` | deep sleep 会重启应用；外部/按键唤醒和板级功耗仍未验证 |
 | 共享总线 | ES8311 与 CW2017 共用 I2C0 | `bsp_i2c_*` | 所有设备复用 BSP 持有的总线；不能为扫描或新设备再创建同端口总线 |
 | 日志与烧录 | ESP32-C3 原生 USB Serial/JTAG | ESP-IDF console | GPIO18/19 保留给 USB；UART0 默认 TX GPIO21 与背光冲突 |
@@ -58,6 +59,12 @@ FoloToy AI Passport 是一个面向 AI agent 的开放式可穿戴 AI 硬件，�
 所有引脚、地址、面板参数和按键电压窗口只在 [`components/bsp/include/bsp_pins.h`](components/bsp/include/bsp_pins.h) 定义。应用代码不得复制这些常量。完整引脚表、面板初始化、ADC 阈值、I2C 地址规则、音频时钟和内存说明见 [AI 硬件开发指南](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
 
 应用也可以使用 ESP-IDF 提供的定时器、FreeRTOS 任务和内部 Flash/NVS；番茄钟分支提供了 NVS 示例。Wi-Fi 和 Bluetooth LE 仍是 ESP-IDF 应用服务，不是 BSP API：它们的菜单页只在打开期间初始化栈，退出时释放。`demo/claude-buddy-port` 仍可作为更完整的 BLE 应用架构参考，但不能替代对当前板卡天线、射频表现、功耗和共存行为的实测。所有 FoloToy AI Passport 均配备 8 MB Flash，默认使用 3 MB factory app 分区。
+
+### BLUFI Wi-Fi 配网示例
+
+进入 **BLUFI Setup**，用 Espressif 的 [Android EspBlufi](https://github.com/EspressifApp/EspBlufi)、[iOS EspBlufi](https://github.com/EspressifApp/EspBlufiForiOS) 或 ESP Config 微信小程序连接 `BLUFI_FoloPassport`。名称以 `BLUFI` 开头是为了通过微信小程序的默认设备筛选。在 App 内扫描 AP，发送 SSID/密码并请求连接；页面会显示 BLE、Wi-Fi 和 IP 状态。`OK` 用已保存凭据重连，`DOWN` 只清除 Wi-Fi STA 凭据，长按 `OK` 返回主菜单。
+
+示例沿用 ESP-IDF BLUFI 的 DH/AES/CRC 协商，不记录接收到的密码。BLUFI 上游已处于维护状态；量产产品仍需明确配网生命周期、设备身份、授权策略、超时/重试和物理恢复方案。
 
 ### 不属于当前能力契约的事项
 
@@ -179,6 +186,7 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 - 音频采样速度、播放、非零录音和页面退出正确；
 - 电池读数合理，CW2017 缺失时应用能安全降级；
 - Wi-Fi 重新扫描可完成，手机 BLE 扫描器可看到广播，两页可反复进出；
+- BLUFI 可返回 AP 列表、接收凭据且不记录密码、回报成功/失败，成功 STA 配置可持久化并可用 `DOWN` 清除；
 - Low Power 页可用 `UP` / `DOWN` 选择 light 或 deep sleep，`OK` 执行；light sleep 约两秒后被 timer 唤醒并恢复背光；deep sleep 约五秒后重启，再进入页面可见 RTC 保留的唤醒计数；
 - 重复进出页面和并发操作后没有任务、对象或堆持续泄漏。
 

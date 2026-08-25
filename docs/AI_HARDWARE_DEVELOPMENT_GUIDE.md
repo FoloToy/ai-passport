@@ -28,6 +28,7 @@ AI 应先完成以下检查：
 | 电池 | CW2017 电量计 | 共享 I2C0，地址 0x63 | 已实现，可缺省 |
 | Wi-Fi | ESP32-C3 2.4 GHz STA | 应用页按需初始化 | 扫描示例已实现 |
 | Bluetooth LE | ESP32-C3 NimBLE peripheral | 应用页按需初始化 | 不可连接广播示例已实现 |
+| BLUFI 配网 | ESP32-C3 NimBLE BLUFI + Wi-Fi STA | 应用页按需初始化 | 安全传输凭据、AP 列表和连接状态回报已实现 |
 | 低功耗 | ESP32-C3 light/deep sleep | RTC timer 唤醒 | 两秒 light sleep 和五秒 deep sleep 示例已实现 |
 | 日志 | USB Serial/JTAG | 原生 USB GPIO18/19 | 已配置 |
 
@@ -74,7 +75,8 @@ app_main
        ├─ Battery demo
        ├─ Wi-Fi scan demo
        ├─ Bluetooth LE advertising demo
-       └─ Light-sleep demo
+       ├─ BLUFI provisioning demo
+       └─ Light/deep-sleep demo
 ```
 
 显示是 UI 的硬依赖，显示或 LVGL 初始化失败时 `app_main` 直接返回。按键、音频、电池是软依赖：初始化失败的菜单项显示 `[FAIL]`，其他页面仍可用。
@@ -90,7 +92,7 @@ app_main
 
 驱动初始化大多设计为幂等，但当前没有统一 deinit API。不要假设可以在运行时反复销毁和重建总线/驱动。
 
-Wi-Fi、NimBLE 和 light/deep sleep 直接使用 ESP-IDF API，不属于板级 BSP。`demo_radio.c` 只管理 NVS、`esp_netif` 和默认 event loop 这些应用级共享前置。Wi-Fi 和 BLE 页在进入时初始化高内存占用的无线栈，退出时停止并释放；不自动抹除已有 NVS 数据来掩盖分区错误。deep sleep 会按 ESP32-C3 语义重启应用，示例用 RTC slow memory 记录唤醒次数。
+Wi-Fi、NimBLE、BLUFI 和 light/deep sleep 直接使用 ESP-IDF API，不属于板级 BSP。`demo_radio.c` 只管理 NVS、`esp_netif` 和默认 event loop 这些应用级共享前置。Wi-Fi、BLE 和 BLUFI 页在进入时初始化高内存占用的无线栈，退出时停止并释放；不自动抹除已有 NVS 数据来掩盖分区错误。BLUFI 凭据使用 Wi-Fi driver 的 NVS 持久化，`DOWN` 只清除 STA 配置。deep sleep 会按 ESP32-C3 语义重启应用，示例用 RTC slow memory 记录唤醒次数。
 
 ## 5. 显示与 LVGL
 
@@ -205,7 +207,7 @@ FoloToy AI Passport 的所有硬件批次均使用 8 MB Flash，`sdkconfig.defau
 - LCD DMA buffer 约 9.6 KB；
 - I2S DMA descriptor/frame buffer；
 - Audio demo 96 KB 录音堆；
-- Wi-Fi 驱动或 NimBLE host/controller（两个示例不同时常驻）；
+- Wi-Fi 驱动或 NimBLE host/controller；BLUFI 页会同时持有两者，安全协商还有上限 1 KB 的 DH 参数临时堆；
 - 各 FreeRTOS 任务栈和最大连续空闲块。
 
 新增图片、字体、网络栈、TLS、音频缓存或双缓冲时，应记录 build 后的静态 RAM/Flash 使用，并在运行时记录 free heap 与 largest free block。总 free heap 足够不代表能成功分配大连续缓冲。
@@ -394,6 +396,7 @@ idf.py flash monitor
 | 电池 | 合理 SOC 和 mV、无电量计时正确降级、断续 I2C 的错误恢复表现 |
 | Wi-Fi | 扫描总数和 SSID/RSSI 可见、OK 重扫描、反复进出后仍可扫描 |
 | Bluetooth LE | 手机看到 `FoloPassport`、OK 重启广播、退出后广播消失、反复进出无重启 |
+| BLUFI | Android/iOS EspBlufi 或 ESP Config 微信小程序看到 `BLUFI_FoloPassport`、AP 列表可返回、正确/错误密码状态正确、成功后显示 SSID/IP、重启后凭据持久、`DOWN` 清除后不再自动连接 |
 | light/deep sleep | Low Power 页用 UP/DOWN 选择、OK 执行；light sleep 约 2 秒后原地恢复背光；deep sleep 约 5 秒后重启，页面显示 timer 唤醒和 RTC 保留计数 |
 | DMA/内存/UI | build 内存报告、运行时最小堆/最大块、音频与刷屏并发稳定性 |
 

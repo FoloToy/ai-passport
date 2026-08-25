@@ -51,6 +51,7 @@ The table below describes the application capabilities implemented by the curren
 | Battery | CW2017 state-of-charge and voltage readings | `bsp_battery_*` | This capability is optional at runtime; accuracy depends on the cell and battery profile and is not equivalent to a calibrated result |
 | Wi-Fi | On-demand 2.4 GHz STA scan demo | `main/demo_wifi.c` | Scans only; it does not connect, store credentials, or validate antenna/RF performance |
 | Bluetooth LE | On-demand non-connectable NimBLE advertising as `FoloPassport` | `main/demo_ble.c` | ESP32-C3 does not support Bluetooth Classic; radio range, coexistence, and power draw require device measurements |
+| BLUFI provisioning | Secure BLUFI transfer of Wi-Fi STA credentials and connection status | `main/demo_blufi.c` | Credentials persist in Wi-Fi NVS; BLUFI is maintained for compatibility and is not a complete production onboarding design |
 | Low power | Two-second light sleep and five-second deep sleep, both with RTC timer wakeup | `main/demo_low_power.c` | Deep sleep restarts the application; external/button wakeup and board-level power consumption remain unverified |
 | Shared bus | ES8311 and CW2017 share I2C0 | `bsp_i2c_*` | Every device must reuse the bus owned by the BSP; do not create another bus on the same port for scanning or a new device |
 | Logging and flashing | Native ESP32-C3 USB Serial/JTAG | ESP-IDF console | GPIO18/19 are reserved for USB; the default UART0 TX on GPIO21 conflicts with the backlight |
@@ -58,6 +59,12 @@ The table below describes the application capabilities implemented by the curren
 All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](docs/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
 
 Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. Wi-Fi and Bluetooth LE remain ESP-IDF application services rather than BSP APIs: their menu pages initialize each stack only while open and release it on exit. `demo/claude-buddy-port` remains a fuller BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior. Every FoloToy AI Passport has 8 MB of Flash, and the default firmware configuration targets 8 MB with a 3 MB factory-app partition.
+
+### BLUFI Wi-Fi setup demo
+
+Open **BLUFI Setup** and connect to `BLUFI_FoloPassport` with Espressif's [Android EspBlufi](https://github.com/EspressifApp/EspBlufi), [iOS EspBlufi](https://github.com/EspressifApp/EspBlufiForiOS), or ESP Config WeChat mini program. The `BLUFI` prefix is required by the mini program's default device filter. Scan for an AP, send its SSID/password, and request connection. The page displays BLE, Wi-Fi, and IP status. `OK` retries the saved STA configuration; `DOWN` clears only the saved Wi-Fi STA credentials. Long `OK` returns to the main menu.
+
+The demo follows ESP-IDF's BLUFI DH/AES/CRC negotiation and never logs the received password. BLUFI itself is in maintenance mode upstream, so a production product still needs an explicit provisioning lifecycle, device identity, authorization policy, timeout, retry limits, and physical reset/recovery design.
 
 ### Capabilities outside the current contract
 
@@ -180,6 +187,7 @@ Different example branches may provide their own host-test commands; follow the 
 - Audio sample rate, playback, non-zero recording, and page exit behavior are correct.
 - Battery readings are plausible, and the application degrades safely when the CW2017 is absent.
 - Wi-Fi rescans complete, BLE advertising is visible to a phone scanner, and both pages can be entered and exited repeatedly.
+- BLUFI returns an AP list, accepts credentials without logging the password, reports success/failure, persists a successful STA configuration, and clears it with `DOWN`.
 - The Low Power page uses `UP`/`DOWN` to select light or deep sleep and `OK` to run it. Light sleep wakes by timer after approximately two seconds and restores the display backlight; deep sleep restarts after approximately five seconds and reports a retained wake count.
 - Repeated page transitions and concurrent operations do not continuously leak tasks, objects, or heap.
 
