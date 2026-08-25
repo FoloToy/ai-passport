@@ -17,5 +17,6 @@
 ## 现有文档索引
 
 - [AI_HARDWARE_DEVELOPMENT_GUIDE.md](AI_HARDWARE_DEVELOPMENT_GUIDE.md)：完整的硬件开发指南与排障参考（上游已有，已归位到本目录）。
+- [specifications.md](specifications.md)：产品规格（面向用户与产品的设备规格：尺寸、重量、电池、充电、NFC、按键等）。
 
 > 注：`docs/hardware-design` 为本次仓库规范化目录，用于容纳硬件设计文档。上游既有硬件指南 `AI_HARDWARE_DEVELOPMENT_GUIDE.md` 已归入本目录。

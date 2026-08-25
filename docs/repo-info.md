@@ -1,7 +1,8 @@
 # 仓库说明（Repo Info）
 
 > **面向读者**：AI agent、开发者、fork 用户以及任何想了解本仓库背景的人
-> **读取时机**：首次接触本仓库、需要了解产品名称 / 官网入口 / 硬件规格 / 仓库协议，或准备引用官方链接之前
+> **读取时机**：首次接触本仓库、需要了解产品名称 / 官网入口 / 仓库协议，或准备引用官方链接之前
+> **关联文档**：设备硬件规格见 [hardware-design/specifications.md](hardware-design/specifications.md)；凭证与隐私入仓红线见 [contribution/doc-conventions.md](contribution/doc-conventions.md)。
 
 ---
 
@@ -34,27 +35,7 @@ AI Passport 是一个**开放式可穿戴 AI 智能体**：
 | **PLAY（游玩）** | 从官方玩法库选择玩法，在浏览器一键刷入；身份卡功能保留，只替换游戏内容 |
 | **CREATE（创造）** | 会写代码就自己做固件；可配合 AI Agent（Codex / Claude Code / TRAE 等）从一句需求开始开发玩法 |
 
-## 3. 硬件规格
-
-以下为设备硬件规格（源自官方产品页）：
-
-| 项目 | 规格 |
-| --- | --- |
-| 形态 | 可穿戴，透明外壳（屏幕 / 主板 / NFC / 麦克风 / 扬声器 / 电池均为产品语言一部分） |
-| 尺寸 | 60 × 95 × 8.5 mm |
-| 重量 | 50 g |
-| MCU | ESP32-C3（8MB Flash） |
-| 显示 | 240 × 320 彩色 TFT |
-| 无线 | 2.4 GHz Wi-Fi（802.11 b/g/n）；Bluetooth® 5 LE（可同步头像 / 昵称 / Token / 个性化内容） |
-| NFC | 被动 NFC 标签（NTAG213，支持读卡器 / 手机读写普通 NDEF 数据） |
-| 输入 | 上 / 下 / 确定三枚功能键 + 独立电源键（硬件实现，不可改功能） |
-| 电源 | 按住电源键 0.5s 开机；长按约 2s 关机；自动息屏后按任意功能键唤醒 |
-| 音频 | 内置麦克风 + 内置扬声器 |
-| 充电 | USB Type-C 2.0 5V |
-| 电池 | 内置 520 mAh 可充电锂电池 |
-| 其他 | 专属二维码（QR fallback，含恢复固件入口） |
-
-## 4. 官方入口
+## 3. 官方入口
 
 | 入口 | 地址 |
 | --- | --- |
@@ -81,29 +62,25 @@ FoloToy 提供两处浏览器刷机入口，均可安全写入本地固件，固
 
 引用"在线刷机 / 浏览器刷机"入口时，产品官网场景优先用官网内置入口；需要给用户通用刷机工具时用 `tool.folotoy.cn`。
 
-## 5. 仓库与开源
+## 4. 仓库与开源
 
 - 开源仓库：`github.com/FoloToy/ai-passport`
 - 协议：**MIT License**（Copyright (c) 2026 FoloToy）
 - 仓库常被 fork 后二次开发；fork 约定见仓库 `docs/fork-guide.md`。
 
-## 6. 命名与多语言
+## 5. 命名与多语言
 
 - 名称 `AI Passport` 在官网中 / 英双版保持一致，不翻译。
 - 官网提供中文（`/`）与英文（`/en/`）两版。
 - 本仓库 README 提供中英双版（`README.md` / `README.zh_CN.md`）；本说明若落仓，建议同样提供 `.zh_CN.md` 或按仓库文档语言约定处理。
 
-## 7. 与工程事实源的关系
+## 6. 与工程事实源的关系
 
-- 本文档是**仓库级**的元信息说明，承载对外展示口径（名称、定位、官网、规格、协议）。
+- 本文档是**仓库级**的元信息说明，承载对外展示口径（名称、定位、官网、协议）。
+- 设备产品规格见 [hardware-design/specifications.md](hardware-design/specifications.md)。
 - 硬件引脚、资源边界等工程事实以仓库 `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md` 与 `components/bsp/include/bsp_pins.h` 为准，本文档不替代工程文档。
 - 网站入口以官网实际页面为准；如官网结构变化，优先更新官网并回同步本文档。
 
-## 8. 隐私与安全门限
+## 7. 隐私与安全门限
 
-- **设备二维码链接含隐私参数，禁止写入代码 / 仓库**：设备（卡片）背面二维码扫码后得到的链接带有隐私令牌参数，例如
-  `https://ai-passport.folotoy.cn/trae/?s=4c11aeAAAAAA&k=CCAXAAAAAA`
-  （`s`、`k` 为设备绑定的敏感标识，可能关联到具体设备或持有者）。此类链接**绝不允许**写进本仓库代码、配置、文档、示例、测试或 commit message。
-- 处理此类链接时：不要在代码库中存放、打印、提交或复制进示例；仅可出现在用户本人可直接查看的介质（如设备贴纸 / 本地记录）中。
-- 发现误提交应立即移除并告知维护者；仅删除工作区文件不能保证 Git 历史中的参数已失效。
-- 对外文档需要演示该链接形态时，使用脱敏占位（如 `https://ai-passport.folotoy.cn/trae/?s=<secret>&k=<key>`），不得携带真实参数。
+设备二维码链接等含隐私参数的敏感内容**禁止写入代码 / 仓库**，规则见 [`docs/contribution/doc-conventions.md`](contribution/doc-conventions.md)「内容安全（凭证不入仓）」与「设备二维码链接」两条。

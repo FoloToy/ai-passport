@@ -6,7 +6,7 @@
 
 | 文档 | 类型 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| [repo-info.md](./repo-info.md) | 仓库说明 | authoritative | 产品与仓库、硬件规格、官方入口、仓库协议、隐私与安全门限 |
+| [repo-info.md](./repo-info.md) | 仓库说明 | authoritative | 产品与仓库、产品定位、官方入口、仓库协议、隐私与安全门限（链接到规格与入仓红线） |
 | [contribution/README.md](./contribution/README.md) | 协作规范索引 | authoritative | 通用协作规范（文档规范、提交与 PR 约定） |
 | [contribution/doc-conventions.md](./contribution/doc-conventions.md) | 文档规范 | authoritative | 先读所有 README、文档生成规范、文档分类规范（公共/特定项目） |
 | [contribution/commit-and-pr.md](./contribution/commit-and-pr.md) | 协作规范 | authoritative | 提交规范 + 提交与 PR 约定 |
@@ -20,6 +20,7 @@
 | [software-design/README.md](./software-design/README.md) | 软件设计索引 | 参考 | 软件设计文档子目录骨架 |
 | [hardware-design/README.md](./hardware-design/README.md) | 硬件设计索引 | 参考 | 硬件设计文档子目录骨架 |
 | [hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md](./hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) | 硬件指南 | authoritative | 完整硬件开发指南与排障参考（上游） |
+| [hardware-design/specifications.md](./hardware-design/specifications.md) | 产品规格 | authoritative | 产品规格（尺寸、重量、电池、充电、NFC、按键等对外口径） |
 
 ## 仓库根治理文档
 
