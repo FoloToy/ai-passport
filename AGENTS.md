@@ -1,3 +1,7 @@
+<p align="right">
+  <a href="AGENTS.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
+
 # Repository Guidelines for AI Agents
 
 This file is the only mandatory entry point for AI-assisted work in this repository. Read task-specific documents from the routing table below; do not load every README by default.
@@ -13,6 +17,7 @@ This file is the only mandatory entry point for AI-assisted work in this reposit
 - A demo must stop every task, timer, callback, and event handler that can access its UI before deleting the screen.
 - Keep testable state machines, protocols, timing, and layout calculations independent from ESP-IDF/LVGL and cover them with host tests.
 - Never commit credentials, device QR secrets, private keys, personal data, or unsanitized logs.
+- Every maintained Markdown document uses English at its default `.md` path and Simplified Chinese in a paired `.zh_CN.md` file. Keep both versions aligned and retain reciprocal language links.
 
 ## Task-specific context routing
 

@@ -1,16 +1,15 @@
-# 资源目录（Assets）
+<p align="right">
+  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
 
-本目录集中存放可复用的资源（字库、图片、音乐等），按资源类型分子目录管理。每个子目录都有一份独立的 `README.md`，说明资源的使用方法。
+# Assets
 
-## 子目录
+This directory stores reusable fonts, images, music, and sound effects, organized by asset type.
 
-- [`fonts/`](fonts/README.md)：字库资源。
-- [`images/`](images/README.md)：图片资源。
-- [`music/`](music/README.md)：音乐/音效资源。
+## Directories
 
-## 通用约定
+- [`fonts/`](fonts/README.md): font assets.
+- [`images/`](images/README.md): image assets.
+- [`music/`](music/README.md): music and sound-effect assets.
 
-- 每个资源放在其类型对应的独立子目录，并在该子目录内新建/维护 `README.md`。
-- 资源若可直接复制到项目工程中使用，应说明其放置路径、命名规则与引用方式。
-- 二进制资源（字体、图片、音频）不属于纯 markdown 文档，请勿与文档混放。
-- 涉及版权/授权的资源需在其 `README.md` 中注明来源与许可。
+Keep each asset in the matching directory and document its destination, naming, and integration method. Record the source and license for copyrighted assets. Do not mix binary assets with Markdown documentation.

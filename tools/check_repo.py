@@ -13,6 +13,7 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parent.parent
 FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
+CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
 SECRET_PATTERNS = {
     "GitHub token": re.compile(r"(?:ghp_|github_pat_)[A-Za-z0-9_]{20,}"),
     "AWS access key": re.compile(r"AKIA[0-9A-Z]{16}"),
@@ -47,6 +48,7 @@ def text_files() -> list[Path]:
 def check_required_files(errors: list[str]) -> None:
     required = (
         "AGENTS.md",
+        "AGENTS.zh_CN.md",
         "CLAUDE.md",
         "dependencies.lock",
         "sdkconfig.defaults",
@@ -77,6 +79,48 @@ def check_markdown_links(files: list[Path], errors: list[str]) -> None:
             resolved = (ROOT / local.lstrip("/")) if local.startswith("/") else (path.parent / local)
             if local and not resolved.resolve().exists():
                 errors.append(f"{path.relative_to(ROOT)}: missing link target {target}")
+
+
+def check_document_languages(files: list[Path], errors: list[str]) -> None:
+    """Require an English default and a linked Simplified Chinese peer."""
+    markdown = {path.resolve() for path in files if path.suffix.lower() == ".md"}
+
+    for path in sorted(markdown):
+        name = path.name
+        text = path.read_text(encoding="utf-8")
+        opening = "\n".join(text.splitlines()[:8])
+
+        if name.endswith(".zh_CN.md"):
+            default_name = f"{name[:-len('.zh_CN.md')]}.md"
+            default_path = path.with_name(default_name).resolve()
+            if default_path not in markdown:
+                errors.append(
+                    f"{path.relative_to(ROOT)}: missing English default {default_name}"
+                )
+            elif default_name not in opening:
+                errors.append(
+                    f"{path.relative_to(ROOT)}: missing top language link to {default_name}"
+                )
+            continue
+
+        chinese_name = f"{path.stem}.zh_CN.md"
+        chinese_path = path.with_name(chinese_name).resolve()
+        if chinese_path not in markdown:
+            errors.append(
+                f"{path.relative_to(ROOT)}: missing Simplified Chinese peer {chinese_name}"
+            )
+        elif chinese_name not in opening:
+            errors.append(
+                f"{path.relative_to(ROOT)}: missing top language link to {chinese_name}"
+            )
+
+        english_prose = text.replace("简体中文", "")
+        match = CJK_RE.search(english_prose)
+        if match:
+            line = english_prose.count("\n", 0, match.start()) + 1
+            errors.append(
+                f"{path.relative_to(ROOT)}:{line}: default Markdown must use English prose"
+            )
 
 
 def check_action_pins(errors: list[str]) -> None:
@@ -134,6 +178,7 @@ def main() -> int:
     files = text_files()
     check_required_files(errors)
     check_markdown_links(files, errors)
+    check_document_languages(files, errors)
     check_action_pins(errors)
     check_issue_forms(errors)
     check_sensitive_content(files, errors)

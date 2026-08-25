@@ -1,16 +1,14 @@
-# 协作规范（Contribution）
+<p align="right">
+  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
 
-本目录存放本仓库的人机协作、文档、提交和 PR 规范。
+# Contribution Guidelines
 
-## 收录标准
+This directory contains human/AI collaboration, documentation, commit, and pull-request rules.
 
-- 收录文档规范、commit 风格、PR 约定和人机协作边界。
-- 每条规则应写清触发条件、必须做什么、禁止做什么、验证方法和例外条件。
-- 项目基线的功能和产品事实进入对应设计文档；仅 fork 私有业务内容不回合上游（见 [doc-conventions.md](doc-conventions.md)）。
-- 可以由 lint、测试或脚本强制的要求，应同时落实到自动化检查，不能只靠 agent 阅读文字。
-- 新增规约时在本文件更新索引。
+Rules must state their trigger, required action, prohibited action, validation method, and exceptions. Product facts belong in the corresponding design document; fork-private business content does not return upstream. Automatable rules must also be enforced by tools or CI.
 
-## 文档索引
+## Documents
 
-- [doc-conventions.md](doc-conventions.md)：按任务加载上下文、文档职责、写作维护和内容安全。
-- [commit-and-pr.md](commit-and-pr.md)：提交规范 + 提交与 PR 约定。
+- [doc-conventions.md](doc-conventions.md): context routing, English-default bilingual documents, ownership, maintenance, and content safety.
+- [commit-and-pr.md](commit-and-pr.md): commit and pull-request conventions.

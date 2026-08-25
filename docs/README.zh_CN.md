@@ -9,7 +9,7 @@ FoloToy AI Passport 是一个开放式可穿戴 AI 硬件，本仓库是这款 A
 - `main` 是最小但完整的可运行基线，也是当前硬件能力的可执行说明；
 - `components/bsp` 隔离板级差异，为应用提供稳定 API；
 - `demo/*` 分支展示从需求到成品的不同实现路径；
-- AI 开发约定见 [`AGENTS.md`](../AGENTS.md) 与 [`docs/development/agent-guide.md`](development/agent-guide.md)；完整硬件上下文和故障知识见 [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)；
+- AI 开发约定见 [`AGENTS.zh_CN.md`](../AGENTS.zh_CN.md) 与 [`docs/development/agent-guide.zh_CN.md`](development/agent-guide.zh_CN.md)；完整硬件上下文和故障知识见 [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md)；
 - 构建结果与真机结果分开记录，禁止把"编译通过"描述成"硬件验证通过"。
 
 ## 硬件能力契约
@@ -111,10 +111,10 @@ SUPPORT.md       使用支持渠道
 
 ## 文档索引
 
-- [`docs/INDEX.md`](INDEX.md) — 全部文档索引（协作规范、工程规范、fork 工作流、软硬件设计）。
-- [`docs/development/agent-guide.md`](development/agent-guide.md) — AI 开发工作流（面向 AI 编程助手：上下文建立、事实来源优先级、BSP 边界、运行时规则、交付格式）。
-- [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) — 硬件开发指南（引脚表、验收矩阵、故障速查）。
-- [`AGENTS.md`](../AGENTS.md) — AI 协作规范入口。
-- [`docs/fork-guide.md`](fork-guide.md) — fork 工作流。
+- [`docs/INDEX.zh_CN.md`](INDEX.zh_CN.md) — 全部文档索引（协作规范、工程规范、fork 工作流、软硬件设计）。
+- [`docs/development/agent-guide.zh_CN.md`](development/agent-guide.zh_CN.md) — AI 开发工作流（上下文建立、事实来源优先级、BSP 边界、运行时规则、交付格式）。
+- [`docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md`](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md) — 硬件开发指南（引脚表、验收矩阵、故障速查）。
+- [`AGENTS.zh_CN.md`](../AGENTS.zh_CN.md) — AI 协作规范入口。
+- [`docs/fork-guide.zh_CN.md`](fork-guide.zh_CN.md) — fork 工作流。
 
 > 注：本 README 只描述产品与仓库，不含给 AI 的执行说明；AI 开始开发前请先读 `docs/development/agent-guide.md`。

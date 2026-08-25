@@ -1,3 +1,7 @@
+<p align="right">
+  <a href="PULL_REQUEST_TEMPLATE.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
+
 ## Summary
 
 <!-- What problem does this PR solve, and what user-visible behavior changes? -->

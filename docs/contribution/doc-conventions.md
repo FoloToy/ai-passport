@@ -1,43 +1,39 @@
-# 文档规范（Doc Conventions）
+<p align="right">
+  <a href="doc-conventions.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
 
-本规范适用于人类贡献者和 AI agent。文档与代码一样接受 review、自动检查和事实校验；文档是否权威由其职责决定，与作者是人还是 AI 无关。
+# Documentation Conventions
 
-## 按任务加载上下文
+These rules apply equally to human contributors and AI agents. Documentation is reviewed and fact-checked like code; authority follows a document's responsibility, not its author.
 
-- 所有任务只强制先读仓库根 `AGENTS.md`。
-- 按 `AGENTS.md` 的路由表读取与当前修改相关的文档和源码，不默认读取全部 README。
-- 产品总览见 `docs/README.md`；需要发现其它文档时再读取 `docs/INDEX.md`。
-- 修改某个事实时，更新其权威来源以及直接引用该事实的文档，不复制新的事实源。
+## Language and file layout
 
-## 文档职责
+- English is mandatory at every maintained default Markdown path: `name.md`.
+- Simplified Chinese is provided at the paired path `name.zh_CN.md`.
+- Both files begin with reciprocal language links. Keep their headings, facts, examples, safety warnings, and links aligned in the same change.
+- English default prose must not contain Chinese text. The `简体中文` switch label is the only allowed CJK text on an English page.
+- Code, commands, paths, URLs, identifiers, and data fields remain unchanged between translations where appropriate.
+- The repository check rejects an unpaired document, a missing language switch, or CJK prose in an English default file.
 
-- **上游基线文档**：描述 AI Passport 硬件、BSP、基线 demo、工程约束和验收方法，可以且应当进入上游。
-- **通用协作与工程规范**：描述代码风格、测试、提交、CI 和 AI 工作流，可以进入上游，但必须以本仓库真实工具和流程为准。
-- **fork 项目文档**：只描述某个 fork 的产品需求、业务逻辑或素材，放在 fork 自己的根 `README.md` 或 `docs/assets/`，不回合上游。
+## Task-based context
 
-不要创建只有目录说明而没有实际用途的空骨架。新增文档必须在 `docs/INDEX.md` 或所属目录索引中登记；删除或移动文档时同步更新所有链接。
+- Every task starts with root `AGENTS.md` only.
+- Follow its routing table and read only documents and source relevant to the change.
+- Use `docs/README.md` for the overview and `docs/INDEX.md` for discovery.
+- Update the authoritative source of a changed fact and documents that directly reference it; do not create a second source of truth.
 
-## 写作与维护
+## Responsibilities
 
-- 中文正文使用全角标点；代码、命令、路径、URL、标识符、YAML/JSON 字段和英文句子保持 ASCII 格式。
-- 注释和文档解释“为什么”、边界、失败方式和验证方法，避免重复源码可以直接表达的内容。
-- 中英文双语文档必须保持章节和事实一致；只修改一侧时，在交付中明确另一侧是否需要同步。
-- 能由脚本检查的规则必须落实到 `tools/` 和 CI，不能只写在文档里。
-- 用户可见行为、兼容性或发布流程变化记录到 `CHANGELOG.md`；内部整理和拼写修复不强制记录。
+- Upstream baseline documents cover AI Passport hardware, BSP behavior, baseline demos, engineering constraints, and acceptance methods.
+- Shared contribution and engineering documents cover code style, testing, commits, CI, and AI workflows grounded in this repository's real tools.
+- Fork-only product requirements, business logic, or assets stay in the fork's root README or `docs/assets/`.
 
-## 内容安全
+Do not create empty document scaffolding without a concrete purpose. Register added documents in `docs/INDEX.md` or their directory index and update links when moving or deleting files.
 
-凭证、令牌、密钥、授权文件、私钥、个人数据和内部 endpoint 不得进入仓库或 Git 历史。提交前运行 `./tools/validate.sh --static`；发现疑似凭证时停止提交并改用环境变量或系统钥匙串。误提交后必须私下报告并轮换凭证，仅删除工作区文件不能消除 Git 历史中的泄露。
+## Writing, safety, and file operations
 
-设备二维码链接的 `s`、`k` 参数属于敏感标识，不得写入代码、配置、文档、示例、测试、日志或 commit message。文档只能使用明显脱敏的形式：
-
-```text
-https://ai-passport.folotoy.cn/trae/?s=<secret>&k=<key>
-```
-
-## 文件操作安全
-
-- 保留用户已有修改和未跟踪文件。
-- 删除用户文件或来源不明的生成物时使用系统回收站；没有安全回收方式时先询问用户。
-- 工具可以清理由自身通过 `mktemp` 创建且已验证路径的临时目录。
-- Git 分支、tag 和远端引用不是普通文件；删除它们前仍需确认目标和用户意图。
+- Explain rationale, boundaries, failure modes, and validation instead of restating source code.
+- Enforce automatable rules in `tools/` and CI as well as documentation.
+- Record user-visible behavior, compatibility, and release-flow changes in `CHANGELOG.md`.
+- Never commit credentials, tokens, keys, authorization files, private keys, personal data, internal endpoints, or unsanitized device QR parameters. Run `./tools/validate.sh --static` before committing.
+- Preserve existing user changes and untracked files. Use recoverable deletion for user files, and confirm intent before deleting branches, tags, or remote references.

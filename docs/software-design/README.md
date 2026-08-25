@@ -1,21 +1,11 @@
-# 软件设计（Software Design）
+<p align="right">
+  <a href="README.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
 
-本目录用于存放本仓库的软件设计文档，包括应用层、组件层与系统层的设计说明、模块划分、接口约定、状态机、资源约束与测试策略。
+# Software Design
 
-## 目录约定
+This directory holds application-, component-, and system-level designs: module boundaries, interfaces, state machines, resources, persistence, concurrency, failure degradation, and test strategy.
 
-- 每个设计主题一个子目录或一个独立 `.md` 文件，名称与主题一致，便于检索。
-- 文档面向 AI agent 与开发者，应包含：目标、范围、输入/输出、状态、并发任务、持久化、内存预算与失败降级。
-- 涉及硬件事实的结论在 `hardware-design/` 中维护；软件设计只依赖其稳定的接口。
+Use one descriptive file or subdirectory per topic. State scope and applicable version or commit. Reference stable hardware documents instead of copying pin or board facts.
 
-## 如何添加一篇软件设计文档
-
-1. 在本目录下新建一个描述性文件（如 `xxx-design.md`）或子目录。
-2. 在文档顶部写明适用范围与所属版本/提交。
-3. 若与硬件行为强相关，链接到 `docs/hardware-design/` 对应文档，不要在此重复硬件数据。
-
-## 现有文档索引
-
-- [AGENTS.md](../../AGENTS.md)：仓库权威 AI 规范的入口与索引。
-
-> 注：`docs/software-design` 用于容纳软件设计文档。协作规范见 `docs/contribution/`，工程规范和 CI 说明见 `docs/development/`，fork 工作流见 `docs/fork-guide.md`；这些入口均由 `AGENTS.md` 索引。
+No topic-specific software design is registered yet. The authoritative AI entry point is [AGENTS.md](../../AGENTS.md); collaboration rules are under `docs/contribution/`, engineering rules under `docs/development/`, and fork workflow in `docs/fork-guide.md`.
