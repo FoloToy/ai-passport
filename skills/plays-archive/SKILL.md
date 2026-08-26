@@ -66,14 +66,19 @@ actually owns one.
 
 ## Generate the functional summary
 
-Write `plays/<app-name>/README.md` and its paired `.zh_CN.md` as an AI-generated
-functional summary for later querying (not a publishing artifact). Record:
+First collect the metadata the developer filled in when publishing to the
+community (bilingual title, bilingual description, and the source address they
+submitted), then write `plays/<app-name>/README.md` and its paired `.zh_CN.md` as
+an AI-generated functional summary for later querying (not a publishing
+artifact). Record:
 
+- **Publish title and description**: the bilingual title and description the
+  developer submitted when publishing to the community.
 - Application name and one-line positioning.
 - What the app does and its feature list.
 - Interaction and gameplay (buttons, screens, flow).
-- Source, given as the **complete repository URL including the branch** (a
-  `tree/<branch>` link) plus the entry path, so the application can be located
+- Source, given as the **source address the developer submitted when
+  publishing** (the HTTPS Git source page), so the application can be located
   precisely.
 - The cover image file name and format.
 

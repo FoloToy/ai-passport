@@ -49,13 +49,14 @@ The per-application `README.md` (and its Simplified Chinese peer) is an
 AI-generated functional summary written for later querying, not a publishing
 artifact. It records:
 
+- The **publish title and description** the developer submitted when publishing
+  to the community (bilingual).
 - Application name and one-line positioning.
 - What the app does and its feature list.
 - Interaction and gameplay (buttons, screens, flow).
-- Source of the application, given as the **complete repository URL including
-  the branch** (a `tree/<branch>` link, for example
-  `https://github.com/<repo>/tree/<branch>`) plus the entry path, so it can be
-  located precisely.
+- Source of the application, given as the **source address the developer
+  submitted when publishing** (the HTTPS Git source page), so it can be located
+  precisely.
 - The cover image file name and format.
 
 Write it by summarizing the application's implementation and behavior, in
