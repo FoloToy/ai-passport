@@ -37,6 +37,21 @@
 
 步骤：连接设备（USB JTAG/serial debug unit）→ 选择本 Release 的合并固件 `FoloToy-AI-Passport-full.bin` → 选择波特率（如 460800）→ 开始写入。目标是 8MB Flash 板卡，无需其它参数。
 
+## Release 说明
+
+tag 触发的 Release 只有在合并固件与它的 Release 说明一起发布时才完整。发布 Release 后，要写一份
+说明，向可能没读过仓库的用户解释这次构建。覆盖三块：
+
+- **功能（What's new / 功能）**：本次 Release 相对上一版新增或变更的功能、行为或修复。面向用户，
+  不是 commit 日志。
+- **方法（How to build / 方法）**：如何生成并校验合并固件（`./tools/validate.sh --firmware` 或
+  `idf.py build`），以及要烧录的产物文件（从 `0x0` 烧录的 `FoloToy-AI-Passport-full.bin`）。
+- **使用（How to use / 使用）**：如何烧录（上方在线刷机工具），以及本次 Release 的关键交互或硬件
+  要求。
+
+用英文写 Release 说明（项目双语时再配一份简体中文），并在 GitHub/GitLab Release 上链接它们。对
+用户可见的行为，保持与 `docs/CHANGELOG.md` 一致。
+
 ## 相关文件
 
 - `.github/workflows/build-firmware.yml`：本流水线定义。
