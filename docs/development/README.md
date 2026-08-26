@@ -14,3 +14,4 @@ This directory contains AI Passport engineering rules and reusable workflows. Ru
 - [CI-validation.md](CI-validation.md): pull-request and main-branch checks.
 - [CI-build-and-release.md](CI-build-and-release.md): tagged firmware builds and releases.
 - [CI-sync-main.md](CI-sync-main.md): upstream synchronization for forks.
+- [publish-to-community.md](publish-to-community.md): publishing firmware to the AI Passport community market.

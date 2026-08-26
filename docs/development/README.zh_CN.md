@@ -23,3 +23,4 @@
 - [CI-build-and-release.md](CI-build-and-release.md)：自动构建与发布说明（tag 触发自动编译固件并发布 Release）。
 - [CI-validation.md](CI-validation.md)：Pull Request 与 main 的自动仓库检查、host tests 和固件验证。
 - [CI-sync-main.md](CI-sync-main.md)：上游同步说明（定期把上游 `FoloToy/ai-passport` 的 `main` 同步到本 fork 的 `main`）。
+- [publish-to-community.md](publish-to-community.md)：发布到社区说明（把当前固件发布到 AI Passport 社区市场）。

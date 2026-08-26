@@ -65,6 +65,12 @@ FoloToy 提供两处浏览器刷机入口，均可安全写入本地固件，固
 
 引用"在线刷机 / 浏览器刷机"入口时，产品官网场景优先用官网内置入口；需要给用户通用刷机工具时用 `tool.folotoy.cn`。
 
+## 3.1 品牌视觉素材
+
+官方产品与品牌视觉参考图存于 [`docs/assets/brand/`](assets/brand/README.md)（索引见同目录 `README.md` / `README.zh_CN.md`）。包含产品**正面**与**背面**实拍图，以及三种品牌配色外壳的正面渲染图（EVA 紫 / 橙 / 红三款）。
+
+这些图是 AI Passport 市场宣传与展示物料的**视觉基线**。可用 AI 图像工具基于这些参考图生成效果图，生成时保持产品轮廓、外部硬件（外壳、按键、接口、挂绳孔）、Logo 文字与配色与参考一致；**屏幕内容不作硬性要求、可被替换**。新生成的渲染图请登记进 [`assets/brand/README.md`](assets/brand/README.md) 索引。素材作为内部视觉基线使用，除非参考图本身允许复用，否则不要原样搬运到公开发布物料中。
+
 ## 4. 产品规格
 
 设备产品规格见 [hardware-design/specifications.md](hardware-design/specifications.md)（尺寸、重量、电池、充电、NFC、按键等）。
