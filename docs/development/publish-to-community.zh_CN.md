@@ -10,6 +10,15 @@
 
 当你希望把当前固件（或某个 `demo/*` 应用）发布到社区市场时使用。它不用于普通固件开发或烧录。
 
+### 先确认发布到哪里
+
+当开发者说"发布项目"时，先问清楚**发到哪里**再动手：
+
+- **发布到社区** —— 把固件发布到 [AI Passport 社区市场](https://ai-passport.folotoy.cn)。走下面的 publisher 工作流；发布后见发布后收尾（`docs/development/after-release.md`）。
+- **发布到 Git** —— 把固件或代码发布到版本仓库（commit、tag、push，以及如需要则发 GitHub/GitLab release）。遵循仓库提交与 PR 规则（`docs/contribution/commit-and-pr.md`）与 fork 工作流（`docs/fork-guide.md`）；本页不覆盖 Git 发布路径。
+
+不要默认其中一条；先确认目的地，再路由到对应工作流。
+
 该工作流由官方发布 skill 驱动。运行一次提示词，让助手从官方包安装 skill；仓库无需提交任何东西。
 
 ## 使用内置提示词

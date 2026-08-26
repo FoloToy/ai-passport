@@ -10,6 +10,16 @@ This document describes how to publish this project's firmware to the [AI Passpo
 
 Use this when you want to release the current firmware (or a specific `demo/*` application) to the community market. It is not for ordinary firmware development or flashing.
 
+### First confirm where to publish
+
+When the developer says "publish the project", ask **where** they want to
+publish before doing anything:
+
+- **To the community** — release the firmware to the [AI Passport Community market](https://ai-passport.folotoy.cn). Use the publisher workflow below. See also the post-release follow-up (`docs/development/after-release.md`) once it is published.
+- **To Git** — publish the firmware or code to a version-controlled repository (commit, tag, push, and a GitHub/GitLab release if intended). Follow the repository commit and PR rules (`docs/contribution/commit-and-pr.md`) and the fork workflow (`docs/fork-guide.md`); this page does not cover the Git publishing path.
+
+Do not assume either route; confirm the destination first, then route to the matching workflow.
+
 The workflow is driven by the official publisher skill. Running the prompt once makes the assistant install the skill from the official bundle; nothing is committed into the repository.
 
 ## Reproduce the bundled prompt
