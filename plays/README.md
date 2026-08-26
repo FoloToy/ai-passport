@@ -52,9 +52,10 @@ artifact. It records:
 - Application name and one-line positioning.
 - What the app does and its feature list.
 - Interaction and gameplay (buttons, screens, flow).
-- Source of the application, described by the **repository address + branch +
-  path** triple so it can be located precisely (for example the GitHub repo URL,
-  the `feature/voice-keychain` branch, and `main/voice_app.c`).
+- Source of the application, given as the **complete repository URL including
+  the branch** (a `tree/<branch>` link, for example
+  `https://github.com/<repo>/tree/<branch>`) plus the entry path, so it can be
+  located precisely.
 - The cover image file name and format.
 
 Write it by summarizing the application's implementation and behavior, in
