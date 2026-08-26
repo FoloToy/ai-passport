@@ -24,7 +24,7 @@ jobs:
       # Step 2: run the sync action
       - name: Sync upstream changes
         id: sync
-        uses: aormsby/fork-sync-with-upstream-action@83d78e8c4bf524e79b091cf257deba4dee9e60df # v3.4.3
+        uses: Shinku-Chen/fork-sync-with-upstream-action@66925e8bb37b2590950a72d786b308e4f1b5301f # TEMP: v3.4.3 + fix for `rev-list` ambiguous branch/dir `main` (upstream PR aormsby/Fork-Sync-With-Upstream-action#85); switch back to aormsby release once merged
         with:
           upstream_sync_repo: FoloToy/ai-passport
           upstream_sync_branch: main
