@@ -39,3 +39,12 @@ skill 的 `SKILL.md` 定义了精确流程：检查项目、准备中英文标�
 ## 助手如何安装该 skill
 
 助手从提示词里的 URL 拉取官方包，并按其中 `SKILL.md` 描述的工作流执行。本仓库无需保留或提交该 skill；提示词每次都会复现官方安装源。
+
+## 发布之后：归档到 plays
+
+固件发布后，询问开发者是否把该应用归档到仓库的 [`plays/`](../../plays/README.md)
+应用档案。若同意，在 `plays/<app-name>/` 下生成该应用的 AI 功能总结（双语
+`README.md` / `.zh_CN.md`），并添加封面图 `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`。
+只提交总结与封面；**不要**在这里存固件 `.bin`。
+
+这样发布后的应用能在仓库内留存、便于后续查询。

@@ -34,3 +34,15 @@ The skill's `SKILL.md` defines the exact workflow: inspect the project, prepare 
 ## How the assistant installs the skill
 
 The assistant fetches the official bundle from the URL in the prompt and follows the workflow described in its `SKILL.md`. No skill needs to be kept or committed in this repository; the prompt reproduces the official install source each time.
+
+## After publishing: archive to plays
+
+Once the firmware is published, ask the developer whether to archive this application
+into the repository's [`plays/`](../../plays/README.md) application archive. If they
+agree, generate an AI-functional summary for the application under
+`plays/<app-name>/` (bilingual `README.md` / `.zh_CN.md`) and add the cover image
+as `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`. Only commit the summary and
+cover; do not store the firmware `.bin` here.
+
+This keeps the release's application discoverable in-repository for later querying.
+

@@ -29,4 +29,6 @@ The root `README.md` path is intentionally available to a fork owner. Upstream's
 
 Use `docs/assets/` for architecture notes, product design, and images that supplement a fork's README. Upstream keeps that directory empty except for `.gitkeep`; fork-private content must not be proposed back to upstream.
 
+Documentation and experience follow the same split. Fork-specific product customization (architecture notes, product design, fork-only assets) stays in the fork under `docs/assets/` and is not proposed back upstream. General, upstream-benefiting documentation or experience improvements — durable facts, reusable interfaces, build or release-flow improvements that help any AI Passport user — are submitted back upstream as a pull request. Use the `experience-pr` skill for post-release experience; see `docs/development/after-release.md`.
+
 All fork documentation follows the repository language rule: English at the default `.md` path and Simplified Chinese at `.zh_CN.md`, with reciprocal switches.
