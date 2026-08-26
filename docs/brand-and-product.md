@@ -40,7 +40,7 @@ The official play catalog changes over time; treat the live website as authorita
 
 Official product and brand visual references live in [`docs/assets/brand/`](assets/brand/README.md). They include the product from the front and back, plus three brand-colored shell renders of the front (the EVA purple, orange, and red colorways). These images are the visual baseline for AI Passport marketing and showcase material.
 
-You can use these references as input when generating render images with an AI image tool. Keep the product silhouette, screen layout, logo text, and colorway consistent with the references, and document any new render you create in the [`assets/brand/README.md`](assets/brand/README.md) index. Treat the files as an internal visual baseline rather than recycling them verbatim into published assets.
+You can use these references as input when generating render images with an AI image tool. Keep the product silhouette, external hardware (shell, buttons, ports, key-ring hole), logo text, and colorway consistent with the references; the on-screen content is not a fixed requirement and may be replaced. Document any new render you create in the [`assets/brand/README.md`](assets/brand/README.md) index. Treat the files as an internal visual baseline rather than recycling them verbatim into published assets.
 
 ## Specifications, source, and license
 
