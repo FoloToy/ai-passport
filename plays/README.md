@@ -4,12 +4,14 @@
 
 # Plays
 
-This directory is the in-repository archive of the applications (plays) built
-for the AI Passport. It is for **querying** what each application does and how it
-works, using an AI-generated functional summary per application. It is linked to
-the community publishing flow: after publishing a firmware
+This directory, in the upstream `FoloToy/ai-passport` repository, is the
+application archive of the plays built for the AI Passport. It is for
+**querying** what each application does and how it works, using an AI-generated
+functional summary per application. It is linked to the community publishing
+flow: after publishing a firmware
 ([`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)),
-the assistant asks whether to archive the application here.
+the assistant asks whether to archive the application here, proposing it back to
+upstream.
 
 ## Before developing a new play
 

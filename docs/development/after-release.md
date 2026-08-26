@@ -16,10 +16,11 @@ firmware.
 ## Track 1: Archive the application to plays
 
 After publishing, ask the developer whether to archive this application into the
-repository's `plays/` application archive. If agreed, generate an AI-functional
-summary under `plays/<app-name>/` (bilingual `README.md` / `.zh_CN.md`) and add
-the cover image as `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`. Commit only
-the summary and cover; do not store the firmware `.bin` here. See
+upstream `FoloToy/ai-passport` repository's `plays/` application archive. If
+agreed, generate an AI-functional summary under `plays/<app-name>/` (bilingual
+`README.md` / `.zh_CN.md`) and add the cover image as
+`plays/<app-name>/<app-name>-cover.<webp|png|jpg>`. Commit only the summary and
+cover; do not store the firmware `.bin` here. See
 [`../../plays/README.md`](../../plays/README.md).
 
 Before generating the summary, check the root README of the `main` and current

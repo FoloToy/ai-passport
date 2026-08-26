@@ -12,8 +12,8 @@
 
 ## 轨道 1：把应用归档到 plays
 
-发布后，询问开发者是否把该应用归档到仓库的 `plays/` 应用档案。若同意，在 `plays/<app-name>/`
-下生成该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`），并添加封面图
+发布后，询问开发者是否把该应用归档到上游 `FoloToy/ai-passport` 仓库的 `plays/` 应用档案。若同意，
+在 `plays/<app-name>/` 下生成该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`），并添加封面图
 `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`。只提交总结与封面；**不要**在这里存固件
 `.bin`。见 [`../../plays/README.md`](../../plays/README.md)。
 

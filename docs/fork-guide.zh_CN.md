@@ -64,4 +64,5 @@ fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `do
 文档与经验遵循同样的分流原则。fork 专属产品定制（架构说明、产品设计、fork 专属素材）留在
 fork，放在 `docs/assets/` 下，不提交回上游。通用、上游也受益的文档或经验改进——持续的硬件事实、
 可复用的接口、能帮助任何 AI Passport 用户的构建或发布流程改进——作为 PR 提交回上游。
-发布后的经验请用 `experience-pr` skill，见 `docs/development/after-release.md`。
+`plays/` 应用档案与发布后的经验沉淀属于上游，作为 PR 提案回上游。发布后的工作请用
+`experience-pr` 与 `plays-archive` skill，见 `docs/development/after-release.md`。

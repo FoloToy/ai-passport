@@ -1,6 +1,6 @@
 ---
 name: plays-archive
-description: After a firmware release, archive the published application into this repository's plays/ directory with an AI-generated bilingual functional summary and a cover image.
+description: After a firmware release, archive the published application into the upstream FoloToy ai-passport repository's plays/ directory with an AI-generated bilingual functional summary and a cover image.
 ---
 
 <p align="right">
@@ -9,11 +9,11 @@ description: After a firmware release, archive the published application into th
 
 # Archive an Application to plays
 
-This skill archives a published application into the repository's `plays/`
-application archive so it is discoverable in-repository for later querying. It
-runs after a firmware release (see
-`docs/development/publish-to-community.md` for publishing itself) and only when
-the developer asks to archive the application.
+This skill archives a published application into the upstream
+`FoloToy/ai-passport` repository's `plays/` application archive so it is
+discoverable in-repository for later querying. It runs after a firmware release
+(see `docs/development/publish-to-community.md` for publishing itself) and only
+when the developer asks to archive the application.
 
 ## Safety and consent gate (run first)
 
@@ -24,7 +24,9 @@ Do not create, write, or commit anything until every gate below is satisfied.
    decline, stop immediately.
 2. **Never modify or commit on the current branch.** Base the archive on the
    latest upstream `main` for a clean baseline, create a dedicated branch or
-   worktree, and carry the change there. Leave the current checkout untouched.
+   worktree, push it to the developer's fork (`origin`), and open the PR from
+   that fork branch against the upstream `FoloToy/ai-passport`. Leave the current
+   checkout untouched.
 3. **No credentials or private data.** Never include credentials, device QR
    secrets, private device links, personal data, or unsanitized logs. Run
    `python3 tools/check_repo.py` before committing anything.
@@ -93,10 +95,16 @@ or updated, include it in the same change. Do **not** store the merged
 firmware `.bin` here; it is a build/publish artifact. Report Build, Host tests,
 Device tests, and Unverified separately.
 
+After review, open the PR from the fork branch against the upstream
+`FoloToy/ai-passport` through the first available GitHub channel — GitHub MCP, a
+GitHub skill, or
+`gh pr create --repo FoloToy/ai-passport --base main --head <fork>:<branch>` —
+and read it back to confirm. Opening a PR requires separate confirmation.
+
 ## What this skill does not do
 
 - It does not publish firmware or run the publisher workflow.
-- It does not open code pull requests or modify production source.
+- It does not modify production source or the firmware.
 - It does not store the firmware `.bin` binary.
 - It does not auto-submit anything without developer review and consent.
 

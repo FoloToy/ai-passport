@@ -4,10 +4,10 @@
 
 # Plays（应用档案）
 
-本目录是仓库内为 AI Passport 构建的应用（plays）档案库。它用于**查询**每个应用做什么、怎么
-用，靠的是每个应用一份由 AI 生成的功能说明。它与社区发布流程关联：发布固件后
-（[`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)），
-助手会询问是否把这个应用归档到这里。
+本目录位于上游 `FoloToy/ai-passport` 仓库，是 AI Passport 应用（plays）的档案库。它用于
+**查询**每个应用做什么、怎么用，靠的是每个应用一份由 AI 生成的功能说明。它与社区发布流程关联：
+发布固件后（[`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)），
+助手会询问是否把这个应用归档到这里，并把它提案回上游。
 
 ## 开发新应用之前
 

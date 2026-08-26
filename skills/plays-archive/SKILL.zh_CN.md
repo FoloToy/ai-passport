@@ -1,6 +1,6 @@
 ---
 name: plays-archive
-description: 固件发布之后，把已发布的应用归档到本仓库的 plays/ 目录，附一份 AI 生成的双语功能说明与封面图。
+description: 固件发布之后，把已发布的应用归档到上游 FoloToy ai-passport 仓库的 plays/ 目录，附一份 AI 生成的双语功能说明与封面图。
 ---
 
 <p align="right">
@@ -9,9 +9,9 @@ description: 固件发布之后，把已发布的应用归档到本仓库的 pla
 
 # 把应用归档到 plays
 
-本 skill 把已发布的应用归档到仓库的 `plays/` 应用档案库，让它在仓库内可被检索、便于后续查询。
-它只在固件发布后（发布流程见 `docs/development/publish-to-community.md`）运行，且仅在开发者
-要求归档该应用时执行。
+本 skill 把已发布的应用归档到上游 `FoloToy/ai-passport` 仓库的 `plays/` 应用档案库，让它在
+仓库内可被检索、便于后续查询。它只在固件发布后（发布流程见
+`docs/development/publish-to-community.md`）运行，且仅在开发者要求归档该应用时执行。
 
 ## 安全与同意门槛（必须先做）
 
@@ -20,7 +20,8 @@ description: 固件发布之后，把已发布的应用归档到本仓库的 pla
 1. **先确认同意。** 本工作涉及项目私有内容。先向开发者确认是否同意归档该应用；开发者拒绝则
    立即停止。
 2. **绝不在当前分支上修改或提交。** 以最新上游 `main` 为干净基线，另起一个独立分支或 worktree
-   承载该变更。保持当前 checkout 不被改动。
+   承载，推到开发者的 fork（`origin`），并从该 fork 分支向上游 `FoloToy/ai-passport` 开 PR。
+   保持当前 checkout 不被改动。
 3. **不写入凭证或私有数据。** 永远不包含凭证、设备 QR 密钥、私密设备链接、个人数据或未脱敏
    日志。提交任何内容前先运行 `python3 tools/check_repo.py`。
 
@@ -74,10 +75,14 @@ description: 固件发布之后，把已发布的应用归档到本仓库的 pla
 **不要**在这里存合并固件 `.bin`；它是构建/发布产物。按 Build、Host tests、Device tests、
 Unverified 分别上报。
 
+审查后，通过第一个可用的 GitHub 通道（GitHub MCP、GitHub skill、或
+`gh pr create --repo FoloToy/ai-passport --base main --head <fork>:<branch>`）从 fork 分支
+向上游 `FoloToy/ai-passport` 开 PR，并回读确认。开 PR 需要单独的再次确认。
+
 ## 本 skill 不做的事
 
 - 不发布固件、不运行 publisher 流程。
-- 不开代码 PR、不改生产源码。
+- 不改生产源码、不改固件。
 - 不存储固件 `.bin` 二进制。
 - 未经开发者审查与同意，不自动提交任何内容。
 
