@@ -53,8 +53,18 @@ When generating a marketing or showcase render from these references, keep the f
 
 Unless the reference image is licensed for reuse, use these files as an internal visual baseline rather than recycling them verbatim into published assets.
 
+## Tooling notes
+
+When generating a render that must match a reference, the common failure mode is a model that "reimagines" the device because it never actually saw the reference image. Keep these points in mind regardless of the image tool you use:
+
+- **Always pass the reference image explicitly.** For a reference-based edit (not a from-scratch text-to-image), you must supply the reference as an input to the generation call. Relying only on a text description lets the model invent a look-alike device instead of reproducing this one.
+- **Local file paths are not accepted as image input.** Most generation services reject a bare filesystem path. Pass the image as a service-supported form: a hosted reference URL, a data URL, or whatever the tool documents for uploads/attachments.
+- **Very long data URLs are fragile when passed by hand.** A multi-KB base64 data URL is easy to corrupt during manual copying between tool calls; prefer a short hosted reference or let the tool resolve the image itself.
+- **Verify hardware fidelity after generating.** Compare the render against the reference for the shell silhouette, key-ring hole, side buttons, ports, and any model badge. If these drift, regenerate rather than accept the result.
+
 ## Usage
 
 - Reference the local files in this directory when generating images with an AI tool; the source files are under `docs/assets/brand/`.
-- Document any new render you create here by adding a row to the tables above and linking the generated file in this directory.
+- Generated images are not brand assets by default. Unless the user explicitly requests a brand render, AI-generated images are project assets and belong in `assets/images/`, not here.
+- Only register a render in this directory when the user specifically requests a brand visual: add a row to the tables above and link the generated file here.
 - Keep product facts (labels, model names, hardware features) accurate; do not invent hardware that is not present in the references. On-screen status text is illustrative and not a fixed requirement.
