@@ -24,7 +24,10 @@ project to build on instead of from scratch:
   later, when the application is published.
 
 Each play subdirectory is an archive of a real, working application; its summary
-is the starting point for deciding whether to extend or reference it.
+is the starting point for deciding whether to extend or reference it. Alongside
+the application archive, also check
+[`docs/development/experience-notes.md`](../docs/development/experience-notes.md)
+for previously recorded, reusable experience from other developer runs.
 
 ## Directory convention
 

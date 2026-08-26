@@ -48,8 +48,9 @@ FoloToy AI Passport 是一个开放式可穿戴 AI 硬件，本仓库是这款 A
 最后分别报告构建结果、未执行的真机项目和逐项验收方法。
 ```
 
-开始前先看 [`plays/`](../plays/README.md) 有没有已存在或可参考的应用，以及相关 demo 分支；
-应用档案里列出了已经构建好、可复用的东西。
+开始前先看 [`plays/`](../plays/README.md) 有没有已存在或可参考的应用，以及相关 demo 分支，
+再看 [`docs/development/experience-notes.md`](development/experience-notes.md) 里已沉淀、可复用的经验。
+这些列出了已经构建好、可复用的东西。
 
 需求越具体，AI 助手越容易一次实现正确。建议说明：
 

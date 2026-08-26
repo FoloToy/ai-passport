@@ -18,7 +18,9 @@
 - 若没有合适的，记到将来该应用发布时再新建 `plays/<app-name>/` 档案。
 
 每个 plays 子目录都是一个真实、可运行应用的档案；它的功能说明是你决定"扩展它还是参考它"
-的起点。
+的起点。除应用档案外，也查一下
+[`docs/development/experience-notes.md`](../docs/development/experience-notes.md)
+里其他开发者已经沉淀、可复用的经验。
 
 ## 目录约定
 

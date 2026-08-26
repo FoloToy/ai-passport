@@ -15,6 +15,10 @@ Each entry is routed before submission: general, upstream-benefiting experience
 goes to the upstream `FoloToy/ai-passport` as a PR; fork-specific customization
 stays in the fork per [`docs/fork-guide.md`](../fork-guide.md).
 
+Before starting a new development, check here for previously recorded, reusable
+experience — alongside [`plays/`](../../plays/README.md) for reference
+applications.
+
 ## How to add an entry
 
 Each release appends a dated entry with the release (tag or commit) as context.

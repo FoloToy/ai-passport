@@ -50,8 +50,8 @@ on-device acceptance steps separately.
 ```
 
 Before starting, check [`plays/`](../plays/README.md) for an existing or reference
-application and the demo branches; see the application archive for what is already
-built and reusable.
+application and the demo branches, and [`docs/development/experience-notes.md`](development/experience-notes.md)
+for previously recorded, reusable experience. See what is already built and reusable.
 
 The more specific the requirement, the more likely the assistant is to implement it correctly in one pass. Useful details include:
 

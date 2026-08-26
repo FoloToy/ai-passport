@@ -12,6 +12,9 @@ fork 上自行创建或变更的 `docs/` 文档。每次采集生成一个 `.md`
 每条经验在提交前分流：通用、上游也受益的经验作为 PR 提交到上游 `FoloToy/ai-passport`；
 纯 fork 定制按 [`docs/fork-guide.md`](../fork-guide.md) 留在 fork。
 
+开始新开发前，可先查这里有没有之前沉淀、可复用的经验——与 [`plays/`](../../plays/README.md) 的
+参考应用一起看。
+
 ## 如何新增一条
 
 每次发布追加一条带日期的记录，以发布版本（tag 或 commit）作为上下文。遵守仓库语言规则：
