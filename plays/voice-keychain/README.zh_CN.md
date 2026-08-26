@@ -7,6 +7,13 @@
 一款音效钥匙扣，把 AI Passport 变成随身音效播放器。开机就能播几十个角色包、
 上百段中文语音——jojo、meme猫、刘华强、哈基米、奶龙、小明剑魔……随手一按就出声音。
 
+## 发布信息
+
+- **标题**：音效钥匙扣（Voice Keychain）
+- **描述**：一款音效钥匙扣，把 AI Passport 变成随身音效播放器；按 OK 即可播放几十个
+  角色包里的上百段中文语音。
+- **封面**：`voice-keychain-cover.png`（PNG，1024×1024）。
+
 ## 功能
 
 - **角色目录**：以可滚动列表浏览全部角色包，每个角色包是一组语音（如 jojo、MC、
@@ -28,11 +35,12 @@
 
 ## 源码
 
-本仓库的 `feature/voice-keychain` 分支。主要实现在 `main/voice_app.c`，
-片段索引在 `main/voice_index.h`。Opus 音频存放在 `voicefs` SPIFFS 数据分区
-（`esp_vfs_spiffs_register`，挂载于 `/voices`，烧录在 `0x210000`），
-用标准 POSIX `fopen`/`fread` 路径读取；应用烧录的是合并固件镜像，
-数据分区需单独烧录。
+- **源码**：<https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain>，
+  入口文件 `main/voice_app.c`（片段索引在 `main/voice_index.h`）
+
+Opus 音频存放在 `voicefs` SPIFFS 数据分区（`esp_vfs_spiffs_register`，挂载于
+`/voices`，烧录在 `0x210000`），用标准 POSIX `fopen`/`fread` 路径读取；应用
+烧录的是合并固件镜像，数据分区需单独烧录。
 
 ## 封面
 
