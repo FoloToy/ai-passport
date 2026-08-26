@@ -72,7 +72,9 @@ functional summary for later querying (not a publishing artifact). Record:
 - Application name and one-line positioning.
 - What the app does and its feature list.
 - Interaction and gameplay (buttons, screens, flow).
-- The source branch or directory it lives in.
+- Source, given as the **repository address + branch + path** triple so the
+  application can be located precisely (for example the GitHub repo URL, the
+  branch, and the entry file path).
 - The cover image file name and format.
 
 If the root README exists, merge its content into the summary rather than
