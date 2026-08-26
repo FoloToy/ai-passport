@@ -65,5 +65,6 @@ When generating a render that must match a reference, the common failure mode is
 ## Usage
 
 - Reference the local files in this directory when generating images with an AI tool; the source files are under `docs/assets/brand/`.
-- Document any new render you create here by adding a row to the tables above and linking the generated file in this directory.
+- Generated images are not brand assets by default. Unless the user explicitly requests a brand render, AI-generated images are project assets and belong in `assets/images/`, not here.
+- Only register a render in this directory when the user specifically requests a brand visual: add a row to the tables above and link the generated file here.
 - Keep product facts (labels, model names, hardware features) accurate; do not invent hardware that is not present in the references. On-screen status text is illustrative and not a fixed requirement.
