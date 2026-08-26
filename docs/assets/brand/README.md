@@ -18,6 +18,7 @@ The AI Passport is a wearable device (named **Folotoy** on the device and in the
 | --- | --- | --- |
 | [`ai-passport-front.png`](ai-passport-front.png) | Front | Transparent shell; on-screen content is illustrative and may be replaced. Keep the shell, buttons, ports, and key-ring hole when generating a matching render. |
 | [`ai-passport-back.webp`](ai-passport-back.webp) | Back | Transparent shell over the PCB; `FOLOTOY` logo, `AI PASS WEARABLE DEVICE`, power/STA/BATT/USB/NFC LEDs, an `NFC` label, the `AI PASSport` title with `Wear it. Flash it. Make it anything.` and a QR code. |
+| [`ai-passport-views.jpg`](ai-passport-views.jpg) | All views | Six-view product diagram (top, bottom, front, back, and both sides) with a blank screen; useful as an overview/exploded-view reference for generating a full-device render. |
 
 ### Brand-color shell renders (front)
 
@@ -35,6 +36,7 @@ All three color renders are 1024 × 1536 PNG and share the same shell layout as 
 | --- | --- | --- | --- |
 | `ai-passport-front.png` | PNG | 605 × 931 | 460 KB |
 | `ai-passport-back.webp` | WebP | — | 118 KB |
+| `ai-passport-views.jpg` | JPEG | 3849 × 2448 | 324 KB |
 | `ai-passport-front-eva-01.png` | PNG | 1024 × 1536 | 2.0 MB |
 | `ai-passport-front-eva-00.png` | PNG | 1024 × 1536 | 2.0 MB |
 | `ai-passport-front-eva-02.png` | PNG | 1024 × 1536 | 2.0 MB |

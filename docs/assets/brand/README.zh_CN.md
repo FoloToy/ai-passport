@@ -18,6 +18,7 @@ AI Passport 是一款穿戴设备（设备上与社区中名为 **Folotoy**）�
 | --- | --- | --- |
 | [`ai-passport-front.png`](ai-passport-front.png) | 正面 | 透明外壳；屏幕上内容仅为示意、可被替换。生成匹配效果图时保持外壳、按键、接口与挂绳孔一致。 |
 | [`ai-passport-back.webp`](ai-passport-back.webp) | 背面 | 透明外壳内可见 PCB；`FOLOTOY` logo、`AI PASS WEARABLE DEVICE`、电源/STA/BATT/USB/NFC 指示灯、`NFC` 标签、`AI PASSport` 标题与 `Wear it. Flash it. Make it anything.` 及二维码。 |
+| [`ai-passport-views.jpg`](ai-passport-views.jpg) | 多视图 | 六视图产品示意图（顶、底、正、背及两侧），屏幕留空；适合作为整机视图/爆炸视图参考，用于生成完整设备效果图。 |
 
 ### 品牌色外壳渲染图（正面）
 
@@ -35,6 +36,7 @@ AI Passport 是一款穿戴设备（设备上与社区中名为 **Folotoy**）�
 | --- | --- | --- | --- |
 | `ai-passport-front.png` | PNG | 605 × 931 | 460 KB |
 | `ai-passport-back.webp` | WebP | — | 118 KB |
+| `ai-passport-views.jpg` | JPEG | 3849 × 2448 | 324 KB |
 | `ai-passport-front-eva-01.png` | PNG | 1024 × 1536 | 2.0 MB |
 | `ai-passport-front-eva-00.png` | PNG | 1024 × 1536 | 2.0 MB |
 | `ai-passport-front-eva-02.png` | PNG | 1024 × 1536 | 2.0 MB |
