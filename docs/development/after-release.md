@@ -23,10 +23,10 @@ the summary and cover; do not store the firmware `.bin` here. See
 [`../../plays/README.md`](../../plays/README.md).
 
 Before generating the summary, check the root README of the `main` and current
-branches (`plays-archive` skill): if a README exists, prompt the developer to
-update it and merge it into the summary; if not, summarize directly. After
-archiving, if neither branch has a root README, update (create) it so the
-archived application is discoverable from the fork's own README.
+branches (`plays-archive` skill): if a README exists, merge it into the summary;
+if not, summarize directly. After archiving, handle each branch independently:
+create the root README on a branch that lacks one, and prompt the developer to
+update the README on a branch that already has one.
 
 ## Track 2: Collect suggestions and file issues
 

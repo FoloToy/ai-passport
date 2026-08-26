@@ -48,15 +48,19 @@ Follow the repository rule that the root README path is reserved for the fork
 owner (see `docs/fork-guide.md`); do not create a root README unless the fork
 actually owns one.
 
-1. **If a README exists** (on `main` or the current branch): prompt the developer
-   to update it and read it. When archiving, **merge the README content into the
-   functional summary** so the summary reflects the human-facing description, not
-   just the code.
+1. **If a README exists** (on `main` or the current branch): when archiving, **merge
+   the README content into the functional summary** so the summary reflects the
+   human-facing description, not just the code. A README that already exists is
+   kept for the branch that owns it.
 2. **If no README exists**: summarize directly from the implementation, with no
    README merge.
-3. **After archiving is complete**: if neither `main` nor the current branch has a
-   root README, update (create) the root README so the archived application is
-   discoverable from the fork's own README.
+3. **After archiving is complete**, handle each branch's root README independently
+   (not as a single combined decision):
+   - For a branch with **no** root README, **create** (or update) the README on
+     that branch so the archived application is discoverable from the fork's own
+     README.
+   - For a branch that already **has** a root README, **prompt the developer to
+     update it** to reflect the new archived application.
 
 ## Generate the functional summary
 
