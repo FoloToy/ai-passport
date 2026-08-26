@@ -34,4 +34,5 @@ the relevant commit short SHA.
 See [`../experiences/`](../experiences/) for the stored entries. The index below
 lists each entry once it is added.
 
-- None recorded yet.
+- [1787773254_9446768.md](../experiences/1787773254_9446768.md) — Post-release
+  follow-up for the AI Passport publishing flow. ([.zh_CN](../experiences/1787773254_9446768.zh_CN.md))
