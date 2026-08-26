@@ -22,6 +22,12 @@ the cover image as `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`. Commit on
 the summary and cover; do not store the firmware `.bin` here. See
 [`../../plays/README.md`](../../plays/README.md).
 
+Before generating the summary, check the root README of the `main` and current
+branches (`plays-archive` skill): if a README exists, prompt the developer to
+update it and merge it into the summary; if not, summarize directly. After
+archiving, if neither branch has a root README, update (create) it so the
+archived application is discoverable from the fork's own README.
+
 ## Track 2: Collect suggestions and file issues
 
 Run the `issue-suggestions` skill to gather the releasing developer's own

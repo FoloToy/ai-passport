@@ -17,6 +17,10 @@
 `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`。只提交总结与封面；**不要**在这里存固件
 `.bin`。见 [`../../plays/README.md`](../../plays/README.md)。
 
+生成总结前，先检查 `main` 分支和当前分支**根目录**的 README（`plays-archive` skill）：若有 README，
+提示开发者更新并把它合并进总结；若没有，直接总结。归档完成后，若两侧分支根目录都无 README，
+则更新（创建）它，让归档的应用能从 fork 自己的 README 检索到。
+
 ## 轨道 2：收集建议并提交 issue
 
 运行 `issue-suggestions` skill，收集发布固件的开发者本人的改进点，把有价值的整理成功能

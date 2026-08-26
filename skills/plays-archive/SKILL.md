@@ -36,6 +36,28 @@ Confirm the application name and the source it belongs to (for example a
 subdirectory name. See [`../../plays/README.md`](../../plays/README.md) for the full
 convention.
 
+## Check the project README
+
+Before generating the summary, check the **root README** of both the `main`
+branch and the current branch:
+
+- `git ls-tree --name-only main README.md` — is there a README on `main`?
+- `test -f README.md` — is there a README on the current branch?
+
+Follow the repository rule that the root README path is reserved for the fork
+owner (see `docs/fork-guide.md`); do not create a root README unless the fork
+actually owns one.
+
+1. **If a README exists** (on `main` or the current branch): prompt the developer
+   to update it and read it. When archiving, **merge the README content into the
+   functional summary** so the summary reflects the human-facing description, not
+   just the code.
+2. **If no README exists**: summarize directly from the implementation, with no
+   README merge.
+3. **After archiving is complete**: if neither `main` nor the current branch has a
+   root README, update (create) the root README so the archived application is
+   discoverable from the fork's own README.
+
 ## Generate the functional summary
 
 Write `plays/<app-name>/README.md` and its paired `.zh_CN.md` as an AI-generated
@@ -46,6 +68,9 @@ functional summary for later querying (not a publishing artifact). Record:
 - Interaction and gameplay (buttons, screens, flow).
 - The source branch or directory it lives in.
 - The cover image file name and format.
+
+If the root README exists, merge its content into the summary rather than
+ignoring the human-facing description.
 
 Write the default `.md` in English and the `.zh_CN.md` in Simplified Chinese,
 aligned in the same change.
@@ -59,7 +84,8 @@ to the repository. Keep it representative and under 10 MiB.
 
 Commit the summary and cover on the dedicated branch (English imperative
 Conventional Commit title, for example
-`docs(plays): add <app-name> application archive`). Do **not** store the merged
+`docs(plays): add <app-name> application archive`). If a root README was created
+or updated, include it in the same change. Do **not** store the merged
 firmware `.bin` here; it is a build/publish artifact. Report Build, Host tests,
 Device tests, and Unverified separately.
 

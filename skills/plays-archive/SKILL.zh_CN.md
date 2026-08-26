@@ -29,6 +29,22 @@ description: 固件发布之后，把已发布的应用归档到本仓库的 pla
 确认应用名及其所属源码（例如某个 `demo/*` 分支或 `main/`）。用小写连字符的应用名作为子目录名。
 完整约定见 [`../../plays/README.md`](../../plays/README.md)。
 
+## 检查项目 README
+
+生成功能说明前，先检查 `main` 分支和当前分支**根目录**的 README：
+
+- `git ls-tree --name-only main README.md` —— `main` 分支有没有 README？
+- `test -f README.md` —— 当前分支有没有 README？
+
+遵循仓库规则：根 README 路径保留给 fork owner（见 `docs/fork-guide.md`）；除非 fork 确实拥有
+根 README，否则不要创建。
+
+1. **若有 README**（`main` 或当前分支有）：提示开发者更新并读取它。归档时把 **README 内容合并进
+   功能说明**，让说明既反映人类可读的描述，也反映代码。
+2. **若没有 README**：直接从实现总结，不合并 README。
+3. **归档完成后**：若 `main` 和当前分支根目录都**没有** README，则更新（创建）根 README，让归档的
+   应用能从 fork 自己的 README 检索到。
+
 ## 生成功能说明
 
 写 `plays/<app-name>/README.md` 及其配对 `.zh_CN.md`，作为为后续查询而生成的 AI 功能说明
@@ -40,6 +56,8 @@ description: 固件发布之后，把已发布的应用归档到本仓库的 pla
 - 所属源码分支或目录。
 - 封面图文件名与格式。
 
+若根 README 存在，把它合并进说明，而不是忽略人类可读的描述。
+
 默认 `.md` 用英文、配对 `.zh_CN.md` 用简体中文，并在同一次变更中对齐。
 
 ## 添加封面图
@@ -50,8 +68,9 @@ description: 固件发布之后，把已发布的应用归档到本仓库的 pla
 ## 提交
 
 在独立分支上提交总结与封面（英文祈使句 Conventional Commit 标题，例如
-`docs(plays): add <app-name> application archive`）。**不要**在这里存合并固件 `.bin`；它是构建/
-发布产物。按 Build、Host tests、Device tests、Unverified 分别上报。
+`docs(plays): add <app-name> application archive`）。若创建或更新了根 README，一并纳入同一次变更。
+**不要**在这里存合并固件 `.bin`；它是构建/发布产物。按 Build、Host tests、Device tests、
+Unverified 分别上报。
 
 ## 本 skill 不做的事
 
