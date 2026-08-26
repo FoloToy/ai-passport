@@ -10,4 +10,8 @@ Each skill must contain at least `SKILL.md` with YAML frontmatter defining `name
 
 ## Current skills
 
-No project-specific skills are registered yet.
+| Skill | What it does |
+| --- | --- |
+| [issue-suggestions](issue-suggestions/SKILL.md) | After a release, collect the releasing developer's own improvement points and file them as feature request issues against the upstream project. |
+| [experience-pr](experience-pr/SKILL.md) | After a release, collect reusable development experience and submit it as a documentation pull request. |
+| [plays-archive](plays-archive/SKILL.md) | After a release, archive the published application into `plays/` with an AI-generated bilingual summary and a cover image. |
