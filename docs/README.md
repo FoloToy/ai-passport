@@ -43,11 +43,15 @@ A simple request can be given directly to an AI assistant:
 ```text
 On the main branch, build an offline habit-tracking application for FoloToy AI Passport.
 Use the three physical buttons and the 240×320 display, and preserve records across power loss.
-Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches first,
+Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches and plays/ applications first,
 keep hardware logic in components/bsp and application logic in main, deliver a runnable
 implementation with tests, and report the build result, unexecuted device checks, and exact
 on-device acceptance steps separately.
 ```
+
+Before starting, check [`plays/`](../plays/README.md) for an existing or reference
+application and the demo branches; see the application archive for what is already
+built and reusable.
 
 The more specific the requirement, the more likely the assistant is to implement it correctly in one pass. Useful details include:
 

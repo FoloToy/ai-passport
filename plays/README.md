@@ -11,6 +11,21 @@ the community publishing flow: after publishing a firmware
 ([`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)),
 the assistant asks whether to archive the application here.
 
+## Before developing a new play
+
+Before starting a new application, check `plays/` for an existing or reference
+project to build on instead of from scratch:
+
+- List the archived applications under `plays/` and read their functional
+  summaries to see whether one already covers the idea.
+- Reuse applicable design ideas, interaction patterns, or state models from an
+  existing play rather than re-inventing them.
+- When none exists, note that a new `plays/<app-name>/` archive will be created
+  later, when the application is published.
+
+Each play subdirectory is an archive of a real, working application; its summary
+is the starting point for deciding whether to extend or reference it.
+
 ## Directory convention
 
 Each application gets its own subdirectory, named after the application in
