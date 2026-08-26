@@ -1,0 +1,78 @@
+---
+name: plays-archive
+description: After a firmware release, archive the published application into this repository's plays/ directory with an AI-generated bilingual functional summary and a cover image.
+---
+
+<p align="right">
+  <a href="SKILL.zh_CN.md">简体中文</a> · <strong>English</strong>
+</p>
+
+# Archive an Application to plays
+
+This skill archives a published application into the repository's `plays/`
+application archive so it is discoverable in-repository for later querying. It
+runs after a firmware release (see
+`docs/development/publish-to-community.md` for publishing itself) and only when
+the developer asks to archive the application.
+
+## Safety and consent gate (run first)
+
+Do not create, write, or commit anything until every gate below is satisfied.
+
+1. **Confirm consent up front.** This work touches project-private content.
+   Ask the developer to confirm they agree to archive the application. If they
+   decline, stop immediately.
+2. **Never modify or commit on the current branch.** Base the archive on the
+   latest upstream `main` for a clean baseline, create a dedicated branch or
+   worktree, and carry the change there. Leave the current checkout untouched.
+3. **No credentials or private data.** Never include credentials, device QR
+   secrets, private device links, personal data, or unsanitized logs. Run
+   `python3 tools/check_repo.py` before committing anything.
+
+## Determine what to archive
+
+Confirm the application name and the source it belongs to (for example a
+`demo/*` branch or `main/`). Use the lowercase-kebab-case application name as the
+subdirectory name. See [`../../plays/README.md`](../../plays/README.md) for the full
+convention.
+
+## Generate the functional summary
+
+Write `plays/<app-name>/README.md` and its paired `.zh_CN.md` as an AI-generated
+functional summary for later querying (not a publishing artifact). Record:
+
+- Application name and one-line positioning.
+- What the app does and its feature list.
+- Interaction and gameplay (buttons, screens, flow).
+- The source branch or directory it lives in.
+- The cover image file name and format.
+
+Write the default `.md` in English and the `.zh_CN.md` in Simplified Chinese,
+aligned in the same change.
+
+## Add the cover image
+
+Place the cover at `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed
+to the repository. Keep it representative and under 10 MiB.
+
+## Commit
+
+Commit the summary and cover on the dedicated branch (English imperative
+Conventional Commit title, for example
+`docs(plays): add <app-name> application archive`). Do **not** store the merged
+firmware `.bin` here; it is a build/publish artifact. Report Build, Host tests,
+Device tests, and Unverified separately.
+
+## What this skill does not do
+
+- It does not publish firmware or run the publisher workflow.
+- It does not open code pull requests or modify production source.
+- It does not store the firmware `.bin` binary.
+- It does not auto-submit anything without developer review and consent.
+
+## Related documents
+
+- Application archive convention: `../plays/README.md`
+- Post-release follow-up overview: `docs/development/after-release.md`
+- Firmware publishing: `docs/development/publish-to-community.md`
+- Contribution and commit rules: `docs/contribution/commit-and-pr.md`
