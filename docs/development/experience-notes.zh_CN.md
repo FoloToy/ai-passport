@@ -37,3 +37,4 @@ fork 上自行创建或变更的 `docs/` 文档。每条经验一个 `.md` 及�
 
 - **ESP32-C3 上音频压缩方式的权衡**（Shinku-Chen）— 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。见 [`../experiences/shinku-chen/audio-compression-trade-offs.zh_CN.md`](../experiences/shinku-chen/audio-compression-trade-offs.zh_CN.md)。
 - **发布后收尾：AI Passport 发布流程的衔接**（Shinku-Chen）— 确认发布目的地、发布时包含数据分区、以及发布后收尾各轨道的同意门槛。见 [`../experiences/shinku-chen/post-release-follow-up.zh_CN.md`](../experiences/shinku-chen/post-release-follow-up.zh_CN.md)。
+- **ESP32-C3（无 PSRAM）上的显示刷新与深睡**（Shinku-Chen）— 直接刷新单个图片矩形、RTC GPIO 深睡唤醒，以及 LVGL 对象类型误用的崩溃特征。见 [`../experiences/shinku-chen/display-refresh-and-deep-sleep.zh_CN.md`](../experiences/shinku-chen/display-refresh-and-deep-sleep.zh_CN.md)。
