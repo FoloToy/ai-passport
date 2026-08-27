@@ -40,8 +40,8 @@
 2. 确认已有可用的 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）；否则把草案交给开发者手动粘贴。
 3. 收集 fork 相对上游 `docs/` 差异里的可复用经验并分流（通用、上游也受益的经验回上游；
    纯 fork 定制按 `fork-guide.md` 留在 fork），保存为
-   `docs/experiences/<username>/` 下的一个新的条目文件（命名为
-   `<unixtime>_<commit-sha>.md`，并配 `.zh_CN.md`，按贡献开发者的 GitHub 用户名分组），
+   `docs/experiences/<username>/` 下的一个新的条目文件（按条目内容概要命名，小写连字符，并配
+   `.zh_CN.md`，按贡献开发者的 GitHub 用户名分组），
    从 [经验索引](experience-notes.md) 链接它，放在以最新上游 `main` 为基线的独立分支上，
    确保当前 checkout 不被改动。
 4. 把变更交给开发者审查，然后在获得明确批准后再 commit、push 到 fork、并向上游 `FoloToy/ai-passport` 开 PR。

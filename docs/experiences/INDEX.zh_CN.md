@@ -15,4 +15,4 @@
 
 ### Shinku-Chen
 
-- [ESP32-C3 上音频压缩方式的权衡](Shinku-Chen/1787793847_91466b0.zh_CN.md) — 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。
+- [ESP32-C3 上音频压缩方式的权衡](Shinku-Chen/audio-compression-trade-offs.zh_CN.md) — 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。

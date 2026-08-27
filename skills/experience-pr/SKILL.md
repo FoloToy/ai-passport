@@ -109,10 +109,11 @@ customization to the upstream PR.
 ## Write the experience entry
 
 Each experience capture produces exactly one `.md` file and its paired
-`.zh_CN.md` file under `docs/experiences/<username>/`, named
-`<unixtime>_<commit-sha>.md`, where `<username>` is the contributing developer's
-GitHub username (lowercase-kebab-case) grouping that developer's entries
-together. This repository requires English at the default `.md` path and a
+`.zh_CN.md` file under `docs/experiences/<username>/`, named after the entry's
+content summary in lowercase-kebab-case (for example
+`audio-compression-trade-offs.md`), where `<username>` is the contributing
+developer's GitHub username (lowercase-kebab-case) grouping that developer's
+entries together. This repository requires English at the default `.md` path and a
 paired `.zh_CN.md`, with reciprocal language links and no Chinese prose in the
 English file. Link the new entry from the index at
 `docs/development/experience-notes.md`.

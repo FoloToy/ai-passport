@@ -1,5 +1,5 @@
 <p align="right">
-  <strong>简体中文</strong> · <a href="1787793847_91466b0.md">English</a>
+  <strong>简体中文</strong> · <a href="audio-compression-trade-offs.md">English</a>
 </p>
 
 # ESP32-C3 上音频压缩方式的权衡

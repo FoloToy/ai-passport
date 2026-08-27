@@ -54,8 +54,8 @@ PR to the upstream `FoloToy/ai-passport` project.
 3. Collect reusable experience from the fork's `docs/` differences, route it
    (general, upstream-benefiting experience goes upstream; fork-specific
    customization stays in the fork per `fork-guide.md`), and store it as a new
-   entry under `docs/experiences/<username>/` (named
-   `<unixtime>_<commit-sha>.md`, plus the `.zh_CN.md` peer, grouped by the
+   entry under `docs/experiences/<username>/` (named after the entry's content
+   summary in lowercase-kebab-case, plus the `.zh_CN.md` peer, grouped by the
    contributing developer's GitHub username), linking it from the
    [experience index](experience-notes.md), on a dedicated branch based on the
    latest upstream `main`, so the current checkout

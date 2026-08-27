@@ -20,4 +20,4 @@ by the contributing developer's username.
 
 ### Shinku-Chen
 
-- [Audio Compression Trade-offs on ESP32-C3](Shinku-Chen/1787793847_91466b0.md) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost.
+- [Audio Compression Trade-offs on ESP32-C3](Shinku-Chen/audio-compression-trade-offs.md) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost.
