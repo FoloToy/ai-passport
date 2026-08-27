@@ -254,6 +254,7 @@ General board acceptance:
 | Black after light sleep | timer wake source, sleep error, backlight restore |
 | Deep sleep does not restart | timer source, boot wake cause, RTC counter |
 | I2S allocation fails after UI growth | competition among LCD/LVGL buffers and I2S DMA |
+| Chinese text appears as boxes | Montserrat 14/20 has no CJK glyphs; compile and select a CJK subset, configure fallback for mixed text, and verify glyph coverage on the device |
 
 ## 15. Pre-delivery checklist
 

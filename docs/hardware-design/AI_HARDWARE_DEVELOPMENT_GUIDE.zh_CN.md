@@ -446,6 +446,7 @@ idf.py flash monitor
 | light sleep 后黑屏 | timer wake source、`esp_light_sleep_start()` 错误日志、唤醒后是否恢复背光 |
 | deep sleep 后未重启 | timer wake source、启动日志的 wake cause、页面 RTC 计数；当前 demo 使用 RTC timer 唤醒 |
 | 加大 UI 后 I2S NO_MEM | LCD 双缓冲/LVGL pool 与 I2S DMA 争夺内部 RAM |
+| 中文显示为方框 | Montserrat 14/20 不含 CJK glyph；编译并选用中文字体子集，为混排配置 fallback，并在真机核对全部字符 |
 
 ## 15. AI 提交前自检
 
