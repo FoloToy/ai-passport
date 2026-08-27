@@ -34,6 +34,11 @@ This document defines public brand and product language. For engineering facts, 
 
 Both flashers write local firmware through WebSerial without uploading the firmware file. Prefer the product-site flasher in AI Passport flows and the general tool for cross-product support.
 
+To configure the device through the official mini program, first flash the stock
+firmware by scanning the QR code on the back of the device. After that, search
+for **"FoloToy AI Passport"** in the mini-program search box to find the official
+configuration companion.
+
 The official play catalog changes over time; treat the live website as authoritative rather than copying a permanent list into engineering decisions.
 
 ## Brand visuals
