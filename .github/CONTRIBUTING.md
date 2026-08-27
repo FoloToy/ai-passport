@@ -25,13 +25,19 @@ second development; the fork conventions are in
 
 ## Development and verification
 
-Use ESP-IDF 5.5.x (known development environment 5.5.3):
+Use ESP-IDF 5.5.3. For a clean-machine setup, follow the
+[environment bootstrap](../docs/development/environment-setup.md).
+
+Prefer the repository firmware gate for builds and flash its verified merged
+image at `0x0`. The direct IDF commands below are for incremental development.
 
 ```bash
-get_idf553                    # Enter the repository's ESP-IDF 5.5.3 environment
+source <path-to-esp-idf-v5.5.3>/export.sh
+idf.py --version             # must report ESP-IDF v5.5.3
+./tools/validate.sh --firmware # preferred merged-image build
 idf.py set-target esp32c3     # Configure the target chip (fresh checkout / after target change)
-idf.py build                  # Compile firmware and validate dependencies
-idf.py flash monitor          # Flash and open logs
+idf.py build                  # Optional incremental application build
+idf.py flash monitor          # Optional incremental application flash
 idf.py fullclean              # Clear stale build state (never for user source changes)
 ```
 

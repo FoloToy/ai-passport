@@ -19,13 +19,19 @@
 
 ## 开发与验证
 
-使用 ESP-IDF 5.5.x（已知开发环境 5.5.3）：
+使用 ESP-IDF 5.5.3。全新机器先按
+[环境引导](../docs/development/environment-setup.zh_CN.md)完成安装。
+
+编译优先运行仓库固件门禁，烧录优先把验证过的合并镜像写入 `0x0`。以下直接
+IDF 命令只用于增量开发。
 
 ```bash
-get_idf553                    # 进入仓库的 ESP-IDF 5.5.3 环境
+source <ESP-IDF-v5.5.3-路径>/export.sh
+idf.py --version             # 必须输出 ESP-IDF v5.5.3
+./tools/validate.sh --firmware # 优先生成合并固件
 idf.py set-target esp32c3     # 配置目标芯片（fresh checkout 后/换 target 后运行）
-idf.py build                  # 编译固件，验证依赖
-idf.py flash monitor          # 烧录并打开日志
+idf.py build                  # 可选：增量 app 编译
+idf.py flash monitor          # 可选：增量 app 烧录
 idf.py fullclean              # 配置过期时清空生成状态（勿用于清理用户源码改动）
 ```
 
