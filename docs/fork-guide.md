@@ -20,7 +20,7 @@ sdkconfig.defaults     reproducible ESP32-C3 defaults
 
 The root `README.md` path is intentionally available to a fork owner. Upstream's project overview is `docs/README.md`, which GitHub displays when no root README exists. A fork may add its own root README to explain its product without replacing upstream documentation.
 
-After publishing a release, update this fork root README on `main` so the released application is discoverable from the repository's own landing page. One fork repository may host several development projects, so this README is the **catalog of the fork's projects** — it lists each project and links to its own README and source — rather than a description of a single application. See the release flow in [`docs/development/CI-build-and-release.md`](development/CI-build-and-release.md). It is fork-owned content and must not be proposed back upstream.
+After publishing a release, update this fork root README on `main` so the released application is discoverable from the repository's own landing page. One fork repository may host several development projects, so this README is the **catalog of the fork's projects**: it introduces each project's content (what it does and how it is used) and links to its own README and source, not just a list of branch links. See the release flow in [`docs/development/CI-build-and-release.md`](development/CI-build-and-release.md). It is fork-owned content and must not be proposed back upstream.
 
 ## Fork rules
 
