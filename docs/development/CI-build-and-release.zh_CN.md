@@ -69,17 +69,20 @@ tag 触发的 Release 只有在合并固件与它的 Release 说明一起发布�
 
 ## 同步 fork 的根 README
 
-发布 Release 后，除了设置 Release 标题、写 Release 说明外，还要同步更新**自己 fork 的 `main` 分支根
-目录 `README.md`**，让新发布的应用能从仓库自己的落地页被检索到。这里指 fork owner 为自己项目维护的
-根 README（按 [`docs/fork-guide.md`](../fork-guide.md) 保留给 fork owner 的
-`README.md` / `README.zh_CN.md` 双语配对）；它是 fork 私有的文档，不提案回上游。
+同一个 fork 仓库可能承载**多个开发项目**。发布 Release 后，除了设置 Release 标题、写 Release 说明外，
+还要同步更新**自己 fork 的 `main` 分支根目录 `README.md`**，让新发布的应用能从仓库自己的落地页被检索、
+可达。fork 根 README 是这个 fork 所承载各个项目的**总览/目录**，不是单个应用的介绍；它列出 fork 携带的
+每个项目，并链接到每个项目自己的 README、源码、Release 与用法说明。
+
+这里指 fork owner 为自己 fork 维护的根 README（按 [`docs/fork-guide.md`](../fork-guide.md) 保留给 fork
+owner 的 `README.md` / `README.zh_CN.md` 双语配对）；它是 fork 私有的文档，不提案回上游。
 
 发布一个应用时：
 
-- 新增或更新 fork 的根 README，列出新发布的应用及其获取方式（源码地址、Release，以及关键用法或烧录
-  说明），并与 Release 标题、说明保持一致。
-- 若 fork 还没有根 README，为 fork `main` 创建双语 `README.md` / `README.zh_CN.md` 配对，让产品与
-  已发布应用能从仓库页面呈现。
+- 新增或更新 fork 的根 README，把新发布的应用登记到 fork 的项目列表中，并链接到该应用自己的
+  README/源码及其获取方式（源码地址、Release，以及关键用法或烧录说明），与 Release 标题、说明保持一致。
+- 若 fork 还没有根 README，为 fork `main` 创建双语 `README.md` / `README.zh_CN.md` 配对，作为项目目录，
+  让每个项目（含新发布的）都能从仓库页面呈现。
 - **不要**把这份 README 提案回上游。根 README 路径保留给 fork owner；上游概览是 `docs/README.md`。
 
 fork 根 README 约定见 [`../fork-guide.md`](../fork-guide.md)。

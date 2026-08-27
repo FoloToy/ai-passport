@@ -60,22 +60,29 @@ consistent with `docs/CHANGELOG.md` for user-visible behavior.
 
 ## Sync the fork's root README
 
-After publishing a release, in addition to setting the release title and writing
-the release notes, also update the root `README.md` on your fork's `main` branch
-so the released application is discoverable from the repository's own landing
-page. This applies to the README a fork owner maintains for their own project
-(the root `README.md` / `README.zh_CN.md` pair reserved for the fork owner per
-[`docs/fork-guide.md`](../fork-guide.md)); it is a fork-owned document, not part
-of the upstream proposal.
+A single fork repository may host several different development projects. After
+publishing a release, in addition to setting the release title and writing the
+release notes, also update the root `README.md` on your fork's `main` branch so
+the released application is discoverable and reachable from the repository's own
+landing page. The fork root README is the **overview / catalog of the projects
+this fork hosts**, not a per-application description; it lists each project the
+fork carries and links to each one's own README, source, release, and usage
+notes.
+
+This applies to the README a fork owner maintains for their own fork (the root
+`README.md` / `README.zh_CN.md` pair reserved for the fork owner per
+[`docs/fork-guide.md`](../fork-guide.md)); it is fork-owned content and is not
+part of the upstream proposal.
 
 When releasing an application:
 
-- Add or update the fork's root README so it lists the newly released
-  application and how to get it (the source address, the release, and any key
-  usage or flashing notes). Keep it aligned with the release title and notes.
+- Add or update the fork's root README so the released application is listed
+  among the fork's projects, with a link to the application's own README/source
+  and how to get it (the source address, the release, and any key usage or
+  flashing notes). Keep it aligned with the release title and notes.
 - If the fork has no root README yet, create the bilingual `README.md` /
-  `README.zh_CN.md` pair for the fork `main` so the product and its released
-  apps are presentable from the repository page.
+  `README.zh_CN.md` pair as the project catalog for fork `main` so every project
+  (including the new release) is presentable from the repository page.
 - Do **not** push this README upstream. The root README path is reserved for
   the fork owner; upstream's overview is `docs/README.md`.
 
