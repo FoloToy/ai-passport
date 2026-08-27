@@ -17,10 +17,11 @@ firmware.
 
 After publishing, ask the developer whether to archive this application into the
 upstream `FoloToy/ai-passport` repository's `plays/` application archive. If
-agreed, generate an AI-functional summary under `plays/<app-name>/` (bilingual
-`README.md` / `.zh_CN.md`) and add the cover image as
-`plays/<app-name>/<app-name>-cover.<webp|png|jpg>`. Commit only the summary and
-cover; do not store the firmware `.bin` here. See
+agreed, generate an AI-functional summary under
+`plays/<username>/<app-name>/` (bilingual `README.md` / `.zh_CN.md`) and add the
+cover image as
+`plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`. Commit only the
+summary and cover; do not store the firmware `.bin` here. See
 [`../../plays/README.md`](../../plays/README.md).
 
 Before generating the summary, check the root README of the `main` and current
@@ -53,8 +54,9 @@ PR to the upstream `FoloToy/ai-passport` project.
 3. Collect reusable experience from the fork's `docs/` differences, route it
    (general, upstream-benefiting experience goes upstream; fork-specific
    customization stays in the fork per `fork-guide.md`), and store it as a new
-   entry under `docs/experiences/` (named `<unixtime>_<commit-sha>.md`, plus the
-   `.zh_CN.md` peer), linking it from the
+   entry under `docs/experiences/<username>/` (named
+   `<unixtime>_<commit-sha>.md`, plus the `.zh_CN.md` peer, grouped by the
+   contributing developer's GitHub username), linking it from the
    [experience index](experience-notes.md), on a dedicated branch based on the
    latest upstream `main`, so the current checkout
    stays untouched.

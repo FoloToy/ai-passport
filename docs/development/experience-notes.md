@@ -7,9 +7,10 @@
 This page is the index for reusable development experience captured after each
 firmware release — focused on the fork's own `docs/` differences from upstream:
 the documents the developer created or changed on this fork. Individual entries
-are stored as separate files under [`../experiences/`](../experiences/), one
-file per entry, named `<unixtime>_<commit-sha>.md`. The `experience-pr` skill
-writes new entries there and links them from the index below.
+are stored as separate files under [`../experiences/`](../experiences/), grouped
+by the contributing developer's username, one file per entry, named
+`<unixtime>_<commit-sha>.md`. The `experience-pr` skill writes new entries there
+and links them from the index below.
 
 Each entry is routed before submission: general, upstream-benefiting experience
 goes to the upstream `FoloToy/ai-passport` as a PR; fork-specific customization
@@ -25,13 +26,16 @@ Each release appends a dated entry with the release (tag or commit) as context.
 Follow the repository language rule: keep the default `.md` path in English and
 the paired `.zh_CN.md` in Simplified Chinese, aligned in the same change.
 
-Each capture produces one `.md` entry and its paired `.zh_CN.md`, stored directly
-under `docs/experiences/` and named with the Unix timestamp of the capture plus
-the relevant commit short SHA.
+Each capture produces one `.md` entry and its paired `.zh_CN.md`, stored under
+`docs/experiences/<username>/` and named with the Unix timestamp of the capture
+plus the relevant commit short SHA. `<username>` is the contributing developer's
+GitHub username (lowercase-kebab-case), and groups that developer's entries
+together instead of flattening them directly under `docs/experiences/`.
 
 ## Entries
 
-See [`../experiences/`](../experiences/) for the stored entries. The index below
-lists each entry once it is added.
+See [`../experiences/`](../experiences/), and its
+[`INDEX.md`](../experiences/INDEX.md) for the archived-entry table, for the
+stored entries. The index below lists each entry once it is added.
 
 - None recorded yet.

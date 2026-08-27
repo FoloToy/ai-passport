@@ -13,9 +13,9 @@
 ## 轨道 1：把应用归档到 plays
 
 发布后，询问开发者是否把该应用归档到上游 `FoloToy/ai-passport` 仓库的 `plays/` 应用档案。若同意，
-在 `plays/<app-name>/` 下生成该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`），并添加封面图
-`plays/<app-name>/<app-name>-cover.<webp|png|jpg>`。只提交总结与封面；**不要**在这里存固件
-`.bin`。见 [`../../plays/README.md`](../../plays/README.md)。
+在 `plays/<username>/<app-name>/` 下生成该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`），
+并添加封面图 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`。只提交总结与封面；
+**不要**在这里存固件 `.bin`。见 [`../../plays/README.md`](../../plays/README.md)。
 
 生成总结前，先检查 `main` 分支和当前分支**根目录**的 README（`plays-archive` skill）：若有 README，
 把它合并进总结；若没有，直接总结。归档完成后对每个分支**各自处理**：没有根 README 的分支创建它，
@@ -39,9 +39,11 @@
 1. 确认开发者同意开始收尾（涉及项目私有内容）。
 2. 确认已有可用的 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）；否则把草案交给开发者手动粘贴。
 3. 收集 fork 相对上游 `docs/` 差异里的可复用经验并分流（通用、上游也受益的经验回上游；
-   纯 fork 定制按 `fork-guide.md` 留在 fork），保存为 `docs/experiences/` 下的一个新的条目文件（命名为
-   `<unixtime>_<commit-sha>.md`，并配 `.zh_CN.md`），从 [经验索引](experience-notes.md)
-   链接它，放在以最新上游 `main` 为基线的独立分支上，确保当前 checkout 不被改动。
+   纯 fork 定制按 `fork-guide.md` 留在 fork），保存为
+   `docs/experiences/<username>/` 下的一个新的条目文件（命名为
+   `<unixtime>_<commit-sha>.md`，并配 `.zh_CN.md`，按贡献开发者的 GitHub 用户名分组），
+   从 [经验索引](experience-notes.md) 链接它，放在以最新上游 `main` 为基线的独立分支上，
+   确保当前 checkout 不被改动。
 4. 把变更交给开发者审查，然后在获得明确批准后再 commit、push 到 fork、并向上游 `FoloToy/ai-passport` 开 PR。
 
 ## 共同的安全与同意门槛

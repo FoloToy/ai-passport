@@ -82,10 +82,11 @@ comm -23 \
 
 ## 写入经验条目
 
-每次经验采集只生成一个 `.md` 文件及其配对的 `.zh_CN.md` 文件，放在 `docs/experiences/`
-下，命名为 `<unixtime>_<commit-sha>.md`。本仓库要求默认 `.md` 路径用英文、配套
-`.zh_CN.md`，两者互指语言链接，且英文文件中不得混入中文。从
-`docs/development/experience-notes.md` 索引链接它。
+每次经验采集只生成一个 `.md` 文件及其配对的 `.zh_CN.md` 文件，放在
+`docs/experiences/<username>/` 下，命名为 `<unixtime>_<commit-sha>.md`，其中
+`<username>` 是贡献开发者的 GitHub 用户名（小写连字符），把该开发者的条目聚在一起。
+本仓库要求默认 `.md` 路径用英文、配套 `.zh_CN.md`，两者互指语言链接，且英文文件中不得混入中文。
+从 `docs/development/experience-notes.md` 索引链接它。
 
 让这个变更落在**独立分支或 worktree** 上。**不要**提交到开发者当前分支。
 

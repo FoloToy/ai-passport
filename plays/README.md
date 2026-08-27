@@ -7,8 +7,10 @@
 This directory, in the upstream `FoloToy/ai-passport` repository, is the
 application archive of the plays built for the AI Passport. It is for
 **querying** what each application does and how it works, using an AI-generated
-functional summary per application. It is linked to the community publishing
-flow: after publishing a firmware
+functional summary per application. Use the
+[`INDEX.md`](INDEX.md) to discover the archived plays and jump to a
+per-application summary. It is linked to the community publishing flow: after
+publishing a firmware
 ([`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)),
 the assistant asks whether to archive the application here, proposing it back to
 upstream.
@@ -18,12 +20,12 @@ upstream.
 Before starting a new application, check `plays/` for an existing or reference
 project to build on instead of from scratch:
 
-- List the archived applications under `plays/` and read their functional
-  summaries to see whether one already covers the idea.
+- List the archived applications under `plays/` (across contributor folders) and
+  read their functional summaries to see whether one already covers the idea.
 - Reuse applicable design ideas, interaction patterns, or state models from an
   existing play rather than re-inventing them.
-- When none exists, note that a new `plays/<app-name>/` archive will be created
-  later, when the application is published.
+- When none exists, note that a new `plays/<username>/<app-name>/` archive will be
+  created later, when the application is published.
 
 Each play subdirectory is an archive of a real, working application; its summary
 is the starting point for deciding whether to extend or reference it. Alongside
@@ -33,15 +35,23 @@ for previously recorded, reusable experience from other developer runs.
 
 ## Directory convention
 
-Each application gets its own subdirectory, named after the application in
-lowercase-kebab-case. Add an application archive only when it is published or
-ready to be recorded; do not pre-create empty scaffolding.
+Archives are grouped by the contributor who published the application, then by
+the application itself, so the collection is organized by author rather than
+flattened. Each application gets its own subdirectory under its contributor's
+folder, both in lowercase-kebab-case. Add an application archive only when it is
+published or ready to be recorded; do not pre-create empty scaffolding.
 
 ```
-plays/<app-name>/
+plays/<username>/<app-name>/
   README.md / README.zh_CN.md   # AI-generated bilingual functional summary
   <app-name>-cover.<webp|png|jpg>  # cover image, committed (<= 10 MiB)
 ```
+
+`<username>` is the contributor's GitHub username (lowercase-kebab-case), and
+`<app-name>` is the application name (lowercase-kebab-case). A single contributor
+can have several applications under their own folder; the folder splits by author
+to keep related submissions together instead of spreading them flat across
+`plays/`.
 
 ## What the per-application README contains
 
@@ -65,9 +75,16 @@ English at the default `.md` path and Simplified Chinese at the paired
 
 ## Cover image
 
-Place the cover at `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed
+Place the cover at `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`,
+committed
 to the repository (like `docs/assets/brand`). Keep it representative and under
 10 MiB.
+
+When generating an effect or mockup image of the play, use the official product
+references under [`docs/assets/brand/`](../docs/assets/brand/README.md) to add
+the machine shell around the on-screen content: keep the shell, buttons, ports,
+and key-ring hole consistent with those references so the rendered screen appears
+inside the real AI Passport device rather than as a bare screen.
 
 ## Firmware
 
@@ -76,5 +93,6 @@ artifact produced by the build flow, not an in-repository asset.
 
 ## Related
 
+- Archive index: [`INDEX.md`](INDEX.md)
 - Repository overview and demo branches: [`../docs/README.md`](../docs/README.md)
 - Software design index: [`../docs/software-design/README.md`](../docs/software-design/README.md)

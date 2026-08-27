@@ -11,3 +11,4 @@
 - Add or update tests with code changes. If automation is not practical, record the test gap and exact manual validation path.
 - If adding a cache, define expiration and cleanup unless durable retention is explicitly justified.
 - The ESP32-C3 has no PSRAM. Review internal RAM and largest-contiguous-block impact before increasing LVGL buffers, audio allocations, network state, or task stacks.
+- **Watch power consumption.** This is a wearable powered by a small battery; keep it efficient. Avoid keeping the screen lit for long periods: dim or turn off the backlight, and return to a low-power state (light/deep sleep) whenever the screen is idle, so the device is not left displaying a bright screen while doing nothing. See the guidance on sleep in [`../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
