@@ -31,6 +31,7 @@ This document defines public brand and product language. For engineering facts, 
 | Official plays | `https://ai-passport.folotoy.cn/plays/` |
 | AI Passport web flasher | `https://ai-passport.folotoy.cn/tools/web-flasher/` |
 | General FoloToy web flasher | `https://tool.folotoy.cn/` |
+| Official config mini program | search **"FoloToy AI Passport"** in the mini-program search box |
 
 Both flashers write local firmware through WebSerial without uploading the firmware file. Prefer the product-site flasher in AI Passport flows and the general tool for cross-product support.
 

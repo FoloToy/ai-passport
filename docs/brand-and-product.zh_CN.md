@@ -49,6 +49,7 @@ AI Passport 是一个**开放式可穿戴 AI 智能体**：
 | 官方玩法库 | `https://ai-passport.folotoy.cn/plays/`（主页锚点 `/#official-plays`） |
 | 浏览器刷机工具 | `https://ai-passport.folotoy.cn/tools/web-flasher/`（产品官网内置入口） |
 | **FOLOTOY 通用刷机工具** | `https://tool.folotoy.cn/`（独立站点，浏览器 WebSerial 刷机 + 实时设备日志，固件不上传服务器） |
+| **官方配置小程序** | 在小程序搜索框搜索 **「FoloToy AI Passport」** 即可找到 |
 
 ### 官方玩法库
 
