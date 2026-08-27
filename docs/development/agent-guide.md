@@ -54,7 +54,7 @@ Only reusable hardware capabilities belong in the BSP. Document blocking behavio
 
 ## Material placement
 
-When the developer submits a reusable asset through you — an image, font, audio clip, or similar project material — save it under the repository-root [`assets/`](../../assets/README.md) by default so it stays available for development and later reuse. Place it in the matching subdirectory (`assets/images/`, `assets/fonts/`, `assets/music/`) and, in that subdirectory's README, record the destination, naming, integration method, and source/license. Never mix binary assets with Markdown documentation. Application or experience archive records (cover, manual, summary) belong in `plays/` or `docs/experiences/`, not in `assets/`; deviate from `assets/` only when the developer explicitly directs another location.
+When the developer submits a reusable asset through you — an image, font, audio clip, or similar project material — save it under the repository-root [`assets/`](../../assets/README.md) by default so it stays available for development and later reuse. Place it in the matching subdirectory (`assets/images/`, `assets/fonts/`, `assets/music/`) and, in that subdirectory's README, record the destination, naming, integration method, and source/license. Never mix binary assets with Markdown documentation. Application or experience archive records (manual, summary) belong in `plays/` or `docs/experiences/`, not in `assets/`; the cover image a developer submits when publishing to the community is a publishing artifact and stays out of the repository. Deviate from `assets/` only when the developer explicitly directs another location.
 
 ## Delivery
 

@@ -32,7 +32,6 @@
 ```
 plays/<username>/<app-name>/
   README.md / README.zh_CN.md         # AI 生成的双语功能说明
-  <app-name>-cover.<webp|png|jpg>     # 封面图，commit（≤10 MiB）
   <topic>-guide.md（+ .zh_CN.md）      # 可选的指南/手册，不是经验
 ```
 
@@ -40,8 +39,9 @@ plays/<username>/<app-name>/
 `<app-name>` 是应用名（英文小写连字符）。一个贡献者可以在自己的文件夹下有多个应用；文件夹按作者
 拆分，把相关提交聚在一起，而不是在 `plays/` 下平铺散开。
 
-play 档案只存放该应用的**介绍与手册**：README 功能说明、封面，以及可选的应用指南。它**不**存放可复用的
-开发经验；发布后的经验条目归属
+play 档案只存放该应用的**介绍与手册**：README 功能说明，以及可选的应用指南。它**不**存放封面图或其它
+二进制素材；发布到社区时提交的封面是发布产物，不是仓库资源，只在功能说明中记录其文件名与格式，
+不 commit 图文件进 `plays/`。它同样**不**存放可复用的开发经验；发布后的经验条目归属
 [`docs/experiences/<username>/`](../docs/experiences/)。
 
 ## 每个应用 README 包含什么
@@ -61,8 +61,9 @@ play 档案只存放该应用的**介绍与手册**：README 功能说明、封�
 
 ## 封面图
 
-封面放在 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库
-（类似 `docs/assets/brand`）。选有代表性、且小于 10 MiB 的图。
+play 档案**不** commit 封面图。开发者发布到社区时提交的封面是发布产物，不放进仓库。在功能说明中
+记录**发布信息**时，只需注明封面的**文件名与格式**（按发布时提交的），以便按名引用，而不要把图文件
+本身加进 `plays/`。
 
 当需要为应用生成效果图或样机图时，参考 [`docs/assets/brand/`](../docs/assets/brand/README.md)
 下的官方产品图。生成时必须传一张参考图（如 `ai-passport-front.png` 或某款配色外壳渲染图）

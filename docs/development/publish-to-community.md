@@ -46,9 +46,9 @@ The assistant fetches the official bundle from the URL in the prompt and follows
 Once the firmware is published, ask the developer whether to archive this application
 into the upstream repository's [`plays/`](../../plays/README.md) application
 archive. If they agree, generate an AI-functional summary for the application under
-`plays/<username>/<app-name>/` (bilingual `README.md` / `.zh_CN.md`) and add the
-cover image as `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`.
-Only commit the summary and cover; do not store the firmware `.bin` here. Use the
+`plays/<username>/<app-name>/` (bilingual `README.md` / `.zh_CN.md`, text only —
+no cover image is committed). Only commit the summary text (and any manual); do
+not store the firmware `.bin` here. Use the
 `plays-archive` skill, which opens the archive PR against the upstream
 `FoloToy/ai-passport`.
 

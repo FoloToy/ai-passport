@@ -21,9 +21,9 @@ release 完成后，下载该 release 的**合并完整固件**（`FoloToy-AI-Pa
 ## 轨道 2：把应用归档到 plays
 
 发布后，询问开发者是否把该应用归档到上游 `FoloToy/ai-passport` 仓库的 `plays/` 应用档案。若同意，
-在 `plays/<username>/<app-name>/` 下生成该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`），
-并添加封面图 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`。只提交总结与封面；
-**不要**在这里存固件 `.bin`。见 [`../../plays/README.md`](../../plays/README.md)。
+在 `plays/<username>/<app-name>/` 下生成该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`，仅文字，
+不 commit 封面图）。只提交总结文字（及可选手册）；**不要**在这里存固件 `.bin`。见
+[`../../plays/README.md`](../../plays/README.md)。
 
 生成总结前，先检查 `main` 分支和当前分支**根目录**的 README（`plays-archive` skill）：若有 README，
 把它合并进总结；若没有，直接总结。归档完成后对每个分支**各自处理**：没有根 README 的分支创建它，

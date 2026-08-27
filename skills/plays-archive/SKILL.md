@@ -1,6 +1,6 @@
 ---
 name: plays-archive
-description: After a firmware release, archive the published application into the upstream FoloToy ai-passport repository's plays/ directory with an AI-generated bilingual functional summary and a cover image.
+description: After a firmware release, archive the published application into the upstream FoloToy ai-passport repository's plays/ directory with an AI-generated bilingual functional summary (text only, no cover image).
 ---
 
 <p align="right">
@@ -81,7 +81,8 @@ publishing artifact). Record:
 - Source, given as the **source address the developer submitted when
   publishing** (the HTTPS Git source page), so the application can be located
   precisely.
-- The cover image file name and format.
+- The cover image file name and format, noted for reference only (the image
+  itself is never committed to the repository).
 
 If the root README exists, merge its content into the summary rather than
 ignoring the human-facing description.
@@ -89,12 +90,16 @@ ignoring the human-facing description.
 Write the default `.md` in English and the `.zh_CN.md` in Simplified Chinese,
 aligned in the same change.
 
-## Add the cover image
+## Record the cover as a reference, not a file
 
-Place the cover at
-`plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed to the
-repository. Keep it representative and under 10 MiB. When generating an effect or
-mockup image for the play, use the official product references under
+Do **not** commit the cover image. The cover the developer submitted when
+publishing to the community is a publishing artifact, not an in-repository
+asset. Record its **file name and format** (as submitted when publishing) in the
+publish information of the per-application README so the image can be referenced
+by name; do not add the image file itself to `plays/`.
+
+When generating an effect or mockup image for the play, use the official product
+references under
 [`docs/assets/brand/`](../../docs/assets/brand/README.md): pass a reference (e.g.
 `ai-passport-front.png` or a colorway shell render) as input to the generation
 call, keep its shell, buttons, ports, and key-ring hole as they are, and redraw
@@ -105,12 +110,13 @@ convention in [`docs/assets/brand/README.md`](../../docs/assets/brand/README.md)
 
 ## Commit
 
-Commit the summary and cover on the dedicated branch (English imperative
-Conventional Commit title, for example
+Commit the text-only summary (and any manual) on the dedicated branch (English
+imperative Conventional Commit title, for example
 `docs(plays): add <app-name> application archive`). If a root README was created
-or updated, include it in the same change. Do **not** store the merged
-firmware `.bin` here; it is a build/publish artifact. Report Build, Host tests,
-Device tests, and Unverified separately.
+or updated, include it in the same change. Do **not** commit the cover image or
+the merged firmware `.bin`; both are publishing/build artifacts, not
+in-repository assets. Report Build, Host tests, Device tests, and Unverified
+separately.
 
 After review, open the PR from the fork branch against the upstream
 `FoloToy/ai-passport` through the first available GitHub channel — GitHub MCP, a
@@ -123,6 +129,7 @@ and read it back to confirm. Opening a PR requires separate confirmation.
 - It does not publish firmware or run the publisher workflow.
 - It does not modify production source or the firmware.
 - It does not store the firmware `.bin` binary.
+- It does not commit a cover image, and does not store any binary asset.
 - It does not auto-submit anything without developer review and consent.
 
 ## Related documents

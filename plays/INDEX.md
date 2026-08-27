@@ -9,7 +9,8 @@ contributor who published it. It is the discovery table for the application
 archive: read a per-application summary to decide whether to extend or reference
 an existing play, or to look up what a published application does.
 
-For the archive convention (naming, structure, and the cover image), see the
+For the archive convention (naming, structure, and the cover-image reference),
+see the
 [plays README](README.md).
 
 ## Index

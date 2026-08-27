@@ -31,10 +31,9 @@ artifact and flashing.
 After publishing, ask the developer whether to archive this application into the
 upstream `FoloToy/ai-passport` repository's `plays/` application archive. If
 agreed, generate an AI-functional summary under
-`plays/<username>/<app-name>/` (bilingual `README.md` / `.zh_CN.md`) and add the
-cover image as
-`plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`. Commit only the
-summary and cover; do not store the firmware `.bin` here. See
+`plays/<username>/<app-name>/` (bilingual `README.md` / `.zh_CN.md`, text only —
+no cover image is committed). Commit only the summary text (and any manual); do
+not store the firmware `.bin` here. See
 [`../../plays/README.md`](../../plays/README.md).
 
 Before generating the summary, check the root README of the `main` and current

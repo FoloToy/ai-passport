@@ -44,7 +44,6 @@ published or ready to be recorded; do not pre-create empty scaffolding.
 ```
 plays/<username>/<app-name>/
   README.md / README.zh_CN.md   # AI-generated bilingual functional summary
-  <app-name>-cover.<webp|png|jpg>  # cover image, committed (<= 10 MiB)
   <topic>-guide.md (+ .zh_CN.md)  # optional manual / how-to, not experience
 ```
 
@@ -55,9 +54,12 @@ folder splits by author to keep related submissions together instead of spreadin
 them flat across `plays/`.
 
 A play archive stores the application's **introduction and manual** only: the
-README functional summary, the cover, and optionally a how-to guide for that app.
-It does **not** store reusable development experience; post-release experience
-entries belong under [`docs/experiences/<username>/`](../docs/experiences/).
+README functional summary and optionally a how-to guide for that app. It does
+**not** store a cover image or any other binary asset; a published application's
+cover image is a community-publishing artifact, not an in-repository asset, and
+is referenced by file name rather than committed to the repository. It also does
+**not** store reusable development experience; post-release experience entries
+belong under [`docs/experiences/<username>/`](../docs/experiences/).
 
 ## What the per-application README contains
 
@@ -81,10 +83,12 @@ English at the default `.md` path and Simplified Chinese at the paired
 
 ## Cover image
 
-Place the cover at `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`,
-committed
-to the repository (like `docs/assets/brand`). Keep it representative and under
-10 MiB.
+A play archive does **not** commit the cover image. The cover a developer
+submitted when publishing to the community is a publishing artifact and stays
+out of the repository. When recording the publish information in the
+per-application README, note the cover's **file name and format** (as submitted
+when publishing) so the image can be referenced by name, but do not add the
+image file itself to `plays/`.
 
 When generating an effect or mockup image of the play, use the official product
 references under [`docs/assets/brand/`](../docs/assets/brand/README.md). Always
