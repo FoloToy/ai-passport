@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- Documented that after publishing a release the fork owner also syncs the fork's root `README.md` (the fork-owned product README on `main`) so the released application is discoverable from the repository's landing page, alongside setting the release title and notes. Extends the release flow in `docs/development/CI-build-and-release.md` and the fork README convention in `docs/fork-guide.md`.
 - Changed the `plays/` application-archive convention so it is text-only: a play archive stores the introduction (README functional summary) and optional manual but no longer commits the cover image a developer submitted when publishing to the community. The cover is recorded by file name and format as a reference, not added to `plays/`. Updated `plays/README`, the `plays-archive` skill, and the post-release/publishing documents accordingly.
 - Documented a release-title convention for multi-app releases: name tags as `v<version>-<app-name>` (e.g. `v0.1.0-voice-keychain`) so the release title carries the version and the app, and confirm the title after the release is published so a release list is scannable by app.
 - Added a post-release follow-up workflow: an `issue-suggestions` skill for filing user feedback as issues against the upstream project, an `experience-pr` skill for submitting reusable development experience as a documentation PR, a `docs/experiences/` directory for per-entry experience files, and supporting `after-release`, `file-issues`, and experience-index documents.

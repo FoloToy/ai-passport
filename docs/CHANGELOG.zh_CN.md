@@ -6,6 +6,7 @@
 
 ## Unreleased
 
+- 规定发布 Release 后，fork owner 在修改 Release 标题与说明之外，还要同步更新 fork 根目录的 `README.md`（fork 自己在 `main` 上的产品 README），让新发布的应用能从仓库落地页被检索到。扩展了 `docs/development/CI-build-and-release.md` 的发布流程与 `docs/fork-guide.md` 的 fork README 约定。
 - 将 `plays/` 应用档案约定改为纯文本：play 档案只存介绍（README 功能说明）与可选手册，不再 commit 开发者发布到社区时提交的封面图。封面仅按文件名与格式登记为引用，不加入 `plays/`。同步更新了 `plays/README`、`plays-archive` skill 及发布后/发布相关文档。
 - 规定多应用发布的 Release 标题约定：tag 按 `v<版本>-<应用名>`（如 `v0.1.0-voice-keychain`）命名，让 Release 标题同时带版本与应用名；发布成功后核对标题，保证一眼扫 Release 列表就能区分是哪个应用。
 - 新增发布后收尾流程：`issue-suggestions` skill 用于把用户反馈作为 issue 提交到上游项目；`experience-pr` skill 用于把可复用的开发经验作为文档 PR 提交；新增 `docs/experiences/` 目录保存单条经验文件；并配套 `after-release`、`file-issues` 与经验索引文档。

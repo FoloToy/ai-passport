@@ -20,6 +20,8 @@ sdkconfig.defaults     reproducible ESP32-C3 defaults
 
 The root `README.md` path is intentionally available to a fork owner. Upstream's project overview is `docs/README.md`, which GitHub displays when no root README exists. A fork may add its own root README to explain its product without replacing upstream documentation.
 
+After publishing a release, update this fork root README on `main` so the released application is discoverable from the repository's own landing page (see the release flow in [`docs/development/CI-build-and-release.md`](development/CI-build-and-release.md)). It is fork-owned content and must not be proposed back upstream.
+
 ## Fork rules
 
 - Keep fork `main` synchronized with `FoloToy/ai-passport:main`.
