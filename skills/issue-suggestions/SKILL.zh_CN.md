@@ -56,7 +56,7 @@ GitHub issue。它只在固件已发布（发布流程见 `docs/development/publ
 
 ## 起草、审查、提交
 
-1. 起草 issue 内容（标题与正文用英文，字段标签按模板定义），去除凭证和私有数据。
+1. 起草 issue 内容（标题用英文，正文可用英文或英文加简体中文混排；字段标签按模板定义），去除凭证和私有数据。
 2. 把草案交给开发者，等待明确授权。
 3. 仅在批准后，通过第一个可用的 GitHub 通道（GitHub MCP、GitHub skill、或
    `gh issue create --repo FoloToy/ai-passport`）提交，并回读确认创建结果。

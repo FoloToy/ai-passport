@@ -32,8 +32,9 @@ Fill the template fields completely. Feature requests use these fields:
 - Additional context
 - Safety check
 
-Write the title and body in English for an upstream-facing issue; keep the
-template's field labels as the template defines them (bilingual).
+Write the title in English for an upstream-facing issue; write the body in
+English or English plus Simplified Chinese (bilingual). Keep the template's
+field labels as the template defines them (bilingual).
 
 ## Collect and screen
 

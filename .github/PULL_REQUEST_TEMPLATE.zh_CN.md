@@ -2,7 +2,7 @@
   <strong>简体中文</strong> · <a href="PULL_REQUEST_TEMPLATE.md">English</a>
 </p>
 
-> GitHub 默认使用英文 PR 模板。本文件仅作为中文填写参考，提交的 PR 标题与正文仍须使用英文。
+> GitHub 默认使用英文 PR 模板。本文件仅作为中文填写参考。PR 标题须使用英文；正文可用英文，或英文加简体中文混排（双语）。
 
 ## 摘要
 
