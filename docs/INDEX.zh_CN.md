@@ -16,6 +16,7 @@
 | [contribution/doc-conventions.zh_CN.md](./contribution/doc-conventions.zh_CN.md) | 文档规范 | authoritative | 按任务加载上下文、文档职责、写作维护和内容安全 |
 | [contribution/commit-and-pr.zh_CN.md](./contribution/commit-and-pr.zh_CN.md) | 协作规范 | authoritative | 提交规范 + 提交与 PR 约定 |
 | [development/README.zh_CN.md](./development/README.zh_CN.md) | 工程规范索引 | authoritative | 通用工程开发规范（构建验证、代码约定） |
+| [development/environment-setup.zh_CN.md](./development/environment-setup.zh_CN.md) | 工程规范 | authoritative | AI 全新机器环境引导、国际与中国大陆下载线路 |
 | [development/build-and-test.zh_CN.md](./development/build-and-test.zh_CN.md) | 工程规范 | authoritative | 构建与验证（ESP-IDF 命令、逻辑测试、改动验证要求） |
 | [development/coding-conventions.zh_CN.md](./development/coding-conventions.zh_CN.md) | 工程规范 | authoritative | 代码约定（语言风格、复用、注释、测试同步、资源约束） |
 | [development/agent-guide.zh_CN.md](./development/agent-guide.zh_CN.md) | 工程规范 | authoritative | AI 开发工作流（上下文建立、需求拆解、BSP 边界、验收交付格式） |

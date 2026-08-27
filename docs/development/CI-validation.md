@@ -17,8 +17,10 @@ The workflow has only `contents: read` and uses no repository secrets, so it can
 
 ```bash
 ./tools/validate.sh --static
-get_idf553
+source <path-to-esp-idf-v5.5.3>/export.sh
 ./tools/validate.sh --firmware
 ```
 
-Reproduce a CI failure with the same mode locally. Do not maintain duplicate validation commands inside the workflow.
+Follow the [environment bootstrap](environment-setup.md) if ESP-IDF 5.5.3 is
+not installed. Reproduce a CI failure with the same mode locally. Do not
+maintain duplicate validation commands inside the workflow.

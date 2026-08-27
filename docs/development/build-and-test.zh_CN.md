@@ -4,15 +4,26 @@
 
 # 构建与验证（Build & Test）
 
-使用 ESP-IDF 5.5.x（已知开发环境 5.5.3）：
+使用 ESP-IDF 5.5.3。全新机器或缺少工具链时，先按
+[环境引导](environment-setup.zh_CN.md)完成安装。
+
+> 固件编译优先运行 `./tools/validate.sh --firmware`，烧录优先把验证通过的
+> `build/FoloToy-AI-Passport-full.bin` 写入 `0x0`。`idf.py build` 和
+> `idf.py flash` 只作为增量开发命令，不作为默认交付方式。
 
 ```bash
-get_idf553                    # 进入仓库的 ESP-IDF 5.5.3 环境
+source <ESP-IDF-v5.5.3-路径>/export.sh
+idf.py --version             # 必须输出 ESP-IDF v5.5.3
+./tools/validate.sh --firmware # 优先：编译并验证 0x0 合并固件
 idf.py set-target esp32c3     # 配置目标芯片（fresh checkout 后/换 target 后运行）
-idf.py build                  # 编译固件，验证依赖
-idf.py flash monitor          # 烧录并打开日志
-idf.py fullclean              # 配置过期时清空生成状态（勿用于清理用户源码改动）
+idf.py build                  # 可选：增量 app 编译
+idf.py flash monitor          # 可选：增量 app 烧录
+idf.py fullclean              # 只清空过期生成状态（勿用于清理用户源码改动）
 ```
+
+`idf.py fullclean` 不能让已有 `sdkconfig` 完整同步变更后的 defaults。需要重建
+target 或已跟踪 defaults 时，先保留有意的本地设置，再运行
+`idf.py set-target esp32c3`。
 
 仓库提交 `dependencies.lock` 以固定 ESP-IDF Managed Components 的解析结果。修改 `idf_component.yml` 后必须使用 ESP-IDF 5.5.3 重新生成锁文件、review 版本变化并与 manifest 一起提交；普通构建不应产生未提交的锁文件差异。
 

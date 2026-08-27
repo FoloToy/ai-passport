@@ -183,18 +183,26 @@ Menu initialization status arrays implicitly follow `DEMOS[]` order; update and 
 
 ## 12. Development environment
 
-Use ESP-IDF 5.5.3 outside the repository. On Ubuntu/Debian, install the standard ESP-IDF prerequisites, clone Espressif's `v5.5.3` tag recursively, and run `./install.sh esp32c3`. Activate its `export.sh` in every terminal and confirm `idf.py --version`.
+Follow the canonical [environment bootstrap](../development/environment-setup.md)
+for clean-machine installation, OS-specific prerequisites, and international or
+mainland China download routes. Use ESP-IDF 5.5.3 outside the repository,
+activate its `export.sh` in every terminal, and confirm the exact version.
+Prefer `./tools/validate.sh --firmware` to build the verified merged image and
+flash that image at `0x0`; use direct `idf.py build/flash` only for incremental
+development.
 
 ```bash
-get_idf553
+source <path-to-esp-idf-v5.5.3>/export.sh
+idf.py --version
 idf.py set-target esp32c3
 idf.py reconfigure
 idf.py build
 ```
 
-The Component Manager resolves dependencies from `components/bsp/idf_component.yml`. Do not edit `managed_components/`. `dependencies.lock` is tracked and must remain reproducible under ESP-IDF 5.5.3. Generated `sdkconfig` does not automatically absorb every changed default; inspect it and use `idf.py fullclean` only for stale generated state.
+The Component Manager resolves dependencies from `components/bsp/idf_component.yml`. Do not edit `managed_components/`. `dependencies.lock` is tracked and must remain reproducible under ESP-IDF 5.5.3. Generated `sdkconfig` does not automatically absorb every changed default; preserve intentional settings and use `idf.py set-target esp32c3` when configuration must be regenerated. Use `idf.py fullclean` only to remove stale build output.
 
-Flash through the native USB Serial/JTAG port, commonly `/dev/ttyACM0` on Linux:
+For an intentional incremental flash, use the native USB Serial/JTAG port,
+commonly `/dev/ttyACM0` on Linux:
 
 ```bash
 idf.py -p /dev/ttyACM0 flash monitor
