@@ -41,8 +41,9 @@ The public firmware contract is limited to the interfaces listed above. Do not i
 A simple request can be given directly to an AI assistant:
 
 ```text
-On the main branch, build an offline habit-tracking application for FoloToy AI Passport.
+Build an offline habit-tracking application for FoloToy AI Passport.
 Use the three physical buttons and the 240×320 display, and preserve records across power loss.
+Start from `main`, create a `feature/*` branch, and develop the application there.
 Follow AGENTS.md and docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md. Inspect relevant demo branches and plays/ applications first,
 keep hardware logic in components/bsp and application logic in main, deliver a runnable
 implementation with tests, and report the build result, unexecuted device checks, and exact
@@ -83,7 +84,7 @@ git diff main...origin/demo/tetris-game -- main components tests
 git show origin/demo/tetris-game:main/demo_tetris.c
 ```
 
-Start a new application:
+Start a new application. This repository hosts several independent projects on one baseline: after starting from `main`, create a `feature/*` branch and develop the application there — do not develop directly on `main`. Each project's final branch is `feature/*` (e.g. `feature/my-passport-app`), kept separate so `main` stays a clean upstream baseline and the projects do not entangle.
 
 ```bash
 git switch main
