@@ -41,8 +41,9 @@ FoloToy AI Passport 是一个开放式可穿戴 AI 硬件，本仓库是这款 A
 简单需求可以直接交给 AI 助手：
 
 ```text
-请基于 main 分支为 FoloToy AI Passport 开发一个离线习惯打卡应用。
+请为 FoloToy AI Passport 开发一个离线习惯打卡应用。
 使用三个实体按键和 240×320 屏幕，记录保存在掉电不丢失的存储中。
+从 `main` 开始，创建 `feature/*` 分支并在该分支上开发。
 遵守 AGENTS.md 和 docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md；先查找相关 demo 分支与 plays/ 应用，
 保持硬件逻辑在 components/bsp、应用逻辑在 main，完成可运行实现与测试，
 最后分别报告构建结果、未执行的真机项目和逐项验收方法。
@@ -82,7 +83,7 @@ git diff main...origin/demo/tetris-game -- main components tests
 git show origin/demo/tetris-game:main/demo_tetris.c
 ```
 
-开始新应用：
+开始新应用。本仓库在同一个基线上承载多个独立项目：从 `main` 开始后，应创建 `feature/*` 分支并在该分支上开发，**不要**直接在 `main` 上开发。每个项目的最终分支都是 `feature/*`（如 `feature/my-passport-app`），让 `main` 保持干净的上游基线，各项目互不纠缠。
 
 ```bash
 git switch main

@@ -47,8 +47,14 @@ Only reusable hardware capabilities belong in the BSP. Document blocking behavio
 - Button callbacks dispatch lightweight events only; move audio, storage, networking, and other slow work to worker tasks.
 - Stop tasks and timers that may access a page before deleting its screen.
 - Preserve menu `UP`/`DOWN`, `OK` click to enter, and page `OK` long-press to return unless the change explicitly redefines them.
+- When the user asks to remove unnecessary components or go straight into a feature, you may drop the main menu and its elements and launch the target feature screen directly. Keep the `ui_pixel` theme (the sky background, grass, title plate, mascot, and ink-outlined panels) intact — do not delete the theme as part of the cleanup, or the screen will render blank. Reuse `ui_pixel_screen_create()` / `ui_pixel_panel_create()` so the feature keeps the shared visual identity.
+- By default show the battery level in the top-right corner of a user interface (read via `bsp_battery_soc()`), unless the developer specifies a different placement or explicitly does not want it. Degrade gracefully when the reading is `-1` (unavailable) instead of drawing a number. Place it so it does not overlap the cloud decoration (`add_cloud`, around `x≈188, y≈8`) in the top-right; use the clear sky space rather than covering the cloud.
 - Budget internal RAM for images, fonts, networking, audio, LVGL, and task stacks; this board has no PSRAM.
 - Isolate testable state machines, protocols, timing, and layout calculations from ESP-IDF/LVGL and cover them with host tests.
+
+## Material placement
+
+When the developer submits a reusable asset through you — an image, font, audio clip, or similar project material — save it under the repository-root [`assets/`](../../assets/README.md) by default so it stays available for development and later reuse. Place it in the matching subdirectory (`assets/images/`, `assets/fonts/`, `assets/music/`) and, in that subdirectory's README, record the destination, naming, integration method, and source/license. Never mix binary assets with Markdown documentation. Application or experience archive records (cover, manual, summary) belong in `plays/` or `docs/experiences/`, not in `assets/`; deviate from `assets/` only when the developer explicitly directs another location.
 
 ## Delivery
 

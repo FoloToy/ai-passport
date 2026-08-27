@@ -5,7 +5,8 @@
 # Plays（应用档案）
 
 本目录位于上游 `FoloToy/ai-passport` 仓库，是 AI Passport 应用（plays）的档案库。它用于
-**查询**每个应用做什么、怎么用，靠的是每个应用一份由 AI 生成的功能说明。它与社区发布流程关联：
+**查询**每个应用做什么、怎么用，靠的是每个应用一份由 AI 生成的功能说明。用
+[`INDEX.md`](INDEX.md) 发现已归档的应用并跳到某个应用的功能说明。它与社区发布流程关联：
 发布固件后（[`docs/development/publish-to-community.md`](../docs/development/publish-to-community.md)），
 助手会询问是否把这个应用归档到这里，并把它提案回上游。
 
@@ -13,9 +14,9 @@
 
 开发新应用前，先查 `plays/` 里有没有已存在或可参考的项目，站在现有基础上做，而不是从零开始：
 
-- 列出 `plays/` 下已归档的应用，读它们的功能说明，看是否已覆盖你的想法。
+- 列出 `plays/` 下（跨贡献者文件夹）已归档的应用，读它们的功能说明，看是否已覆盖你的想法。
 - 复用已有应用里合适的设计思路、交互模式或状态模型，而不是重新发明。
-- 若没有合适的，记到将来该应用发布时再新建 `plays/<app-name>/` 档案。
+- 若没有合适的，记到将来该应用发布时再新建 `plays/<username>/<app-name>/` 档案。
 
 每个 plays 子目录都是一个真实、可运行应用的档案；它的功能说明是你决定"扩展它还是参考它"
 的起点。除应用档案外，也查一下
@@ -24,14 +25,24 @@
 
 ## 目录约定
 
-每个应用一个子目录，目录名 = 应用名（小写连字符）。仅在应用发布或准备记录时建档，不要预先
-创建空骨架。
+档案按贡献者（发布该应用的作者）分组，再按应用本身分组，这样整库按作者组织而不是平铺。
+每个应用在其贡献者文件夹下拥有独立子目录，两者都用英文小写连字符命名。仅在应用发布或准备记录时
+建档，不要预先创建空骨架。
 
 ```
-plays/<app-name>/
+plays/<username>/<app-name>/
   README.md / README.zh_CN.md         # AI 生成的双语功能说明
   <app-name>-cover.<webp|png|jpg>     # 封面图，commit（≤10 MiB）
+  <topic>-guide.md（+ .zh_CN.md）      # 可选的指南/手册，不是经验
 ```
+
+`<username>` 是贡献者的 GitHub 用户名（英文小写连字符，如 `shinku-chen`）。
+`<app-name>` 是应用名（英文小写连字符）。一个贡献者可以在自己的文件夹下有多个应用；文件夹按作者
+拆分，把相关提交聚在一起，而不是在 `plays/` 下平铺散开。
+
+play 档案只存放该应用的**介绍与手册**：README 功能说明、封面，以及可选的应用指南。它**不**存放可复用的
+开发经验；发布后的经验条目归属
+[`docs/experiences/<username>/`](../docs/experiences/)。
 
 ## 每个应用 README 包含什么
 
@@ -50,8 +61,14 @@ plays/<app-name>/
 
 ## 封面图
 
-封面放在 `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库（类似
-`docs/assets/brand`）。选有代表性、且小于 10 MiB 的图。
+封面放在 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库
+（类似 `docs/assets/brand`）。选有代表性、且小于 10 MiB 的图。
+
+当需要为应用生成效果图或样机图时，参考 [`docs/assets/brand/`](../docs/assets/brand/README.md)
+下的官方产品图。生成时必须传一张参考图（如 `ai-passport-front.png` 或某款配色外壳渲染图）
+作为生成调用输入，保留其外壳、按键、接口与钥匙扣孔原样，只把参考图的屏幕区域**重绘**成该玩法的
+真实屏显内容。屏幕的尺寸、比例、圆角与外壳内位置与参考保持一致，使玩法内容出现在真实 AI Passport
+设备屏幕内，而不是一块裸屏幕或自由漂浮的画面。
 
 ## 固件
 
@@ -59,5 +76,6 @@ plays/<app-name>/
 
 ## 相关
 
+- 档案索引：[`INDEX.md`](INDEX.md)
 - 仓库总览与 demo 分支：[`../docs/README.md`](../docs/README.md)
 - 软件设计索引：[`../docs/software-design/README.md`](../docs/software-design/README.md)

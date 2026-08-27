@@ -31,8 +31,17 @@ This document defines public brand and product language. For engineering facts, 
 | Official plays | `https://ai-passport.folotoy.cn/plays/` |
 | AI Passport web flasher | `https://ai-passport.folotoy.cn/tools/web-flasher/` |
 | General FoloToy web flasher | `https://tool.folotoy.cn/` |
+| Official config mini program | search **"FoloToy AI Passport"** in the mini-program search box |
 
 Both flashers write local firmware through WebSerial without uploading the firmware file. Prefer the product-site flasher in AI Passport flows and the general tool for cross-product support.
+
+### Official config mini program
+
+To configure the device through the official mini program, first flash the stock
+firmware by scanning the QR code on the back of the device. After that, search
+for **"FoloToy AI Passport"** in the mini-program search box to find the official
+configuration companion. In it you can set an **avatar**, a **name**, **music**
+to play, and **text** to show on the device screen.
 
 The official play catalog changes over time; treat the live website as authoritative rather than copying a permanent list into engineering decisions.
 
@@ -40,7 +49,7 @@ The official play catalog changes over time; treat the live website as authorita
 
 Official product and brand visual references live in [`docs/assets/brand/`](assets/brand/README.md). They include the product from the front and back, plus three brand-colored shell renders of the front (the EVA purple, orange, and red colorways). These images are the visual baseline for AI Passport marketing and showcase material.
 
-You can use these references as input when generating render images with an AI image tool. Keep the product silhouette, external hardware (shell, buttons, ports, key-ring hole), logo text, and colorway consistent with the references; the on-screen content is not a fixed requirement and may be replaced. Document any new render you create in the [`assets/brand/README.md`](assets/brand/README.md) index. Treat the files as an internal visual baseline rather than recycling them verbatim into published assets.
+You can use these references as input when generating render images with an AI image tool. Treat the reference image as the base of the whole render: keep its external hardware (shell, buttons, ports, key-ring hole), logo text, and colorway as they are, and redraw only the reference's screen region into the content the user requests. The on-screen area of the reference is a placeholder — keep the screen's size, aspect ratio, corners, and position inside the shell identical to the reference rather than reshaping or moving it. Always pass one of these reference images as input when generating a device render, rather than relying on a text description alone. Document any new render you create in the [`assets/brand/README.md`](assets/brand/README.md) index. Treat the files as an internal visual baseline rather than recycling them verbatim into published assets.
 
 ## Specifications, source, and license
 

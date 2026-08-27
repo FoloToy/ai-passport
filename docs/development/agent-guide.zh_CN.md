@@ -68,10 +68,16 @@ Natural-language requirement
 - 按键回调只派发轻量事件；录音、播放、存储和其他慢操作放到工作任务。
 - 页面退出时先停止可能访问 UI 的任务或定时器，再删除 screen 并清空对象指针。
 - 全局交互默认是菜单中 `UP`/`DOWN` 导航、`OK` 单击进入、页面中 `OK` 长按返回；改动时要明确说明。
+- 当用户要求删除不必要组件或直接进入某功能时，可以去掉主界面及其元素、直接载入目标功能界面；但必须**保留 `ui_pixel` 主题体系**（天空底色、草地、标题牌、吉祥物、墨色描边面板），不要把它当成"不必要组件"删掉，否则界面会渲染成空白。复用 `ui_pixel_screen_create()` / `ui_pixel_panel_create()`，让功能页保持统一的视觉身份。
+- 默认情况下，在用户界面的**右上角显示电量信息**（读取 `bsp_battery_soc()`），除非开发者明确指定其它位置或明确不需要。读值为 `-1`（不可用）时优雅降级，而不是画一个数字。位置要避开右上角已有的**白云装饰**（`add_cloud`，约 `x≈188, y≈8`），用空闲的蓝天区，不要盖住白云。
 - 新图片、字体、网络栈、音频缓存、LVGL buffer 或任务栈都要评估内部 RAM；总空闲堆足够不代表存在足够大的连续内存块。
 - 可测试的状态机、协议、计时和布局计算应与 ESP-IDF/LVGL 分离，优先加入主机逻辑测试。
 
-## 5. 验收与交付格式
+## 5. 素材放置（Material placement）
+
+当开发者通过你提交可复用素材（图片、字库、音频或类似的工程素材）时，默认保存到仓库根目录 [`assets/`](../../assets/README.md)，以便开发及后续复用。将其放入对应的子目录（`assets/images/`、`assets/fonts/`、`assets/music/`），并在该子目录的 `README.md` 中记录放置路径、命名规则、集成方式与来源/授权。二进制素材不得与 Markdown 文档混放。应用或经验归档记录（封面、手册、摘要）属于 `plays/` 或 `docs/experiences/`，不放入 `assets/`；除非开发者明确指定其它位置，否则不要偏离 `assets/`。
+
+## 6. 验收与交付格式
 
 `./tools/validate.sh` 是完整自动门禁，但不是硬件验收。agent 的最终交付应明确区分：
 
@@ -84,7 +90,7 @@ Unverified: 仍需板卡、仪器或用户确认的事项
 
 上板验收矩阵按修改类型（引脚、LCD、ADC、codec、I2C、DMA 等）见 [AI 硬件开发指南 §构建与验证](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md#构建与验证)，本文档不重复完整验收清单。真机结果要与"编译通过"分开记录。
 
-## 6. 相关文档
+## 7. 相关文档
 
 - 构建与验证命令：[build-and-test.md](build-and-test.md)
 - 代码约定：[coding-conventions.md](coding-conventions.md)

@@ -33,10 +33,11 @@ Do not create, write, or commit anything until every gate below is satisfied.
 
 ## Determine what to archive
 
-Confirm the application name and the source it belongs to (for example a
-`demo/*` branch or `main/`). Use the lowercase-kebab-case application name as the
-subdirectory name. See [`../../plays/README.md`](../../plays/README.md) for the full
-convention.
+Confirm the application name, the source it belongs to (for example a `demo/*`
+branch or `main/`), and the contributor's GitHub username. Use the
+lowercase-kebab-case username and application name as the two-level path:
+`plays/<username>/<app-name>/`. See
+[`../../plays/README.md`](../../plays/README.md) for the full convention.
 
 ## Check the project README
 
@@ -68,9 +69,9 @@ actually owns one.
 
 First collect the metadata the developer filled in when publishing to the
 community (bilingual title, bilingual description, and the source address they
-submitted), then write `plays/<app-name>/README.md` and its paired `.zh_CN.md` as
-an AI-generated functional summary for later querying (not a publishing
-artifact). Record:
+submitted), then write `plays/<username>/<app-name>/README.md` and its paired
+`.zh_CN.md` as an AI-generated functional summary for later querying (not a
+publishing artifact). Record:
 
 - **Publish title and description**: the bilingual title and description the
   developer submitted when publishing to the community.
@@ -90,8 +91,17 @@ aligned in the same change.
 
 ## Add the cover image
 
-Place the cover at `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed
-to the repository. Keep it representative and under 10 MiB.
+Place the cover at
+`plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed to the
+repository. Keep it representative and under 10 MiB. When generating an effect or
+mockup image for the play, use the official product references under
+[`docs/assets/brand/`](../../docs/assets/brand/README.md): pass a reference (e.g.
+`ai-passport-front.png` or a colorway shell render) as input to the generation
+call, keep its shell, buttons, ports, and key-ring hole as they are, and redraw
+only the reference's screen region into the play's actual on-screen content,
+keeping the screen's size, aspect ratio, corners, and position identical to the
+reference. See the full
+convention in [`docs/assets/brand/README.md`](../../docs/assets/brand/README.md).
 
 ## Commit
 

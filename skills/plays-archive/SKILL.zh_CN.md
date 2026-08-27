@@ -27,7 +27,8 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 
 ## 确定要归档的内容
 
-确认应用名及其所属源码（例如某个 `demo/*` 分支或 `main/`）。用小写连字符的应用名作为子目录名。
+确认应用名、其所属源码（例如某个 `demo/*` 分支或 `main/`），以及贡献者的 GitHub 用户名。
+用小写连字符的用户名和应用名作为两级路径：`plays/<username>/<app-name>/`。
 完整约定见 [`../../plays/README.md`](../../plays/README.md)。
 
 ## 检查项目 README
@@ -51,7 +52,7 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 ## 生成功能说明
 
 先收集开发者发布到社区时填写的元数据（双语标题、双语描述，以及他们提交的源码地址），然后写
-`plays/<app-name>/README.md` 及其配对 `.zh_CN.md`，作为为后续查询而生成的 AI 功能说明
+`plays/<username>/<app-name>/README.md` 及其配对 `.zh_CN.md`，作为为后续查询而生成的 AI 功能说明
 （不是发布产物）。记录：
 
 - **发布标题与描述**：发布到社区时开发者提交的双语标题、双语描述。
@@ -67,8 +68,12 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 
 ## 添加封面图
 
-封面放在 `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库。选有代表性且小于
-10 MiB 的图。
+封面放在 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库。
+选有代表性且小于 10 MiB 的图。当需要为应用生成效果图或样机图时，参考
+[`docs/assets/brand/`](../../docs/assets/brand/README.md) 下的官方产品图：生成时必须传一张参考图
+（如 `ai-passport-front.png` 或某款配色外壳渲染图）作为生成调用输入，保留其外壳、按键、接口与
+钥匙扣孔原样，只把参考图的屏幕区域**重绘**成该玩法的真实屏显内容，屏幕的尺寸、比例、圆角与外壳内
+位置与参考保持一致。完整约定见 [`docs/assets/brand/README.md`](../../docs/assets/brand/README.md)。
 
 ## 提交
 
