@@ -57,13 +57,18 @@ actually owns one.
    kept for the branch that owns it.
 2. **If no README exists**: summarize directly from the implementation, with no
    README merge.
-3. **After archiving is complete**, handle each branch's root README independently
-   (not as a single combined decision):
-   - For a branch with **no** root README, **create** (or update) the README on
-     that branch so the archived application is discoverable from the fork's own
-     README.
-   - For a branch that already **has** a root README, **prompt the developer to
-     update it** to reflect the new archived application.
+3. **After archiving is complete, also update the corresponding branch's root
+   README** so the archived application is registered on the branch that hosts
+   it. Handle each branch's root README independently (not as a single combined
+   decision):
+   - For a branch with **no** root README, **create** the bilingual
+     `README.md` / `README.zh_CN.md` pair on that branch and register the newly
+     archived application (with a short description and a link to the archive /
+     source) so it is discoverable from the branch's own landing page.
+   - For a branch that already **has** a root README, **update it** (do not stop
+     at prompting) to add or refresh the entry for the newly archived
+     application. If the root README is a multi-project catalog, add the new
+     application as one of the projects it introduces.
 
 ## Generate the functional summary
 
