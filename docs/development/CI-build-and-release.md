@@ -16,6 +16,29 @@ Open `https://ai-passport.folotoy.cn/tools/web-flasher/`, connect the USB JTAG/s
 
 For board and flashing details, see [the hardware development guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
 
+## Release title
+
+When this repository publishes firmware for several different applications from
+the same source tree, a bare version number does not tell a user which app a
+release is for. Give each tag a name that carries the version and the app, and
+make sure the release title shows both.
+
+- **Tag naming convention**: name tags as `v<version>-<app-name>` in
+  lowercase-kebab-case, e.g. `v0.1.0-voice-keychain`, `v1.0.0-pocket-pomodoro`.
+  The `<app-name>` is the application this release builds (see the
+  `plays/<username>/<app-name>/` archive naming). A tag that only says a version
+  is ambiguous when several apps share the tree.
+- **After the release is published, confirm the release title.** The workflow
+  sets the title to the tag name, so a correctly-named tag already reads
+  `v0.1.0-voice-keychain`. If the tag did not include the app, or the title is
+  not obvious at a glance, edit the release (GitHub: `Edit release`; GitLab:
+  edit the tag) so the title is `<version> <app-name>`, e.g. `v0.1.0 Voice
+  Keychain`. One quick scan of the release list should distinguish which app a
+  release is for.
+- **Keep title and tag consistent.** Use `<version>-<app-name>` so the app name
+  is visible in both the tag list and the release list. Do not rely on a
+  human-readable body alone to carry the app name.
+
 ## Release notes
 
 A tag-triggered release succeeds only when the merged firmware and its release
