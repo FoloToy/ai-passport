@@ -82,7 +82,7 @@ comm -23 \
 
 ## 写入经验条目
 
-每次经验采集只生成一个 `.md` 文件及其配对的 `.zh_CN.md` 文件，放在
+每次经验采集可产出**一条或多条**经验，每条是一个独立的 `.md` 文件并配其 `.zh_CN.md`，放在
 `docs/experiences/<username>/` 下，按条目内容概要命名（小写连字符，例如
 `audio-compression-trade-offs.md`），其中 `<username>` 是贡献开发者的 GitHub 用户名
 （小写连字符），把该开发者的条目聚在一起。

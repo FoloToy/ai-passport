@@ -22,11 +22,12 @@ applications.
 
 ## How to add an entry
 
-Each release appends a dated entry with the release (tag or commit) as context.
-Follow the repository language rule: keep the default `.md` path in English and
-the paired `.zh_CN.md` in Simplified Chinese, aligned in the same change.
+Each release may produce **one or more** reusable, post-release learnings; each
+is added as its own entry (with the release tag or commit as context). Follow the
+repository language rule: keep the default `.md` path in English and the paired
+`.zh_CN.md` in Simplified Chinese, aligned in the same change.
 
-Each capture produces one `.md` entry and its paired `.zh_CN.md`, stored under
+Each entry is a single `.md` file with its paired `.zh_CN.md`, stored under
 `docs/experiences/<username>/` and named after the entry's content summary in
 lowercase-kebab-case (for example `audio-compression-trade-offs.md`), so the
 filename describes the topic instead of an opaque timestamp. `<username>` is the
