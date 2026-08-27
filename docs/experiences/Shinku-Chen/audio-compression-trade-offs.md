@@ -55,6 +55,109 @@ A full tool was not needed in the final build: the previous IMA-ADPCM encoder
 (`encode_voice.py`) and its legacy comparison document remain in the fork as the
 recorded decision history, and the Opus path is the shipped implementation.
 
+## Detailed measurement
+
+The full measurement that informed the choice, so the numbers above can be
+taken as data rather than claims.
+
+### Scope and measurement basis
+
+- Target: ESP32-C3, 8 MB flash, no PSRAM, ESP-IDF 5.5.3.
+- Data partition: `voicefs`, 3 MB (`0x300000`), SPIFFS, mounted at `/voices`.
+- Source set measured: the current `assets/project` (38 directories, 1557 clips,
+  ~4598 s of audio). All clips are mp3/ogg/wav; they are decoded, low-passed,
+  silence-trimmed, then encoded.
+- The firmware decodes IMA-ADPCM 4-bit in software (`main/voice_app.c`); any
+  other decoder must be added to the firmware.
+
+### Why the size is a hard limit
+
+IMA-ADPCM 4-bit at 16 kHz mono stores 4 bits per sample: `16000 × 4 / 8 = 8000
+bytes/s`. With silence trimming the measured rate over the current set is
+~7800–8000 B/s. So with the current codec, the 3 MB partition holds about 8.7%
+of the full current asset set. This is the baseline.
+
+### Per-method detail
+
+- **IMA-ADPCM 4-bit (current)**: fixed 8000 B/s (4 bits/sample × 16 kHz); decoder
+  already in `main/voice_app.c`, tiny, negligible CPU/RAM; intelligible, simple,
+  deterministic, no extra library.
+- **MP3 (potential)**: selectable 32–64 kbps (64 kbps = 8000 B/s, 32 kbps = 4000
+  B/s); no decoder in ESP-IDF by default, needs an MP3 library (Helix, minimp3,
+  or the ESP-ADF MP3 component), ~30–40 KB flash plus RAM and CPU; more
+  CPU-intensive than IMA-ADPCM.
+- **Opus (potential)**: selectable 6–24 kbps (12 kbps = 1500 B/s, 24 kbps = 3000
+  B/s); no built-in decoder, port libopus or a component; ~60–80 KB flash and
+  some RAM on no-PSRAM, moderate CPU; far more efficient than IMA-ADPCM at low
+  bit rates for speech.
+- **Raw PCM (baseline, not used)**: 16 kHz mono 16-bit = 32000 B/s, ~4× larger
+  than IMA-ADPCM; not used in this product.
+
+### Measured results
+
+The OPUS numbers were measured by real encoding with ffmpeg 4.4 (libopus) over
+clips from the current set at three rate points. Effective bytes/second differ
+from the nominal kbps because per-segment container/frame overhead adds a little.
+
+| Sample | Duration | Opus 6 kbps | Opus 12 kbps | Opus 24 kbps |
+| --- | --- | --- | --- | --- |
+| cxk (short) | 0.61 s | 867 B/s | 1593 B/s | 2871 B/s |
+| mama (mid) | 2.55 s | 1084 B/s | 1623 B/s | 4284 B/s |
+| ren sheng (long) | 14.02 s | 845 B/s | 1532 B/s | 3216 B/s |
+
+Effective rates: **6 kbps ≈ 850–1000 B/s, 12 kbps ≈ 1500–1600 B/s, 24 kbps ≈
+2900–4300 B/s.**
+
+### Capacity at 3 MB
+
+Percent of the full current set that fits in the 3 MB partition, by method and
+bit rate. Higher is better, but the firmware decoder cost is the counterweight.
+The IMA-ADPCM rows are measured over the current set; the OPUS rows use the
+measured rates; the MP3 rows are the nominal rate (no MP3 measurement run).
+
+| Method / bit rate | B/s | Fits in 3 MB | Share of set |
+| --- | --- | --- | --- |
+| IMA-ADPCM 4-bit | 7800 | ~402 s | ~8.7% |
+| MP3 64 kbps (nominal) | 8000 | ~402 s | ~8.7% |
+| MP3 32 kbps (nominal) | 4000 | ~805 s | ~17.5% |
+| Opus 24 kbps | 4300 | ~1048 s | ~22.8% |
+| Opus 12 kbps | 1500 | ~2146 s | ~46.7% |
+| Opus 6 kbps | 1000 | ~3072 s | ~66.8% |
+
+Even by the most efficient packing, the 3 MB partition holds only 8 of 38
+directories under IMA-ADPCM, covering ~9.4% of total duration. The largest, most
+popular packs (each exceeding a third of the partition) are the first dropped:
+Jile (4385 KB, 570 s) alone exceeds the whole partition; Kenan (3172 KB, 413 s);
+Hajimi (3089 KB, 398 s); JoJo (2505 KB, 323 s).
+
+### Firmware decoder cost
+
+The decisive counterweight to raw compression ratio.
+
+| Method | Decoder needed | Flash (est.) | RAM (est.) | CPU |
+| --- | --- | --- | --- | --- |
+| IMA-ADPCM | already present | ~0 (already built) | negligible | very low |
+| MP3 | add component | ~30–40 KB | small | moderate |
+| Opus | add libopus | ~60–80 KB | moderate | moderate |
+
+### Recommendation summary
+
+Two viable paths, in order of least risk:
+
+1. **Keep IMA-ADPCM, enlarge the partition.** The 8 MB flash has ~1.94 MB
+   unallocated; growing `voicefs` from 3 MB to ~5 MB raises the IMA-ADPCM ceiling
+   to ~13.7%. No new decoder, minimal firmware change, but still only about a
+   seventh of the set.
+2. **Add a small Opus decoder and keep 3 MB.** At 12 kbps this recovers nearly half
+   the set for the same partition footprint, but requires porting a decoder and
+   re-validating decode CPU/RAM on the device.
+
+If the product goal is "make as much of the current set playable as possible,"
+path 2 (Opus) delivers the most content per flash; if the goal is "no new firmware
+risk," path 1 (enlarge the partition with the existing codec) is the safer
+increment. Either way, the current asset set cannot fully fit in 3 MB without a
+codec change.
+
 ## Reusable takeaways
 
 - **Measure, don't estimate.** The effective bytes/second per clip differs from the
