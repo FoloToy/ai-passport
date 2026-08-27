@@ -48,3 +48,4 @@ See [`../experiences/`](../experiences/), and its
 stored entries. The index below lists each entry once it is added.
 
 - **Audio Compression Trade-offs on ESP32-C3** (Shinku-Chen) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost. See [`../experiences/Shinku-Chen/audio-compression-trade-offs.md`](../experiences/Shinku-Chen/audio-compression-trade-offs.md).
+- **Post-Release Follow-up for the AI Passport Publishing Flow** (Shinku-Chen) — confirm the publish destination, include the data partition in a release, and the consent gates for the post-release tracks. See [`../experiences/Shinku-Chen/post-release-follow-up.md`](../experiences/Shinku-Chen/post-release-follow-up.md).
