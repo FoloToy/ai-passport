@@ -45,8 +45,8 @@ All three color renders are 1024 × 1536 PNG and share the same shell layout as 
 
 When generating a marketing or showcase render from these references, keep the following consistent:
 
-- **External hardware**: keep the rounded-corner shell, top key-ring hole, side buttons, and ports consistent with the reference.
-- **Screen content**: not a requirement. The screen is a programmable display and its image may be fully replaced by the play or firmware; leave it flexible in generated renders.
+- **Reference as the device base.** The reference image is the base for the whole render: keep its outer shell, top key-ring hole, side buttons, ports, and logo text as they are. The reference's on-screen area is only a placeholder — you do not keep it.
+- **Redraw the screen area to the request.** The core operation is to redraw the reference's screen region to the content the user asks for (for example the actual UI of a specific play), keeping the screen's size, aspect ratio, corners, and position inside the shell identical to the reference. Keep the placeholder screen inset inside the matched frame; do not reshape, move, or replace the screen frame itself.
 - **Logo and label text**: keep `Folotoy` / `FOLOTOY`, the model name, and any tagline as shown on the shell.
 - **Colorways**: use the shell reference as the base and change only the accent/shell palette for a new variant (for example a white, green, or black edition).
 - **Aspect**: renders at a 2:3 vertical ratio read best for the front view.
@@ -57,7 +57,7 @@ Unless the reference image is licensed for reuse, use these files as an internal
 
 When generating a render that must match a reference, the common failure mode is a model that "reimagines" the device because it never actually saw the reference image. Keep these points in mind regardless of the image tool you use:
 
-- **Always pass the reference image explicitly.** For a reference-based edit (not a from-scratch text-to-image), you must supply the reference as an input to the generation call. Relying only on a text description lets the model invent a look-alike device instead of reproducing this one.
+- **Always pass the reference image explicitly.** Generating a device render is a reference-based redraw, not a from-scratch text-to-image: you must supply a `docs/assets/brand` reference (typically `ai-passport-front.png` or a colorway shell render) as an input to the generation call, keep its outer hardware, and redraw only the screen region to the requested content. Relying only on a text description lets the model invent a look-alike device instead of reproducing this one.
 - **Local file paths are not accepted as image input.** Most generation services reject a bare filesystem path. Pass the image as a service-supported form: a hosted reference URL, a data URL, or whatever the tool documents for uploads/attachments.
 - **Very long data URLs are fragile when passed by hand.** A multi-KB base64 data URL is easy to corrupt during manual copying between tool calls; prefer a short hosted reference or let the tool resolve the image itself.
 - **Verify hardware fidelity after generating.** Compare the render against the reference for the shell silhouette, key-ring hole, side buttons, ports, and any model badge. If these drift, regenerate rather than accept the result.

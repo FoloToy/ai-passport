@@ -87,10 +87,13 @@ to the repository (like `docs/assets/brand`). Keep it representative and under
 10 MiB.
 
 When generating an effect or mockup image of the play, use the official product
-references under [`docs/assets/brand/`](../docs/assets/brand/README.md) to add
-the machine shell around the on-screen content: keep the shell, buttons, ports,
-and key-ring hole consistent with those references so the rendered screen appears
-inside the real AI Passport device rather than as a bare screen.
+references under [`docs/assets/brand/`](../docs/assets/brand/README.md). Always
+pass a reference (e.g. `ai-passport-front.png` or a colorway shell render) as
+input to the generation call, keep its shell, buttons, ports, and key-ring hole
+as they are, and redraw only the reference's screen region into the play's actual
+on-screen content. Keep the screen's size, aspect ratio, corners, and position
+inside the shell identical to the reference so the play content appears inside
+the real AI Passport device rather than as a bare or free-floating image.
 
 ## Firmware
 

@@ -95,8 +95,13 @@ Place the cover at
 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed to the
 repository. Keep it representative and under 10 MiB. When generating an effect or
 mockup image for the play, use the official product references under
-[`docs/assets/brand/`](../../docs/assets/brand/README.md) to add the machine shell
-around the on-screen content.
+[`docs/assets/brand/`](../../docs/assets/brand/README.md): pass a reference (e.g.
+`ai-passport-front.png` or a colorway shell render) as input to the generation
+call, keep its shell, buttons, ports, and key-ring hole as they are, and redraw
+only the reference's screen region into the play's actual on-screen content,
+keeping the screen's size, aspect ratio, corners, and position identical to the
+reference. See the full
+convention in [`docs/assets/brand/README.md`](../../docs/assets/brand/README.md).
 
 ## Commit
 
