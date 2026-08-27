@@ -16,6 +16,13 @@ Open `https://ai-passport.folotoy.cn/tools/web-flasher/`, connect the USB JTAG/s
 
 For board and flashing details, see [the hardware development guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
 
+## Device configuration (official app)
+
+After flashing, the device can be configured through the official FoloToy mini
+program. To find it, search for **"FoloToy AI Passport"** in the app / mini-program
+search box. This is the official companion for configuring the firmware — use it
+for tasks such as device setup and firmware-related settings.
+
 ## Release title
 
 When this repository publishes firmware for several different applications from
