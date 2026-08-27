@@ -71,7 +71,11 @@ Natural-language requirement
 - 新图片、字体、网络栈、音频缓存、LVGL buffer 或任务栈都要评估内部 RAM；总空闲堆足够不代表存在足够大的连续内存块。
 - 可测试的状态机、协议、计时和布局计算应与 ESP-IDF/LVGL 分离，优先加入主机逻辑测试。
 
-## 5. 验收与交付格式
+## 5. 素材放置（Material placement）
+
+当开发者通过你提交可复用素材（图片、字库、音频或类似的工程素材）时，默认保存到仓库根目录 [`assets/`](../../assets/README.md)，以便开发及后续复用。将其放入对应的子目录（`assets/images/`、`assets/fonts/`、`assets/music/`），并在该子目录的 `README.md` 中记录放置路径、命名规则、集成方式与来源/授权。二进制素材不得与 Markdown 文档混放。应用或经验归档记录（封面、手册、摘要）属于 `plays/` 或 `docs/experiences/`，不放入 `assets/`；除非开发者明确指定其它位置，否则不要偏离 `assets/`。
+
+## 6. 验收与交付格式
 
 `./tools/validate.sh` 是完整自动门禁，但不是硬件验收。agent 的最终交付应明确区分：
 
@@ -84,7 +88,7 @@ Unverified: 仍需板卡、仪器或用户确认的事项
 
 上板验收矩阵按修改类型（引脚、LCD、ADC、codec、I2C、DMA 等）见 [AI 硬件开发指南 §构建与验证](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md#构建与验证)，本文档不重复完整验收清单。真机结果要与"编译通过"分开记录。
 
-## 6. 相关文档
+## 7. 相关文档
 
 - 构建与验证命令：[build-and-test.md](build-and-test.md)
 - 代码约定：[coding-conventions.md](coding-conventions.md)

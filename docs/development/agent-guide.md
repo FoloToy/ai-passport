@@ -50,6 +50,10 @@ Only reusable hardware capabilities belong in the BSP. Document blocking behavio
 - Budget internal RAM for images, fonts, networking, audio, LVGL, and task stacks; this board has no PSRAM.
 - Isolate testable state machines, protocols, timing, and layout calculations from ESP-IDF/LVGL and cover them with host tests.
 
+## Material placement
+
+When the developer submits a reusable asset through you — an image, font, audio clip, or similar project material — save it under the repository-root [`assets/`](../../assets/README.md) by default so it stays available for development and later reuse. Place it in the matching subdirectory (`assets/images/`, `assets/fonts/`, `assets/music/`) and, in that subdirectory's README, record the destination, naming, integration method, and source/license. Never mix binary assets with Markdown documentation. Application or experience archive records (cover, manual, summary) belong in `plays/` or `docs/experiences/`, not in `assets/`; deviate from `assets/` only when the developer explicitly directs another location.
+
 ## Delivery
 
 The automated gate is not hardware acceptance. Report `Build`, `Host tests`, `Device tests`, and `Unverified` separately. Use the [hardware guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the applicable on-device matrix.
