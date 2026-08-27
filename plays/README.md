@@ -45,6 +45,7 @@ published or ready to be recorded; do not pre-create empty scaffolding.
 plays/<username>/<app-name>/
   README.md / README.zh_CN.md   # AI-generated bilingual functional summary
   <app-name>-cover.<webp|png|jpg>  # cover image, committed (<= 10 MiB)
+  <topic>-guide.md (+ .zh_CN.md)  # optional manual / how-to, not experience
 ```
 
 `<username>` is the contributor's GitHub username (lowercase-kebab-case), and
@@ -52,6 +53,11 @@ plays/<username>/<app-name>/
 can have several applications under their own folder; the folder splits by author
 to keep related submissions together instead of spreading them flat across
 `plays/`.
+
+A play archive stores the application's **introduction and manual** only: the
+README functional summary, the cover, and optionally a how-to guide for that app.
+It does **not** store reusable development experience; post-release experience
+entries belong under [`docs/experiences/<username>/`](../docs/experiences/).
 
 ## What the per-application README contains
 

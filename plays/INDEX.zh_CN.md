@@ -17,10 +17,9 @@
 | --- | --- | --- | --- |
 | Shinku-Chen | [音效钥匙扣](Shinku-Chen/voice-keychain/README.zh_CN.md) | 把 AI Passport 变成口袋音频播放器的音效钥匙扣；按 OK 播放来自几十个角色包的数百条中文语音片段。 | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
 
-音效钥匙扣档案还携带配套技术文档：
+音效钥匙扣档案还携带配套手册：
 
 - [音效钥匙扣指南](Shinku-Chen/voice-keychain/voice-guide.zh_CN.md) — 源音频存放位置、如何压缩，以及如何构建/烧录固件与数据分区。
-- [ESP32-C3 上音频压缩方式的权衡](Shinku-Chen/voice-keychain/voice-compression-comparison.zh_CN.md) — 在 IMA-ADPCM、Opus、MP3 之间的实测容量与解码器成本。
 
 ## 新增记录
 

@@ -33,11 +33,16 @@
 plays/<username>/<app-name>/
   README.md / README.zh_CN.md         # AI 生成的双语功能说明
   <app-name>-cover.<webp|png|jpg>     # 封面图，commit（≤10 MiB）
+  <topic>-guide.md（+ .zh_CN.md）      # 可选的指南/手册，不是经验
 ```
 
 `<username>` 是贡献者的 GitHub 用户名（小写连字符），`<app-name>` 是应用名（小写连字符）。
 一个贡献者可以在自己的文件夹下有多个应用；文件夹按作者拆分，把相关提交聚在一起，而不是在
 `plays/` 下平铺散开。
+
+play 档案只存放该应用的**介绍与手册**：README 功能说明、封面，以及可选的应用指南。它**不**存放可复用的
+开发经验；发布后的经验条目归属
+[`docs/experiences/<username>/`](../docs/experiences/)。
 
 ## 每个应用 README 包含什么
 
