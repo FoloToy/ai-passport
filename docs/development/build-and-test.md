@@ -7,18 +7,19 @@
 Use ESP-IDF 5.5.3. On a clean machine or when the toolchain is missing, follow
 the [environment bootstrap](environment-setup.md) first.
 
-> Prefer `./tools/validate.sh --firmware` for firmware builds and flash its
-> verified `build/FoloToy-AI-Passport-full.bin` at offset `0x0`. Treat
-> `idf.py build` and `idf.py flash` as incremental development commands, not the
-> default delivery path.
+> Prefer `idf.py build` for day-to-day firmware compilation — it is the fast,
+> incremental application build. Use `./tools/validate.sh --firmware` when you
+> need the merged, byte-verified full image (`build/FoloToy-AI-Passport-full.bin`
+> flashed at offset `0x0`), such as before a release or delivery, and flash the
+> verified image from that path.
 
 ```bash
 source <path-to-esp-idf-v5.5.3>/export.sh
 idf.py --version             # must report ESP-IDF v5.5.3
-./tools/validate.sh --firmware # preferred: build and verify merged 0x0 image
 idf.py set-target esp32c3     # fresh checkout or changed target
-idf.py build                  # optional incremental application build
-idf.py flash monitor          # optional incremental application flash
+idf.py build                  # preferred: fast incremental application build
+idf.py flash monitor          # incremental application flash (dev loop)
+./tools/validate.sh --firmware # when you need the merged + verified 0x0 image
 idf.py fullclean              # remove stale generated build state only
 ```
 

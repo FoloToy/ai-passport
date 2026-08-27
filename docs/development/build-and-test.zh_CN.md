@@ -7,17 +7,18 @@
 使用 ESP-IDF 5.5.3。全新机器或缺少工具链时，先按
 [环境引导](environment-setup.zh_CN.md)完成安装。
 
-> 固件编译优先运行 `./tools/validate.sh --firmware`，烧录优先把验证通过的
-> `build/FoloToy-AI-Passport-full.bin` 写入 `0x0`。`idf.py build` 和
-> `idf.py flash` 只作为增量开发命令，不作为默认交付方式。
+> 日常固件编译优先用 `idf.py build`——它是更快的增量应用编译。需要
+> 合并且逐字节验证的完整镜像（`build/FoloToy-AI-Passport-full.bin`，烧录在
+> `0x0`）时（例如发布前或交付），才用 `./tools/validate.sh --firmware`，并
+> 从该路径烧录验证通过的镜像。
 
 ```bash
 source <ESP-IDF-v5.5.3-路径>/export.sh
 idf.py --version             # 必须输出 ESP-IDF v5.5.3
-./tools/validate.sh --firmware # 优先：编译并验证 0x0 合并固件
 idf.py set-target esp32c3     # 配置目标芯片（fresh checkout 后/换 target 后运行）
-idf.py build                  # 可选：增量 app 编译
-idf.py flash monitor          # 可选：增量 app 烧录
+idf.py build                  # 优先：更快的增量 app 编译
+idf.py flash monitor          # 增量 app 烧录（开发循环）
+./tools/validate.sh --firmware # 需要合并 + 验证的 0x0 镜像时
 idf.py fullclean              # 只清空过期生成状态（勿用于清理用户源码改动）
 ```
 
