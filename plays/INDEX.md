@@ -20,6 +20,7 @@ table.
 | Contributor | Application | Summary | Source |
 | --- | --- | --- | --- |
 | Shinku-Chen | [Voice Keychain](shinku-chen/voice-keychain/README.md) | A sound-effects keychain that turns the AI Passport into a pocket audio player; press OK to play one of hundreds of Chinese voice clips from dozens of character packs. | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
+| Shinku-Chen | [What to Eat Today](shinku-chen/eat-what/README.md) | A button-driven food roulette that turns the AI Passport into a "what should I eat?" spinner; hold a key to cycle food options and let go to stop on the one you want. | [feature/cheerful-goodall](https://github.com/Shinku-Chen/ai-passport/tree/feature/cheerful-goodall) |
 
 The Voice Keychain archive also carries its manual:
 
