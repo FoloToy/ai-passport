@@ -15,29 +15,31 @@ Raw audio lives in `assets/project/<directory>/*.mp3|ogg|wav`. Each directory be
 
 ## Transcoding pipeline
 
-Run the transcoder after adding or changing source audio, with a Python environment that has `numpy` and `miniaudio`:
+Run the transcoder after adding or changing source audio. It requires `ffmpeg` with the `libopus` encoder and a Python environment with `numpy` and `miniaudio`:
 
 ```bash
 pip install numpy miniaudio     # once
-python tools/encode_voice.py
+python tools/encode_opus.py
 ```
 
 The script performs, for each clip:
 
-1. Decode mp3/ogg/wav with `miniaudio` and resample to 8 kHz mono int16.
+1. Decode mp3/ogg/wav with `miniaudio` and resample to 16 kHz mono.
 2. Apply a low-pass filter (voice bandwidth, about 4 kHz) and trim leading/trailing silence.
-3. Encode IMA-ADPCM 4-bit (about 32 kbps; ~87.5% smaller than 16-bit PCM, still intelligible speech).
-4. Write `assets/audio/dirNN/clipMM.adpcm`, update `assets/audio/voice_index.json`, regenerate `main/voice_index.h` (compile-time path/name/length table the firmware uses), and pack a `voicefs.img` using the ESP-IDF `spiffsgen.py` tool.
+3. Encode Opus at 8 kbps with `ffmpeg` (libopus), writing a raw Opus packet stream (each packet is a 2-byte little-endian length plus one Opus frame).
+4. Write `assets/audio/dirNN/clipMM.opus`, update `assets/audio/voice_index.json`, regenerate `main/voice_index.h` (compile-time path/name/length table the firmware uses), and pack a `voicefs.img` using the ESP-IDF `spiffsgen.py` tool.
+
+The firmware decodes the frames in a dedicated task and writes PCM to the audio output. The older IMA-ADPCM encoder (`encode_voice.py`) remains in the repository as recorded decision history; the shipped path is Opus.
 
 ## Storage layout
 
 `partitions.csv` adds a dedicated SPIFFS data partition:
 
 ```csv
-voicefs, data, spiffs, 0x310000, 0x300000,
+voicefs, data, spiffs, 0x210000, 0x5F0000,
 ```
 
-The firmware mounts it via `esp_vfs_spiffs_register` under `/voices` and reads each clip with ordinary `fopen`/`fread`. SPIFFS is an ESP-IDF built-in component, so no external Managed Component is required. The `voicefs.img` is the content of that partition; it is small relative to the 3 MB partition (the coded clips are a few hundred KB).
+The firmware mounts it via `esp_vfs_spiffs_register` under `/voices` and reads each clip with ordinary `fopen`/`fread`. SPIFFS is an ESP-IDF built-in component, so no external Managed Component is required. The `voicefs.img` is the content of that partition; it is small relative to the ~5.94 MB (0x5F0000) partition (the coded clips are a few hundred KB).
 
 ## Building and flashing
 
@@ -47,7 +49,7 @@ Build the application firmware as usual. The data partition is flashed separatel
 # app + bootloader + partition table
 idf.py -p <PORT> flash
 # data partition (voice assets) — flash the voicefs.img to the voicefs offset
-python -m esptool --chip esp32c3 -p <PORT> write_flash 0x310000 assets/audio/voicefs.img
+python -m esptool --chip esp32c3 -p <PORT> write_flash 0x210000 assets/audio/voicefs.img
 ```
 
 On first boot the partition is mounted with `format_if_mount_failed = true`, so a blank data partition is formatted automatically before reading clips.
@@ -57,5 +59,5 @@ On first boot the partition is mounted with `format_if_mount_failed = true`, so 
 When you add, rename, or remove source audio:
 
 1. Put the files in `assets/project/<directory>/`.
-2. Run `python tools/encode_voice.py` to regenerate the clips, `voice_index.h`, and `voicefs.img`.
+2. Run `python tools/encode_opus.py` to regenerate the clips, `voice_index.h`, and `voicefs.img`.
 3. Rebuild the firmware (the `voice_index.h` table changed) and re-flash the data partition.
