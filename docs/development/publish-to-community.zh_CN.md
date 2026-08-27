@@ -8,16 +8,13 @@
 
 ## 何时使用
 
-当你希望把当前固件（或某个 `demo/*` 应用）发布到社区市场时使用。它不用于普通固件开发或烧录。
+当项目进入**发布**时使用——也就是**代码开发完毕、能够使用、可以交付**的时候。发布不是提交：提交是开发过程中保存进度，而发布只在开发完成、固件真正可用时才发生。本页讲发布决策；开发本身遵循开发与提交规则。
 
-### 先确认发布到哪里
-
-当开发者说"发布项目"时，先问清楚**发到哪里**再动手：
+当开发者说"发布"或"发版"时，第一件事是决定**发到哪里**。不要默认其中一条。
 
 - **发布到社区** —— 把固件发布到 [AI Passport 社区市场](https://ai-passport.folotoy.cn)。走下面的 publisher 工作流；发布后见发布后收尾（`docs/development/after-release.md`）。
-- **发布到 Git** —— 把固件或代码发布到版本仓库（commit、tag、push，以及如需要则发 GitHub/GitLab release）。遵循仓库提交与 PR 规则（`docs/contribution/commit-and-pr.md`）与 fork 工作流（`docs/fork-guide.md`）；本页不覆盖 Git 发布路径。
-
-不要默认其中一条；先确认目的地，再路由到对应工作流。
+- **发布到 Git** —— 把开发完成的代码发布到版本仓库。逻辑：先**提交**完成后的代码，再为它**开 release 流程**。release 产物可由 **CI/CD 流水线生成（推荐）**，tag 触发 `.github/workflows/build-firmware.yml` 自动构建；也**可用开发者本地已构建的 `.bin` 文件**。遵循仓库提交与 PR 规则（`docs/contribution/commit-and-pr.md`）与 fork 工作流（`docs/fork-guide.md`）；自动构建与产物见 [`CI-build-and-release.md`](CI-build-and-release.md)。
+- **还没到发布时机** —— 代码尚未开发完成、不能使用；继续开发，不发布。
 
 该工作流由官方发布 skill 驱动。运行一次提示词，让助手从官方包安装 skill；仓库无需提交任何东西。
 

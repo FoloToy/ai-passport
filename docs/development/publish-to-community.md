@@ -8,17 +8,13 @@ This document describes how to publish this project's firmware to the [AI Passpo
 
 ## When to use this
 
-Use this when you want to release the current firmware (or a specific `demo/*` application) to the community market. It is not for ordinary firmware development or flashing.
+Use this when the project is being **released** — that is, when the code is finished, usable, and ready to ship. A release is not a commit: a commit saves progress during development, while a release happens only when development is complete and the firmware actually works. This page covers the publish decision; for development itself, see the development and commit rules.
 
-### First confirm where to publish
-
-When the developer says "publish the project", ask **where** they want to
-publish before doing anything:
+When the developer says "publish" or "release", the first thing to decide is **where** to publish. Do not assume a route.
 
 - **To the community** — release the firmware to the [AI Passport Community market](https://ai-passport.folotoy.cn). Use the publisher workflow below. See also the post-release follow-up (`docs/development/after-release.md`) once it is published.
-- **To Git** — publish the firmware or code to a version-controlled repository (commit, tag, push, and a GitHub/GitLab release if intended). Follow the repository commit and PR rules (`docs/contribution/commit-and-pr.md`) and the fork workflow (`docs/fork-guide.md`); this page does not cover the Git publishing path.
-
-Do not assume either route; confirm the destination first, then route to the matching workflow.
+- **To Git** — publish the finished code to a version-controlled repository. The flow is: commit the finished code, then open a release for it. The release artifact may be produced by the CI/CD pipeline (**recommended**, tag-triggered via `.github/workflows/build-firmware.yml`), or it may be a local `.bin` the developer already built. Follow the repository commit and PR rules (`docs/contribution/commit-and-pr.md`) and the fork workflow (`docs/fork-guide.md`); see [`CI-build-and-release.md`](CI-build-and-release.md) for the automated build and release artifacts.
+- **Neither yet** — the code is not finished and usable; keep developing, do not publish.
 
 The workflow is driven by the official publisher skill. Running the prompt once makes the assistant install the skill from the official bundle; nothing is committed into the repository.
 
