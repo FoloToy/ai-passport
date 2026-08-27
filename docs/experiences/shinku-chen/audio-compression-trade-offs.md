@@ -55,6 +55,11 @@ A full tool was not needed in the final build: the previous IMA-ADPCM encoder
 (`encode_voice.py`) and its legacy comparison document remain in the fork as the
 recorded decision history, and the Opus path is the shipped implementation.
 
+The analysis above is against the 3 MB (`0x300000`) partition that was in place
+at the time. The final shipped configuration keeps the Opus decoder and uses a
+`0x210000, 0x5F0000` (~5.94 MB) `voicefs` partition, so the playable capacity
+exceeds the 3 MB numbers used here.
+
 ## Detailed measurement
 
 The full measurement that informed the choice, so the numbers above can be
@@ -63,7 +68,9 @@ taken as data rather than claims.
 ### Scope and measurement basis
 
 - Target: ESP32-C3, 8 MB flash, no PSRAM, ESP-IDF 5.5.3.
-- Data partition: `voicefs`, 3 MB (`0x300000`), SPIFFS, mounted at `/voices`.
+- Data partition: `voicefs`, 3 MB (`0x300000`) at the time of this analysis,
+  SPIFFS, mounted at `/voices`. (The final shipped partition is `0x210000,
+  0x5F0000`, ~5.94 MB; see the decision below.)
 - Source set measured: the current `assets/project` (38 directories, 1557 clips,
   ~4598 s of audio). All clips are mp3/ogg/wav; they are decoded, low-passed,
   silence-trimmed, then encoded.
