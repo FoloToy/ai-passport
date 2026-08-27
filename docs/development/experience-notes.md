@@ -34,4 +34,4 @@ the relevant commit short SHA.
 See [`../experiences/`](../experiences/) for the stored entries. The index below
 lists each entry once it is added.
 
-- None recorded yet.
+- [Audio Compression Trade-offs on ESP32-C3](./../experiences/1787793847_91466b0.md) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost.
