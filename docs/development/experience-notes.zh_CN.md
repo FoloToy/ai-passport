@@ -23,7 +23,7 @@ fork 上自行创建或变更的 `docs/` 文档。每条经验一个 `.md` 及�
 
 条目存放在 `docs/experiences/<username>/` 下，按条目内容概要命名（小写连字符，例如
 `audio-compression-trade-offs.md`），让文件名描述主题，而不是用不透明的时间戳。
-`<username>` 是贡献开发者的 GitHub 用户名（大小写不敏感，按用户名原样保留，如 `Shinku-Chen/`），
+`<username>` 是贡献开发者的 GitHub 用户名（英文小写连字符，如 `shinku-chen`），
 把该开发者的条目聚在一起，而不是在 `docs/experiences/` 下平铺。
 
 开发者不限于一条经验。档案保存**每位开发者一条或多条经验**，每条都是放在该开发者文件夹下的独立文件
@@ -35,5 +35,5 @@ fork 上自行创建或变更的 `docs/` 文档。每条经验一个 `.md` 及�
 见 [`../experiences/`](../experiences/) 目录下已保存的条目，以及它的
 [`INDEX.md`](../experiences/INDEX.md) 档案条目表。下面索引在条目新增后列出。
 
-- **ESP32-C3 上音频压缩方式的权衡**（Shinku-Chen）— 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。见 [`../experiences/Shinku-Chen/audio-compression-trade-offs.zh_CN.md`](../experiences/Shinku-Chen/audio-compression-trade-offs.zh_CN.md)。
-- **发布后收尾：AI Passport 发布流程的衔接**（Shinku-Chen）— 确认发布目的地、发布时包含数据分区、以及发布后收尾各轨道的同意门槛。见 [`../experiences/Shinku-Chen/post-release-follow-up.zh_CN.md`](../experiences/Shinku-Chen/post-release-follow-up.zh_CN.md)。
+- **ESP32-C3 上音频压缩方式的权衡**（Shinku-Chen）— 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。见 [`../experiences/shinku-chen/audio-compression-trade-offs.zh_CN.md`](../experiences/shinku-chen/audio-compression-trade-offs.zh_CN.md)。
+- **发布后收尾：AI Passport 发布流程的衔接**（Shinku-Chen）— 确认发布目的地、发布时包含数据分区、以及发布后收尾各轨道的同意门槛。见 [`../experiences/shinku-chen/post-release-follow-up.zh_CN.md`](../experiences/shinku-chen/post-release-follow-up.zh_CN.md)。

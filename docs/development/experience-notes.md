@@ -31,9 +31,9 @@ Each entry is a single `.md` file with its paired `.zh_CN.md`, stored under
 `docs/experiences/<username>/` and named after the entry's content summary in
 lowercase-kebab-case (for example `audio-compression-trade-offs.md`), so the
 filename describes the topic instead of an opaque timestamp. `<username>` is the
-contributing developer's GitHub username (case-insensitive, kept as the username
-is, so `Shinku-Chen/` is stored verbatim), and groups that developer's entries
-together instead of flattening them directly under `docs/experiences/`.
+contributing developer's GitHub username (lowercase-kebab-case, e.g.
+`shinku-chen`), and groups that developer's entries together instead of
+flattening them directly under `docs/experiences/`.
 
 A developer is not limited to a single entry. The archive holds **one or more
 entries per developer**, each as its own file (with its paired `.zh_CN.md`) under
@@ -47,5 +47,5 @@ See [`../experiences/`](../experiences/), and its
 [`INDEX.md`](../experiences/INDEX.md) for the archived-entry table, for the
 stored entries. The index below lists each entry once it is added.
 
-- **Audio Compression Trade-offs on ESP32-C3** (Shinku-Chen) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost. See [`../experiences/Shinku-Chen/audio-compression-trade-offs.md`](../experiences/Shinku-Chen/audio-compression-trade-offs.md).
-- **Post-Release Follow-up for the AI Passport Publishing Flow** (Shinku-Chen) — confirm the publish destination, include the data partition in a release, and the consent gates for the post-release tracks. See [`../experiences/Shinku-Chen/post-release-follow-up.md`](../experiences/Shinku-Chen/post-release-follow-up.md).
+- **Audio Compression Trade-offs on ESP32-C3** (Shinku-Chen) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost. See [`../experiences/shinku-chen/audio-compression-trade-offs.md`](../experiences/shinku-chen/audio-compression-trade-offs.md).
+- **Post-Release Follow-up for the AI Passport Publishing Flow** (Shinku-Chen) — confirm the publish destination, include the data partition in a release, and the consent gates for the post-release tracks. See [`../experiences/shinku-chen/post-release-follow-up.md`](../experiences/shinku-chen/post-release-follow-up.md).

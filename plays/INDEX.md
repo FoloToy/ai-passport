@@ -19,11 +19,11 @@ table.
 
 | Contributor | Application | Summary | Source |
 | --- | --- | --- | --- |
-| Shinku-Chen | [Voice Keychain](Shinku-Chen/voice-keychain/README.md) | A sound-effects keychain that turns the AI Passport into a pocket audio player; press OK to play one of hundreds of Chinese voice clips from dozens of character packs. | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
+| Shinku-Chen | [Voice Keychain](shinku-chen/voice-keychain/README.md) | A sound-effects keychain that turns the AI Passport into a pocket audio player; press OK to play one of hundreds of Chinese voice clips from dozens of character packs. | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
 
 The Voice Keychain archive also carries its manual:
 
-- [Voice Keychain guide](Shinku-Chen/voice-keychain/voice-guide.md) — where source audio lives, how it is compressed, and how to build/flash the firmware and data partition.
+- [Voice Keychain guide](shinku-chen/voice-keychain/voice-guide.md) — where source audio lives, how it is compressed, and how to build/flash the firmware and data partition.
 
 ## Adding a record
 

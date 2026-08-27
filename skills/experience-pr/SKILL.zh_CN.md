@@ -85,7 +85,7 @@ comm -23 \
 每次经验采集可产出**一条或多条**经验，每条是一个独立的 `.md` 文件并配其 `.zh_CN.md`，放在
 `docs/experiences/<username>/` 下，按条目内容概要命名（小写连字符，例如
 `audio-compression-trade-offs.md`），其中 `<username>` 是贡献开发者的 GitHub 用户名
-（大小写不敏感，按用户名原样保留），把该开发者的条目聚在一起。
+（英文小写连字符），把该开发者的条目聚在一起。
 本仓库要求默认 `.md` 路径用英文、配套 `.zh_CN.md`，两者互指语言链接，且英文文件中不得混入中文。
 从 `docs/development/experience-notes.md` 索引链接它。
 
