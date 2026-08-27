@@ -74,8 +74,7 @@ matching entry:
 
 ## Draft, review, and submit
 
-1. Draft the issue content (English title; body in English or English plus
-   Simplified Chinese (bilingual), keeping field labels as the
+1. Draft the issue content (English title and body, keeping field labels as the
    template defines), sanitized of credentials and private data.
 2. Present the draft to the developer and wait for explicit authorization.
 3. Only after approval, submit through the first available GitHub channel

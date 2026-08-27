@@ -17,7 +17,7 @@
 ## PR 约定
 
 - PR 标题使用英文，采用 Conventional Commit 格式和英文祈使句，例如 `docs: streamline AI development workflow`。
-- PR body 使用英文，或英文加简体中文混排（双语）；至少填写 `.github/PULL_REQUEST_TEMPLATE.md` 中的摘要、兼容性和验证结果。
+- PR body 使用英文，至少填写 `.github/PULL_REQUEST_TEMPLATE.md` 中的摘要、兼容性和验证结果。
 - Build、Host tests 和 Device tests 必须分开报告；未执行的真机项目写入 `Unverified`，不能用编译成功代替实机验证。
 - 对引脚、显示旋转、codec 时钟、ADC、DMA、Flash 布局或电源行为的修改，必须记录板卡版本和观察到的真机结果；未验证时不得标记 ready for merge。
 - 显示类改动附照片或截图；涉及接线、引脚映射、持久化格式或兼容性的改动必须显式说明。
