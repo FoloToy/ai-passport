@@ -34,9 +34,9 @@ Do not create, write, or commit anything until every gate below is satisfied.
 ## Determine what to archive
 
 Confirm the application name, the source it belongs to (for example a `demo/*`
-branch or `main/`), and the contributor's GitHub username. Use the
-lowercase-kebab-case username and application name as the two-level path:
-`plays/<username>/<app-name>/`. See
+branch or `main/`), and the contributor's GitHub username. Use the username
+(case-insensitive, kept as-is) and the lowercase-kebab-case application name as
+the two-level path: `plays/<username>/<app-name>/`. See
 [`../../plays/README.md`](../../plays/README.md) for the full convention.
 
 ## Check the project README

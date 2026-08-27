@@ -31,9 +31,9 @@ Each entry is a single `.md` file with its paired `.zh_CN.md`, stored under
 `docs/experiences/<username>/` and named after the entry's content summary in
 lowercase-kebab-case (for example `audio-compression-trade-offs.md`), so the
 filename describes the topic instead of an opaque timestamp. `<username>` is the
-contributing developer's GitHub username (lowercase-kebab-case), and groups that
-developer's entries together instead of flattening them directly under
-`docs/experiences/`.
+contributing developer's GitHub username (case-insensitive, kept as the username
+is, so `Shinku-Chen/` is stored verbatim), and groups that developer's entries
+together instead of flattening them directly under `docs/experiences/`.
 
 A developer is not limited to a single entry. The archive holds **one or more
 entries per developer**, each as its own file (with its paired `.zh_CN.md`) under

@@ -112,8 +112,8 @@ Each experience capture may produce **one or more** entries, each as its own
 `.md` file with its paired `.zh_CN.md` under `docs/experiences/<username>/`,
 named after the entry's content summary in lowercase-kebab-case (for example
 `audio-compression-trade-offs.md`), where `<username>` is the contributing
-developer's GitHub username (lowercase-kebab-case) grouping that developer's
-entries together. This repository requires English at the default `.md` path and a
+developer's GitHub username (case-insensitive, kept as-is) grouping that
+developer's entries together. This repository requires English at the default `.md` path and a
 paired `.zh_CN.md`, with reciprocal language links and no Chinese prose in the
 English file. Link each new entry from the index at
 `docs/development/experience-notes.md`.

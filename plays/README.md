@@ -38,8 +38,10 @@ for previously recorded, reusable experience from other developer runs.
 Archives are grouped by the contributor who published the application, then by
 the application itself, so the collection is organized by author rather than
 flattened. Each application gets its own subdirectory under its contributor's
-folder, both in lowercase-kebab-case. Add an application archive only when it is
-published or ready to be recorded; do not pre-create empty scaffolding.
+folder. The username folder keeps the name as-is (case-insensitive, matching the
+GitHub username), and the application folder is lowercase-kebab-case. Add an
+application archive only when it is published or ready to be recorded; do not
+pre-create empty scaffolding.
 
 ```
 plays/<username>/<app-name>/
@@ -48,11 +50,11 @@ plays/<username>/<app-name>/
   <topic>-guide.md (+ .zh_CN.md)  # optional manual / how-to, not experience
 ```
 
-`<username>` is the contributor's GitHub username (lowercase-kebab-case), and
-`<app-name>` is the application name (lowercase-kebab-case). A single contributor
-can have several applications under their own folder; the folder splits by author
-to keep related submissions together instead of spreading them flat across
-`plays/`.
+`<username>` is the contributor's GitHub username (case-insensitive, kept as the
+username is, so `Shinku-Chen/` is stored verbatim). `<app-name>` is the
+application name (lowercase-kebab-case). A single contributor can have several
+applications under their own folder; the folder splits by author to keep related
+submissions together instead of spreading them flat across `plays/`.
 
 A play archive stores the application's **introduction and manual** only: the
 README functional summary, the cover, and optionally a how-to guide for that app.

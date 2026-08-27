@@ -28,7 +28,7 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 ## 确定要归档的内容
 
 确认应用名、其所属源码（例如某个 `demo/*` 分支或 `main/`），以及贡献者的 GitHub 用户名。
-用小写连字符的用户名和应用名作为两级路径：`plays/<username>/<app-name>/`。
+用户名按原样保留（大小写不敏感），应用名用小写连字符，作为两级路径：`plays/<username>/<app-name>/`。
 完整约定见 [`../../plays/README.md`](../../plays/README.md)。
 
 ## 检查项目 README
