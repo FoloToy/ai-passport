@@ -37,11 +37,6 @@
 
 步骤：连接设备（USB JTAG/serial debug unit）→ 选择本 Release 的合并固件 `FoloToy-AI-Passport-full.bin` → 选择波特率（如 460800）→ 开始写入。目标是 8MB Flash 板卡，无需其它参数。
 
-## 设备配置（官方小程序）
-
-烧录完成后，可通过官方 FoloToy 小程序配置设备。在搜索框里搜索 **「FoloToy AI Passport」** 即可找到。
-这是官方固件配套的配置入口，用于设备设置与固件相关配置。
-
 ## Release 标题
 
 当本仓库从同一棵源码树发布多个不同应用时，只有版本号看不出这个 Release 是哪个应用。给每个 tag 起一个
