@@ -47,6 +47,7 @@ Only reusable hardware capabilities belong in the BSP. Document blocking behavio
 - Button callbacks dispatch lightweight events only; move audio, storage, networking, and other slow work to worker tasks.
 - Stop tasks and timers that may access a page before deleting its screen.
 - Preserve menu `UP`/`DOWN`, `OK` click to enter, and page `OK` long-press to return unless the change explicitly redefines them.
+- When the user asks to remove unnecessary components or go straight into a feature, you may drop the main menu and its elements and launch the target feature screen directly. Keep the `ui_pixel` theme (the sky background, grass, title plate, mascot, and ink-outlined panels) intact — do not delete the theme as part of the cleanup, or the screen will render blank. Reuse `ui_pixel_screen_create()` / `ui_pixel_panel_create()` so the feature keeps the shared visual identity.
 - Budget internal RAM for images, fonts, networking, audio, LVGL, and task stacks; this board has no PSRAM.
 - Isolate testable state machines, protocols, timing, and layout calculations from ESP-IDF/LVGL and cover them with host tests.
 
