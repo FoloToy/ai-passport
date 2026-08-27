@@ -57,18 +57,23 @@ actually owns one.
    kept for the branch that owns it.
 2. **If no README exists**: summarize directly from the implementation, with no
    README merge.
-3. **After archiving is complete, also update the corresponding branch's root
-   README** so the archived application is registered on the branch that hosts
-   it. Handle each branch's root README independently (not as a single combined
-   decision):
-   - For a branch with **no** root README, **create** the bilingual
-     `README.md` / `README.zh_CN.md` pair on that branch and register the newly
-     archived application (with a short description and a link to the archive /
-     source) so it is discoverable from the branch's own landing page.
-   - For a branch that already **has** a root README, **update it** (do not stop
-     at prompting) to add or refresh the entry for the newly archived
-     application. If the root README is a multi-project catalog, add the new
-     application as one of the projects it introduces.
+3. **After archiving is complete, update the README on the hosting branch and on
+   fork `main`** so the archived application is registered where it is hosted.
+   Handle the hosting branch and `main` independently:
+   - **On the hosting branch** (the `feature/*` branch that carries the
+     application): if there is no root README, **create** the bilingual
+     `README.md` / `README.zh_CN.md` pair on that branch; if one exists, **update
+     it** (do not stop at prompting) to add or refresh the application's own
+     description.
+   - **On fork `main`**: update the root `README.md` / `README.zh_CN.md` so the
+     released application is discoverable from the repository's landing page.
+     The `main` root README is the **catalog of the fork's projects**: it
+     **fully includes** the content of each project's own README — a complete
+     description of what the application does and how to use it (its
+     interactions, modes, keys, persistence, and notes) — not a one-line
+     intro followed by a branch link. Pull the content from the hosting branch's
+     README so `main` presents a complete, in-repository description of every
+     project.
 
 ## Generate the functional summary
 

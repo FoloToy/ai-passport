@@ -38,12 +38,14 @@ not store the firmware `.bin` here. See
 
 Before generating the summary, check the root README of the `main` and current
 branches (`plays-archive` skill): if a README exists, merge it into the summary;
-if not, summarize directly. After archiving, also update the **corresponding
-branch's** root README so the archived application is registered on the branch
-that hosts it. Handle each branch independently: create the bilingual root
-README on a branch that lacks one (registering the new application), and update
-the root README on a branch that already has one (add the new application; if
-the README is a multi-project catalog, introduce it as one of the projects).
+if not, summarize directly. After archiving, update the README on the **hosting
+branch** and on fork `main` so the archived application is registered where it
+is hosted. On the hosting branch, create the bilingual root README if it lacks
+one or update it if one exists (adding the application's own description). On
+fork `main`, update the root README so it **fully includes** the content of each
+project's own README — a complete description of what the application does and
+how to use it — not a one-line intro followed by a branch link; pull the content
+from the hosting branch's README.
 
 ## Track 3: Collect suggestions and file issues
 

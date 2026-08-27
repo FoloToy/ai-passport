@@ -58,37 +58,6 @@ Write the release notes in English (and a Simplified Chinese version where the
 project is bilingual) and link them from the GitHub/GitLab release. Keep them
 consistent with `docs/CHANGELOG.md` for user-visible behavior.
 
-## Sync the fork's root README
-
-A single fork repository may host several different development projects. After
-publishing a release, in addition to setting the release title and writing the
-release notes, also update the root `README.md` on your fork's `main` branch so
-the released application is discoverable and reachable from the repository's own
-landing page. The fork root README is the **overview / catalog of the projects
-this fork hosts**: it introduces each project's content (what it does, how it is
-used, and the key behavior or notes), and links to that project's own README,
-source, release, and usage notes. It is not just a list of branch links.
-
-This applies to the README a fork owner maintains for their own fork (the root
-`README.md` / `README.zh_CN.md` pair reserved for the fork owner per
-[`docs/fork-guide.md`](../fork-guide.md)); it is fork-owned content and is not
-part of the upstream proposal.
-
-When releasing an application:
-
-- Add or update the fork's root README so the released application is introduced
-  among the fork's projects: give a short description of what it does and how to
-  use it, and link to the application's own README/source and how to get it (the
-  source address, the release, and any key usage or flashing notes). Keep it
-  aligned with the release title and notes.
-- If the fork has no root README yet, create the bilingual `README.md` /
-  `README.zh_CN.md` pair as the project catalog for fork `main` so every project
-  (including the new release) is presentable from the repository page.
-- Do **not** push this README upstream. The root README path is reserved for
-  the fork owner; upstream's overview is `docs/README.md`.
-
-See [`../fork-guide.md`](../fork-guide.md) for the fork root-README convention.
-
 ## Related documents
 
 - Firmware publishing to the community: [publish-to-community.md](publish-to-community.md)
