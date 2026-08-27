@@ -10,6 +10,16 @@ This document describes how to publish this project's firmware to the [AI Passpo
 
 Use this when you want to release the current firmware (or a specific `demo/*` application) to the community market. It is not for ordinary firmware development or flashing.
 
+### First confirm where to publish
+
+When the developer says "publish the project", ask **where** they want to
+publish before doing anything:
+
+- **To the community** — release the firmware to the [AI Passport Community market](https://ai-passport.folotoy.cn). Use the publisher workflow below. See also the post-release follow-up (`docs/development/after-release.md`) once it is published.
+- **To Git** — publish the firmware or code to a version-controlled repository (commit, tag, push, and a GitHub/GitLab release if intended). Follow the repository commit and PR rules (`docs/contribution/commit-and-pr.md`) and the fork workflow (`docs/fork-guide.md`); this page does not cover the Git publishing path.
+
+Do not assume either route; confirm the destination first, then route to the matching workflow.
+
 The workflow is driven by the official publisher skill. Running the prompt once makes the assistant install the skill from the official bundle; nothing is committed into the repository.
 
 ## Reproduce the bundled prompt
@@ -34,3 +44,16 @@ The skill's `SKILL.md` defines the exact workflow: inspect the project, prepare 
 ## How the assistant installs the skill
 
 The assistant fetches the official bundle from the URL in the prompt and follows the workflow described in its `SKILL.md`. No skill needs to be kept or committed in this repository; the prompt reproduces the official install source each time.
+
+## After publishing: archive to plays
+
+Once the firmware is published, ask the developer whether to archive this application
+into the upstream repository's [`plays/`](../../plays/README.md) application
+archive. If they agree, generate an AI-functional summary for the application under
+`plays/<app-name>/` (bilingual `README.md` / `.zh_CN.md`) and add the cover image
+as `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`. Only commit the summary and
+cover; do not store the firmware `.bin` here. Use the `plays-archive` skill, which
+opens the archive PR against the upstream `FoloToy/ai-passport`.
+
+This keeps the release's application discoverable in-repository for later querying.
+

@@ -15,3 +15,28 @@ All Actions are pinned to full commit SHAs. The build job has `contents: read`; 
 Open `https://ai-passport.folotoy.cn/tools/web-flasher/`, connect the USB JTAG/serial device, select the release's merged `FoloToy-AI-Passport-full.bin`, choose a baud rate such as 460800, and write it from `0x0`. The browser performs local writing and verification; it does not upload the firmware file.
 
 For board and flashing details, see [the hardware development guide](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+
+## Release notes
+
+A tag-triggered release succeeds only when the merged firmware and its release
+notes travel together. After the release is published, write release notes that
+explain the build to a user who may not have read the repository. Cover three
+things:
+
+- **What's new**: the features, behaviors, or fixes this release adds or
+  changes compared with the previous one. Keep it user-facing, not a commit log.
+- **How to build**: how to produce and verify the merged firmware
+  (`./tools/validate.sh --firmware` or `idf.py build`), and the artifact file to
+  flash (`FoloToy-AI-Passport-full.bin` flashed from `0x0`).
+- **How to use**: how to flash the build (the browser flasher above) and the key
+  interactions or hardware requirements of the release.
+
+Write the release notes in English (and a Simplified Chinese version where the
+project is bilingual) and link them from the GitHub/GitLab release. Keep them
+consistent with `docs/CHANGELOG.md` for user-visible behavior.
+
+## Related documents
+
+- Firmware publishing to the community: [publish-to-community.md](publish-to-community.md)
+- Post-release follow-up: [after-release.md](after-release.md)
+

@@ -10,6 +10,15 @@
 
 当你希望把当前固件（或某个 `demo/*` 应用）发布到社区市场时使用。它不用于普通固件开发或烧录。
 
+### 先确认发布到哪里
+
+当开发者说"发布项目"时，先问清楚**发到哪里**再动手：
+
+- **发布到社区** —— 把固件发布到 [AI Passport 社区市场](https://ai-passport.folotoy.cn)。走下面的 publisher 工作流；发布后见发布后收尾（`docs/development/after-release.md`）。
+- **发布到 Git** —— 把固件或代码发布到版本仓库（commit、tag、push，以及如需要则发 GitHub/GitLab release）。遵循仓库提交与 PR 规则（`docs/contribution/commit-and-pr.md`）与 fork 工作流（`docs/fork-guide.md`）；本页不覆盖 Git 发布路径。
+
+不要默认其中一条；先确认目的地，再路由到对应工作流。
+
 该工作流由官方发布 skill 驱动。运行一次提示词，让助手从官方包安装 skill；仓库无需提交任何东西。
 
 ## 使用内置提示词
@@ -39,3 +48,13 @@ skill 的 `SKILL.md` 定义了精确流程：检查项目、准备中英文标�
 ## 助手如何安装该 skill
 
 助手从提示词里的 URL 拉取官方包，并按其中 `SKILL.md` 描述的工作流执行。本仓库无需保留或提交该 skill；提示词每次都会复现官方安装源。
+
+## 发布之后：归档到 plays
+
+固件发布后，询问开发者是否把该应用归档到上游仓库的 [`plays/`](../../plays/README.md)
+应用档案。若同意，在 `plays/<app-name>/` 下生成该应用的 AI 功能总结（双语
+`README.md` / `.zh_CN.md`），并添加封面图 `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`。
+只提交总结与封面；**不要**在这里存固件 `.bin`。用 `plays-archive` skill，它会向上游
+`FoloToy/ai-passport` 开归档 PR。
+
+这样发布后的应用能在上游仓库留存、便于后续查询。

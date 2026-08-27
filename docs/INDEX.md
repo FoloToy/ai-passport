@@ -22,6 +22,9 @@ Use this page to discover repository documentation. `authoritative` documents de
 | [development/CI-build-and-release.md](development/CI-build-and-release.md) | Tagged firmware builds and releases | authoritative |
 | [development/CI-sync-main.md](development/CI-sync-main.md) | Fork upstream synchronization | authoritative |
 | [development/publish-to-community.md](development/publish-to-community.md) | Publish firmware to the AI Passport community market | authoritative |
+| [development/after-release.md](development/after-release.md) | Post-release follow-up for suggestions and experience | authoritative |
+| [development/file-issues.md](development/file-issues.md) | Filing a suggestion as an upstream GitHub issue | authoritative |
+| [development/experience-notes.md](development/experience-notes.md) | Index of development experience entries under `docs/experiences/` | reference |
 | [fork-guide.md](fork-guide.md) | Fork branch and documentation workflow | authoritative |
 | [hardware-design/README.md](hardware-design/README.md) | Hardware-document index | reference |
 | [hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) | Board facts, constraints, validation, and troubleshooting | authoritative |

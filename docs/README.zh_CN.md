@@ -43,10 +43,14 @@ FoloToy AI Passport 是一个开放式可穿戴 AI 硬件，本仓库是这款 A
 ```text
 请基于 main 分支为 FoloToy AI Passport 开发一个离线习惯打卡应用。
 使用三个实体按键和 240×320 屏幕，记录保存在掉电不丢失的存储中。
-遵守 AGENTS.md 和 docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md；先查找相关 demo 分支，
+遵守 AGENTS.md 和 docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md；先查找相关 demo 分支与 plays/ 应用，
 保持硬件逻辑在 components/bsp、应用逻辑在 main，完成可运行实现与测试，
 最后分别报告构建结果、未执行的真机项目和逐项验收方法。
 ```
+
+开始前先看 [`plays/`](../plays/README.md) 有没有已存在或可参考的应用，以及相关 demo 分支，
+再看 [`docs/development/experience-notes.md`](development/experience-notes.md) 里已沉淀、可复用的经验。
+这些列出了已经构建好、可复用的东西。
 
 需求越具体，AI 助手越容易一次实现正确。建议说明：
 
