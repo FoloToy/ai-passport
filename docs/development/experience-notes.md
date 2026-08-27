@@ -34,6 +34,12 @@ contributing developer's GitHub username (lowercase-kebab-case), and groups that
 developer's entries together instead of flattening them directly under
 `docs/experiences/`.
 
+A developer is not limited to a single entry. The archive holds **one or more
+entries per developer**, each as its own file (with its paired `.zh_CN.md`) under
+that developer's folder, and each linked from the index below. Add a new entry
+for each reusable, post-release learning rather than folding it into an existing
+one, so each record stays a single, self-contained topic.
+
 ## Entries
 
 See [`../experiences/`](../experiences/), and its

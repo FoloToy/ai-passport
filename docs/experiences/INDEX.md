@@ -16,7 +16,9 @@ For how to add an entry and what belongs here, see the
 ## Index
 
 Each entry is stored under `docs/experiences/<username>/` and listed here grouped
-by the contributing developer's username.
+by the contributing developer's username. A developer may have **one or more
+entries**; each is its own record, and a new learning is added as a new entry
+rather than merged into an existing one.
 
 ### Shinku-Chen
 

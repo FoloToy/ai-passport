@@ -118,6 +118,12 @@ paired `.zh_CN.md`, with reciprocal language links and no Chinese prose in the
 English file. Link the new entry from the index at
 `docs/development/experience-notes.md`.
 
+A developer is not limited to one entry. The archive holds **one or more entries
+per developer**, each as its own `.md` file (with its paired `.zh_CN.md`) under
+that developer's folder. Capture each reusable, post-release learning as a new
+entry rather than merging it into an existing one, so each entry stays a single,
+self-contained topic.
+
 Keep this change on a **dedicated branch or worktree**. Do not commit it on the
 developer's current branch.
 
