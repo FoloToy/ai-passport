@@ -11,6 +11,8 @@
 
 ## 索引
 
-暂无经验条目记录。每条经验保存在 `docs/experiences/<username>/` 下，并从经验索引链接。
+每条经验保存在 `docs/experiences/<username>/` 下，并在下面按贡献开发者的 GitHub 用户名分组列出。
 
-新增条目后，按 `<username>` 在这里列出来。
+### Shinku-Chen
+
+- [ESP32-C3 上音频压缩方式的权衡](Shinku-Chen/1787793847_91466b0.zh_CN.md) — 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。

@@ -14,12 +14,12 @@ For the archive convention (naming, structure, and the cover image), see the
 
 ## Index
 
-No play archived yet. Each archive is stored under
-`plays/<username>/<app-name>/` and linked from this table once it is added.
+Each archive is stored under `plays/<username>/<app-name>/` and linked from this
+table.
 
 | Contributor | Application | Summary | Source |
 | --- | --- | --- | --- |
-| _none recorded yet_ | | | |
+| Shinku-Chen | [Voice Keychain](Shinku-Chen/voice-keychain/README.md) | A sound-effects keychain that turns the AI Passport into a pocket audio player; press OK to play one of hundreds of Chinese voice clips from dozens of character packs. | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
 
 ## Adding a record
 

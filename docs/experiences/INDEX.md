@@ -15,7 +15,9 @@ For how to add an entry and what belongs here, see the
 
 ## Index
 
-No experience entries recorded yet. Each entry is stored under
-`docs/experiences/<username>/` and linked from the experience notes index.
+Each entry is stored under `docs/experiences/<username>/` and listed here grouped
+by the contributing developer's username.
 
-When an entry is added, list it here grouped by `<username>`.
+### Shinku-Chen
+
+- [Audio Compression Trade-offs on ESP32-C3](Shinku-Chen/1787793847_91466b0.md) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost.

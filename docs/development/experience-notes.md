@@ -38,4 +38,4 @@ See [`../experiences/`](../experiences/), and its
 [`INDEX.md`](../experiences/INDEX.md) for the archived-entry table, for the
 stored entries. The index below lists each entry once it is added.
 
-- None recorded yet.
+- **Audio Compression Trade-offs on ESP32-C3** (Shinku-Chen) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost. See [`../experiences/Shinku-Chen/1787793847_91466b0.md`](../experiences/Shinku-Chen/1787793847_91466b0.md).

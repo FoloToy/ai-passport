@@ -11,11 +11,11 @@
 
 ## 索引
 
-暂无已归档的应用。每个档案保存在 `plays/<username>/<app-name>/` 下，新增后从本表链接。
+每个档案保存在 `plays/<username>/<app-name>/` 下，并从本表链接。
 
 | 贡献者 | 应用 | 功能说明 | 源码 |
 | --- | --- | --- | --- |
-| _暂无记录_ | | | |
+| Shinku-Chen | [音效钥匙扣](Shinku-Chen/voice-keychain/README.zh_CN.md) | 把 AI Passport 变成口袋音频播放器的音效钥匙扣；按 OK 播放来自几十个角色包的数百条中文语音片段。 | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
 
 ## 新增记录
 

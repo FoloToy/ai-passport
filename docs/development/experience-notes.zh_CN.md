@@ -29,4 +29,4 @@ fork 上自行创建或变更的 `docs/` 文档。每次采集生成一个 `.md`
 见 [`../experiences/`](../experiences/) 目录下已保存的条目，以及它的
 [`INDEX.md`](../experiences/INDEX.md) 档案条目表。下面索引在条目新增后列出。
 
-- 暂无记录。
+- **ESP32-C3 上音频压缩方式的权衡**（Shinku-Chen）— 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。见 [`../experiences/Shinku-Chen/1787793847_91466b0.zh_CN.md`](../experiences/Shinku-Chen/1787793847_91466b0.zh_CN.md)。
