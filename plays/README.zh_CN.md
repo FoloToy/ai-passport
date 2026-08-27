@@ -15,7 +15,7 @@
 
 - 列出 `plays/` 下已归档的应用，读它们的功能说明，看是否已覆盖你的想法。
 - 复用已有应用里合适的设计思路、交互模式或状态模型，而不是重新发明。
-- 若没有合适的，记到将来该应用发布时再新建 `plays/<app-name>/` 档案。
+- 若没有合适的，记到将来该应用发布时再新建 `plays/<username>/<app-name>/` 档案。
 
 每个 plays 子目录都是一个真实、可运行应用的档案；它的功能说明是你决定"扩展它还是参考它"
 的起点。除应用档案外，也查一下
@@ -24,11 +24,12 @@
 
 ## 目录约定
 
-每个应用一个子目录，目录名 = 应用名（小写连字符）。仅在应用发布或准备记录时建档，不要预先
-创建空骨架。
+应用按贡献者分目录，所以每个档案放在两级路径下：`plays/<username>/<app-name>/`。第一级
+`<username>` 用贡献者的 GitHub 用户名（例如 `Shinku-Chen`），便于溯源归属；第二级是应用名
+（小写连字符）。仅在应用发布或准备记录时建档，不要预先创建空骨架。
 
 ```
-plays/<app-name>/
+plays/<username>/<app-name>/
   README.md / README.zh_CN.md         # AI 生成的双语功能说明
   <app-name>-cover.<webp|png|jpg>     # 封面图，commit（≤10 MiB）
 ```
@@ -50,7 +51,7 @@ plays/<app-name>/
 
 ## 封面图
 
-封面放在 `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库（类似
+封面放在 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库（类似
 `docs/assets/brand`）。选有代表性、且小于 10 MiB 的图。
 
 ## 固件

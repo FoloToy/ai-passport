@@ -33,10 +33,10 @@ Do not create, write, or commit anything until every gate below is satisfied.
 
 ## Determine what to archive
 
-Confirm the application name and the source it belongs to (for example a
-`demo/*` branch or `main/`). Use the lowercase-kebab-case application name as the
-subdirectory name. See [`../../plays/README.md`](../../plays/README.md) for the full
-convention.
+Confirm the application name, the contributing username, and the source it belongs
+to (for example a `demo/*` branch or `main/`). Use a two-level path — the
+contributor's GitHub username followed by the lowercase-kebab-case application
+name. See [`../../plays/README.md`](../../plays/README.md) for the full convention.
 
 ## Check the project README
 

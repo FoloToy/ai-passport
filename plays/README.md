@@ -22,8 +22,8 @@ project to build on instead of from scratch:
   summaries to see whether one already covers the idea.
 - Reuse applicable design ideas, interaction patterns, or state models from an
   existing play rather than re-inventing them.
-- When none exists, note that a new `plays/<app-name>/` archive will be created
-  later, when the application is published.
+- When none exists, note that a new `plays/<username>/<app-name>/` archive will
+  be created later, when the application is published.
 
 Each play subdirectory is an archive of a real, working application; its summary
 is the starting point for deciding whether to extend or reference it. Alongside
@@ -33,12 +33,15 @@ for previously recorded, reusable experience from other developer runs.
 
 ## Directory convention
 
-Each application gets its own subdirectory, named after the application in
-lowercase-kebab-case. Add an application archive only when it is published or
-ready to be recorded; do not pre-create empty scaffolding.
+Applications are grouped by their contributor, so each archive lives under a
+two-level path: `plays/<username>/<app-name>/`. The username is the contributor's
+GitHub username (for example `Shinku-Chen`), which makes ownership easy to trace;
+the second level is the application name in lowercase-kebab-case. Add an
+application archive only when it is published or ready to be recorded; do not
+pre-create empty scaffolding.
 
 ```
-plays/<app-name>/
+plays/<username>/<app-name>/
   README.md / README.zh_CN.md   # AI-generated bilingual functional summary
   <app-name>-cover.<webp|png|jpg>  # cover image, committed (<= 10 MiB)
 ```
@@ -65,9 +68,9 @@ English at the default `.md` path and Simplified Chinese at the paired
 
 ## Cover image
 
-Place the cover at `plays/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed
-to the repository (like `docs/assets/brand`). Keep it representative and under
-10 MiB.
+Place the cover at `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`,
+committed to the repository (like `docs/assets/brand`). Keep it representative
+and under 10 MiB.
 
 ## Firmware
 
