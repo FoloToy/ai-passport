@@ -18,18 +18,23 @@ release 完成后，下载该 release 的**合并完整固件**（`FoloToy-AI-Pa
 开发者本地构建的 `full.bin`。若不能运行，先停下来修复再做后面轨道。产物与烧录见
 [`CI-build-and-release.md`](CI-build-and-release.md)。
 
-## 轨道 2：把应用归档到 plays
+## 轨道 2：归档到 plays（可选） + 整理 README（必须）
 
-发布后，询问开发者是否把该应用归档到上游 `FoloToy/ai-passport` 仓库的 `plays/` 应用档案。若同意，
-在 `plays/<username>/<app-name>/` 下生成该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`，仅文字，
-不 commit 封面图）。只提交总结文字（及可选手册）；**不要**在这里存固件 `.bin`。见
-[`../../plays/README.md`](../../plays/README.md)。
+发布后，**提议**把该应用归档到上游 `FoloToy/ai-passport` 仓库的 `plays/` 应用档案。归档是**可选的**——
+开发者可以拒绝归档，这个选择被尊重，且不影响后续收尾。若同意，在 `plays/<username>/<app-name>/` 下生成
+该应用的 AI 功能总结（双语 `README.md` / `.zh_CN.md`，仅文字，不 commit 封面图），只提交总结文字（及
+可选手册）；**不要**在这里存固件 `.bin`。见 [`../../plays/README.md`](../../plays/README.md)。
 
-生成总结前，先检查 `main` 分支和当前分支**根目录**的 README（`plays-archive` skill）：若有 README，
-把它合并进总结；若没有，直接总结。归档完成后，更新**承载分支**上的 README 与 fork `main` 的 README，让
-归档的应用登记到它承载的地方。在承载分支上：没有根 README 就创建双语配对，有则主动更新（加该应用自身
-说明）。在 fork `main` 上：更新根 README，让它**完整囊括**每个项目自己 README 的内容——完整说明该应用
-做什么、怎么用——而不是一行简介 + 分支链接；内容取自承载分支的 README。
+**无论是否归档，README 整理都必须进行。** 即使跳过归档到 `plays/`，仍要更新**承载分支**上的 README 与
+fork `main` 的 README，让应用登记到它开发的地方：
+
+- 在**承载分支**上：没有根 README 就创建双语配对，有则主动更新（加该应用自身说明）。
+- 在 fork **main** 上：更新根 README，让它**完整囊括**每个项目自己 README 的内容——完整说明该应用
+  做什么、怎么用——而不是一行简介 + 分支链接；内容取自承载分支的 README。
+
+**建议：这些 README 更新直接提交/合并，而不是开 PR。** fork 根 README 与承载分支的根 README 是 fork
+自有内容（不属于上游提案），直接 commit 到分支 / fork `main` 即可，不必等 review PR。只有当改动是要回到
+上游时才开 PR。
 
 ## 轨道 3：收集建议并提交 issue
 

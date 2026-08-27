@@ -57,9 +57,11 @@ actually owns one.
    kept for the branch that owns it.
 2. **If no README exists**: summarize directly from the implementation, with no
    README merge.
-3. **After archiving is complete, update the README on the hosting branch and on
-   fork `main`** so the archived application is registered where it is hosted.
-   Handle the hosting branch and `main` independently:
+3. **The README update is required whether or not the application is archived.**
+   Archiving to `plays/` is optional (the developer may decline); but you must
+   still update the README on the hosting branch and on fork `main` so the
+   application is registered where it is developed. Handle the hosting branch and
+   `main` independently:
    - **On the hosting branch** (the `feature/*` branch that carries the
      application): if there is no root README, **create** the bilingual
      `README.md` / `README.zh_CN.md` pair on that branch; if one exists, **update
@@ -74,6 +76,12 @@ actually owns one.
      intro followed by a branch link. Pull the content from the hosting branch's
      README so `main` presents a complete, in-repository description of every
      project.
+
+4. **Recommended: merge these README updates directly, without opening a PR.**
+   The fork root README and the hosting branch's root README are fork-owned
+   content (not part of the upstream proposal), so commit them directly to the
+   branch / fork `main` rather than waiting on a review PR. Only open a PR when
+   the change is meant to go upstream.
 
 ## Generate the functional summary
 

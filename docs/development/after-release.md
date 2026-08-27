@@ -26,26 +26,34 @@ local `full.bin` the developer built. If it does not run, stop and fix before th
 next tracks. See [`CI-build-and-release.md`](CI-build-and-release.md) for the
 artifact and flashing.
 
-## Track 2: Archive the application to plays
+## Track 2: Archive to plays (optional) and update the README (required)
 
-After publishing, ask the developer whether to archive this application into the
-upstream `FoloToy/ai-passport` repository's `plays/` application archive. If
-agreed, generate an AI-functional summary under
-`plays/<username>/<app-name>/` (bilingual `README.md` / `.zh_CN.md`, text only —
-no cover image is committed). Commit only the summary text (and any manual); do
-not store the firmware `.bin` here. See
+After publishing, **offer** to archive this application into the upstream
+`FoloToy/ai-passport` repository's `plays/` application archive. Archiving is
+**optional** — the developer may decline to archive; that choice is respected and
+does not block the rest of the follow-up. If they agree, generate an AI-functional
+summary under `plays/<username>/<app-name>/` (bilingual `README.md` /
+`.zh_CN.md`, text only — no cover image is committed) and commit only the summary
+text (and any manual); do not store the firmware `.bin` here. See
 [`../../plays/README.md`](../../plays/README.md).
 
-Before generating the summary, check the root README of the `main` and current
-branches (`plays-archive` skill): if a README exists, merge it into the summary;
-if not, summarize directly. After archiving, update the README on the **hosting
-branch** and on fork `main` so the archived application is registered where it
-is hosted. On the hosting branch, create the bilingual root README if it lacks
-one or update it if one exists (adding the application's own description). On
-fork `main`, update the root README so it **fully includes** the content of each
-project's own README — a complete description of what the application does and
-how to use it — not a one-line intro followed by a branch link; pull the content
-from the hosting branch's README.
+**The README update is required regardless of whether the application is
+archived.** Even if you skip archiving to `plays/`, you must still update the
+README on the **hosting branch** and on fork `main` so the application is
+registered where it is developed:
+
+- On the **hosting branch**, create the bilingual root README if it lacks one, or
+  update it if one exists, adding the application's own description.
+- On fork **main**, update the root README so it **fully includes** the content of
+  each project's own README — a complete description of what the application does
+  and how to use it — not a one-line intro followed by a branch link; pull the
+  content from the hosting branch's README.
+
+**Recommendation: merge these README updates directly rather than opening a PR.**
+The fork root README and the hosting branch's root README are fork-owned content
+(not part of the upstream proposal), so update them by committing directly to the
+branch / fork `main` instead of waiting on a review PR. Only open a PR when the
+change is meant to go upstream.
 
 ## Track 3: Collect suggestions and file issues
 
