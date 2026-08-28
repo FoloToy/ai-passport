@@ -21,6 +21,7 @@
 - 遵循仓库提交与 PR 规则（[commit-and-pr.md](../../contribution/commit-and-pr.md)）。
 - 遵循 fork 工作流（[fork-guide.md](../../fork-guide.md)）。
 - tag 触发的构建运行 `build-firmware.yml`，它只在 tag 时发布。见 [CI-build-and-release.md](../CI-build-and-release.md)。
+- 日常编译优先用 `idf.py build`（快、增量）；只有需要合并校验的 `0x0` 全镜像（如发布或交付前）才用 `./tools/validate.sh --firmware`。
 - 工作流创建 release，默认标题为版本号名（来自 `softprops/action-gh-release` 的 `github.ref_name`）。发布后把标题完善为「项目功能名称 + 版本号」，例如 `Voice Keychain v1.2.0`。版本号为 tag，功能名称为共享[发布属性](../project-completion.md#共享发布属性)中的应用发布名。
 - 发布说明必须向未读过仓库的用户解释构建：新增内容、如何构建、如何使用。
 

@@ -30,6 +30,9 @@ market.
 - Follow the fork workflow ([fork-guide.md](../../fork-guide.md)).
 - A tag-triggered build runs `build-firmware.yml`, which publishes the release
   only for a tag. See [CI-build-and-release.md](../CI-build-and-release.md).
+- For day-to-day compilation prefer `idf.py build` (fast, incremental); use
+  `./tools/validate.sh --firmware` only when the merged, byte-verified `0x0`
+  full image is needed, such as before a release or delivery.
 - The workflow creates the release with a default title of the version/tag name
   (from `softprops/action-gh-release` and `github.ref_name`). After the release
   is published, refine the title to the project feature name plus the version
