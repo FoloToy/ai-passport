@@ -39,5 +39,5 @@ Commands run:
 - [ ] I ran `./tools/validate.sh`, or every `NOT RUN` field above names the unavailable environment or device.
 - [ ] I separated build, host-test, and device-test results.
 - [ ] I updated authoritative documentation for changed hardware facts or durable behavior.
-- [ ] I did not edit `docs/CHANGELOG.md` unless this PR is a release-maintainer update for released baseline behavior.
+- [ ] I did not add a `docs/CHANGELOG.md` entry unless this PR is a release-maintainer update for released baseline behavior.
 - [ ] I removed credentials, private device links, personal data, and unsanitized logs.
