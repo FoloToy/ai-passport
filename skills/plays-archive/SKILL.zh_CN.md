@@ -1,6 +1,6 @@
 ---
 name: plays-archive
-description: 固件发布之后，把已发布的应用归档到上游 FoloToy ai-passport 仓库的 plays/ 目录，附一份 AI 生成的双语功能说明与封面图。
+description: 固件发布之后，把已发布的应用归档到上游 FoloToy ai-passport 仓库的 plays/ 目录，附一份 AI 生成的双语功能说明（纯文本；封面图只记录文件名与格式，不提交）。
 ---
 
 <p align="right">
@@ -60,16 +60,16 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 - 应用做什么、功能清单。
 - 交互与玩法（按键、屏幕、流程）。
 - 应用来源，用**开发者发布时提交的源码地址**（HTTPS Git 源码页）精确定位。
-- 封面图文件名与格式。
+- 封面图文件名与格式，仅作为发布元数据记录——封面图本身**不**提交（档案为纯文本）。
 
 若根 README 存在，把它合并进说明，而不是忽略人类可读的描述。
 
 默认 `.md` 用英文、配对 `.zh_CN.md` 用简体中文，并在同一次变更中对齐。
 
-## 添加封面图
+## 封面图
 
-封面放在 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`，commit 进仓库。
-选有代表性且小于 10 MiB 的图。当需要为应用生成效果图或样机图时，参考
+档案为**纯文本**：**不要**提交封面图，只在功能说明里记录其文件名与格式作为发布元数据。图片本身随
+社区发布留存。若需为发布（而非归档）生成封面，参考
 [`docs/assets/brand/`](../../docs/assets/brand/README.md) 下的官方产品图：生成时必须传一张参考图
 （如 `ai-passport-front.png` 或某款配色外壳渲染图）作为生成调用输入，保留其外壳、按键、接口与
 钥匙扣孔原样，只把参考图的屏幕区域**重绘**成该玩法的真实屏显内容，屏幕的尺寸、比例、圆角与外壳内
@@ -77,7 +77,7 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 
 ## 提交
 
-在独立分支上提交总结与封面（英文祈使句 Conventional Commit 标题，例如
+在独立分支上提交总结（英文祈使句 Conventional Commit 标题，例如
 `docs(plays): add <app-name> application archive`）。若创建或更新了根 README，一并纳入同一次变更。
 **不要**在这里存合并固件 `.bin`；它是构建/发布产物。按 Build、Host tests、Device tests、
 Unverified 分别上报。
@@ -91,6 +91,7 @@ Unverified 分别上报。
 - 不发布固件、不运行 publisher 流程。
 - 不改生产源码、不改固件。
 - 不存储固件 `.bin` 二进制。
+- 不存储封面图（档案为纯文本）。
 - 未经开发者审查与同意，不自动提交任何内容。
 
 ## 相关文档

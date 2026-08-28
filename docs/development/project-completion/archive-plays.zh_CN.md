@@ -16,7 +16,7 @@
 ## 步骤
 
 1. 确认同意与可用的 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）。
-2. 在 `plays/<app-name>/` 下生成双语 AI 功能总结（`README.md` / `.zh_CN.md`），有根 README 时合并它。
+2. 在 `plays/<username>/<app-name>/` 下生成双语 AI 功能总结（`README.md` / `.zh_CN.md`），有根 README 时合并它。
 3. 记录发布元数据——双语标题与简介、源码地址，其中包括封面按文件名与格式记录；但不提交封面图本身。档案为纯文本（text-only）。
 4. 各自处理每个分支的根 README（必需的 README 同步见 [readme-update.md](./readme-update.md)）。
 5. 只在专门分支上提交总结；不存固件 `.bin`，也不存封面图。

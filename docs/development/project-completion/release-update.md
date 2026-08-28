@@ -14,14 +14,21 @@ market.
 
 ## Steps
 
-1. Commit the change and push it to the fork (`origin`).
-2. Create and push a tag to trigger the release workflow.
+Each step is an external, authorizing mutation. Confirm each one with the
+developer separately — do not treat a single up-front confirmation as covering
+commit, push, tag, and release.
+
+1. Commit the change and push it to the fork (`origin`) — confirm separately.
+2. Create and push a tag to trigger the release workflow — confirm separately.
 3. Let the tagged build produce the merged firmware `.bin`.
-4. Create or update the GitHub/GitLab release with the artifact. The workflow
-   sets the default release title to the version/tag name; after the release is
-   up, refine it to the project feature name plus the version number.
+4. Create or update the GitHub/GitLab release with the artifact — confirm
+   separately. The workflow sets the default release title to the version/tag
+   name; after the release is up, refine it to the project feature name plus the
+   version number.
 5. Write release notes in English (and a Simplified Chinese version where the
    project is bilingual) covering what is new, how to build, and how to use.
+6. Verify the released full build on hardware (see
+   [Post-release hardware verification](../project-completion.md#post-release-hardware-verification)).
 
 ## Rules
 

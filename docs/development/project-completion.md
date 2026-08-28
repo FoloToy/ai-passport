@@ -13,6 +13,10 @@ The completion flow is not a fixed pipeline and is not tied to a release. The
 developer selects any one or a combination of the six actions, in any order. Each
 action runs only after the developer confirms it.
 
+All six actions are **optional** — none is mandatory. The README update (action
+E) is one of the six; it runs when selected, and it also accompanies archiving
+(action D) by default, so archiving a project also refreshes the README.
+
 ## When the completion flow is offered
 
 Offer the six-action menu when either signal occurs:
@@ -105,6 +109,20 @@ collecting them again:
 
 At execution, reuse the profile where it was already collected. If the profile
 was not collected, fetch the values through the relevant action skill.
+
+## Post-release hardware verification
+
+When a delivery action (A or B) produced a merged full build, verify it on real
+hardware before treating the project as complete. Download the release's merged
+full firmware (`FoloToy-AI-Passport-full.bin`, the flashable complete build from
+`0x0`), flash it to a device, and confirm it runs normally. Do not treat a
+successful build or upload as hardware validation: this step proves the artifact
+the release actually points to boots and works on real hardware. The artifact
+comes from the release assets (the CI/CD `full.bin`) or, for a Git release with
+no CI artifact, the local `full.bin` the developer built. If it does not run,
+stop and fix before closing out. See
+[`CI-build-and-release.md`](CI-build-and-release.md) for the artifact and
+flashing.
 
 ## Shared safety and consent gates
 

@@ -14,8 +14,10 @@ committed into the repository.
 
 ## Inputs
 
-- A single merged ESP `.bin` flashed from `0x0`. Build it with
-  `./tools/validate.sh --firmware` or `idf.py build` when needed.
+- A single merged ESP `.bin` flashed from `0x0`, built and verified with
+  `./tools/validate.sh --firmware` (this produces and verifies the merged full
+  image; do not substitute `idf.py build`, which is only for day-to-day
+  incremental compilation).
 - A representative cover image (JPEG / PNG / WebP, up to 10 MiB).
 - The public HTTPS Git page for the firmware repository, resolved from
   `git remote -v`.

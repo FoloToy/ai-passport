@@ -44,7 +44,6 @@ published or ready to be recorded; do not pre-create empty scaffolding.
 ```
 plays/<username>/<app-name>/
   README.md / README.zh_CN.md   # AI-generated bilingual functional summary
-  <app-name>-cover.<webp|png|jpg>  # cover image, committed (<= 10 MiB)
   <topic>-guide.md (+ .zh_CN.md)  # optional manual / how-to, not experience
 ```
 
@@ -54,9 +53,10 @@ A single contributor can have several applications under their own folder; the
 folder splits by author to keep related submissions together instead of spreading
 them flat across `plays/`.
 
-A play archive stores the application's **introduction and manual** only: the
-README functional summary, the cover, and optionally a how-to guide for that app.
-It does **not** store reusable development experience; post-release experience
+A play archive is **text-only**: it stores the application's **introduction and
+manual** — the README functional summary and optionally a how-to guide for that
+app. It does **not** store the cover image (recorded only by file name and format
+as publish metadata) or reusable development experience; post-release experience
 entries belong under [`docs/experiences/<username>/`](../docs/experiences/).
 
 ## What the per-application README contains
@@ -73,7 +73,8 @@ artifact. It records:
 - Source of the application, given as the **source address the developer
   submitted when publishing** (the HTTPS Git source page), so it can be located
   precisely.
-- The cover image file name and format.
+- The cover image file name and format, recorded as publish metadata only — the
+  cover image itself is **not** committed (the archive is text-only).
 
 Write it by summarizing the application's implementation and behavior, in
 English at the default `.md` path and Simplified Chinese at the paired
@@ -81,19 +82,20 @@ English at the default `.md` path and Simplified Chinese at the paired
 
 ## Cover image
 
-Place the cover at `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`,
-committed
-to the repository (like `docs/assets/brand`). Keep it representative and under
-10 MiB.
+The cover image is a publish artifact, not repository content. Do **not** commit
+the cover image into `plays/`; record only its file name and format in the
+summary as publish metadata. The image itself lives with the community
+publication.
 
-When generating an effect or mockup image of the play, use the official product
-references under [`docs/assets/brand/`](../docs/assets/brand/README.md). Always
-pass a reference (e.g. `ai-passport-front.png` or a colorway shell render) as
-input to the generation call, keep its shell, buttons, ports, and key-ring hole
-as they are, and redraw only the reference's screen region into the play's actual
-on-screen content. Keep the screen's size, aspect ratio, corners, and position
-inside the shell identical to the reference so the play content appears inside
-the real AI Passport device rather than as a bare or free-floating image.
+When generating a cover for the community publication (not for the archive), use
+the official product references under
+[`docs/assets/brand/`](../docs/assets/brand/README.md). Always pass a reference
+(e.g. `ai-passport-front.png` or a colorway shell render) as input to the
+generation call, keep its shell, buttons, ports, and key-ring hole as they are,
+and redraw only the reference's screen region into the play's actual on-screen
+content. Keep the screen's size, aspect ratio, corners, and position inside the
+shell identical to the reference so the play content appears inside the real
+AI Passport device rather than as a bare or free-floating image.
 
 ## Firmware
 

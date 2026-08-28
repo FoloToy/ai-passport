@@ -17,11 +17,13 @@ branches, so root READMEs exist on multiple branches. Handle each branch's root
 README independently — the `main` README and a `feature/*` branch README are
 separate decisions.
 
-## When this is required
+## When this is recommended
 
-The README update is **required whether or not the application is archived.**
-Archiving to `plays/` (action D) is optional — the developer may decline — but
-the README must still be updated on the hosting branch and on fork `main` so the
+The README update is an **optional** action like the other five, and it is also
+the default companion to archiving: when the application is archived to `plays/`
+(action D), the README sync runs as part of that action. Archiving itself is
+optional — the developer may decline — but whenever a project is completed, the
+README should be refreshed on the hosting branch and on fork `main` so the
 application is registered where it is developed.
 
 ## Rules

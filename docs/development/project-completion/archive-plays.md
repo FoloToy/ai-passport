@@ -20,8 +20,9 @@ The workflow is driven by the `plays-archive` skill.
 ## Steps
 
 1. Confirm consent and a GitHub channel (GitHub MCP, a GitHub skill, or `gh`).
-2. Generate a bilingual AI-functional summary under `plays/<app-name>/`
-   (`README.md` / `.zh_CN.md`), merging the root README when one exists.
+2. Generate a bilingual AI-functional summary under
+   `plays/<username>/<app-name>/` (`README.md` / `.zh_CN.md`), merging the root
+   README when one exists.
 3. Record the publish metadata — the bilingual title and description and the
    source address — which include the cover image by file name and format, but
    do not commit the cover image itself. The archive is text-only.

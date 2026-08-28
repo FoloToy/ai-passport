@@ -1,6 +1,6 @@
 ---
 name: plays-archive
-description: After a firmware release, archive the published application into the upstream FoloToy ai-passport repository's plays/ directory with an AI-generated bilingual functional summary and a cover image.
+description: After a firmware release, archive the published application into the upstream FoloToy ai-passport repository's plays/ directory with an AI-generated bilingual functional summary (text-only; the cover image is recorded by file name and format, not committed).
 ---
 
 <p align="right">
@@ -81,7 +81,8 @@ publishing artifact). Record:
 - Source, given as the **source address the developer submitted when
   publishing** (the HTTPS Git source page), so the application can be located
   precisely.
-- The cover image file name and format.
+- The cover image file name and format, recorded as publish metadata only — the
+  cover image itself is **not** committed (the archive is text-only).
 
 If the root README exists, merge its content into the summary rather than
 ignoring the human-facing description.
@@ -89,12 +90,12 @@ ignoring the human-facing description.
 Write the default `.md` in English and the `.zh_CN.md` in Simplified Chinese,
 aligned in the same change.
 
-## Add the cover image
+## Cover image
 
-Place the cover at
-`plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`, committed to the
-repository. Keep it representative and under 10 MiB. When generating an effect or
-mockup image for the play, use the official product references under
+The archive is **text-only**: do **not** commit the cover image. Record only its
+file name and format in the summary as publish metadata. The image itself lives
+with the community publication; if a cover must be generated for the publication
+(not the archive), use the official product references under
 [`docs/assets/brand/`](../../docs/assets/brand/README.md): pass a reference (e.g.
 `ai-passport-front.png` or a colorway shell render) as input to the generation
 call, keep its shell, buttons, ports, and key-ring hole as they are, and redraw
@@ -105,7 +106,7 @@ convention in [`docs/assets/brand/README.md`](../../docs/assets/brand/README.md)
 
 ## Commit
 
-Commit the summary and cover on the dedicated branch (English imperative
+Commit the summary on the dedicated branch (English imperative
 Conventional Commit title, for example
 `docs(plays): add <app-name> application archive`). If a root README was created
 or updated, include it in the same change. Do **not** store the merged
@@ -123,6 +124,7 @@ and read it back to confirm. Opening a PR requires separate confirmation.
 - It does not publish firmware or run the publisher workflow.
 - It does not modify production source or the firmware.
 - It does not store the firmware `.bin` binary.
+- It does not store the cover image (the archive is text-only).
 - It does not auto-submit anything without developer review and consent.
 
 ## Related documents
