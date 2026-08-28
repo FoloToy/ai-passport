@@ -4,19 +4,12 @@
 
 # Hardware Design
 
-This directory contains product specifications, firmware-visible board facts, resource constraints, acceptance matrices, and troubleshooting knowledge.
+This directory contains the authoritative hardware documents for every standard-production AI Passport.
 
-- `components/bsp/include/bsp_pins.h` is the source of truth for firmware pin assignments and board constants.
-- Product specifications are maintained in `specifications.md`; firmware behavior and constraints are maintained in the hardware guide.
-- Do not infer board interfaces from generic ESP32-C3 capabilities or another development board.
-- Pin, I2C, ADC, display, audio-clock, or other hardware mapping changes must update the relevant document and record the physical-device result.
+## Documents
 
-## Document map
+- [specifications.md](specifications.md): user-visible dimensions, devices, power, input, and battery specifications.
+- [AI_HARDWARE_DEVELOPMENT_GUIDE.md](AI_HARDWARE_DEVELOPMENT_GUIDE.md): firmware-visible pins, ownership, electrical facts, constraints, troubleshooting, and device acceptance.
+- [`bsp_pins.h`](../../components/bsp/include/bsp_pins.h): firmware constants used by BSP code.
 
-| Document | Audience and authority |
-| --- | --- |
-| [AI_HARDWARE_DEVELOPMENT_GUIDE.md](AI_HARDWARE_DEVELOPMENT_GUIDE.md) | Engineering reference for BSP behavior, resource ownership, constraints, validation, and troubleshooting. |
-| [specifications.md](specifications.md) | Public product specifications. |
-| `components/bsp/include/bsp_pins.h` | Firmware source of truth for pin assignments, bus instances, addresses, panel parameters, and button windows. |
-
-New documents must state their scope, link software interfaces instead of duplicating constants, and keep build results separate from physical-device results.
+Do not infer an interface from the ESP32-C3 datasheet alone. A hardware change updates `bsp_pins.h`, the hardware guide, and its physical acceptance result in the same PR.

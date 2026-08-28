@@ -16,7 +16,7 @@
 4. 使用 `sudo`、安装系统包、写仓库外目录、修改用户组或通过受限网络下载前，先请求用户授权。
 5. 未经用户明确授权，不得修改 shell 启动文件、全局 Git 配置、代理、证书校验或包管理器配置。
 6. 不得把机器专用的 shell alias 当作必要命令。
-7. 优先使用官方上游和乐鑫运营的下载服务，不得静默切换到未经验证的镜像。
+7. 只使用官方上游或乐鑫运营的下载服务。增加其它镜像时必须使用用户明确提供的 URL。
 
 先执行只读探测：
 
@@ -33,7 +33,7 @@ git status --short --branch
 
 ## 选择下载线路
 
-默认使用国际线路。用户明确要求，或 GitHub/Registry 直连不可用、过慢时，使用中国大陆线路。镜像变量只作用于当前终端或单条命令。
+除非用户要求中国大陆线路，否则使用国际线路。只有下载命令返回非零，或连续十分钟没有传输数据时，才从国际线路切换。镜像变量只作用于当前终端或单条命令。
 
 | 下载内容 | 国际默认线路 | 中国大陆官方线路 |
 | --- | --- | --- |
@@ -81,7 +81,7 @@ xcode-select --install
 brew install cmake ninja ccache dfu-util libusb python
 ```
 
-`xcode-select --install` 和 Homebrew 安装均属于主机级修改且可能需要交互，AI 不得未经用户授权直接执行。
+`xcode-select --install` 和 Homebrew 安装都会修改主机并可打开交互式安装器，AI 未经用户授权不得执行。
 
 ### Windows 与 WSL2
 
@@ -147,7 +147,7 @@ printf 'IDF_PATH=%s\n' "${IDF_PATH}"
 
 版本不是严格的 `ESP-IDF v5.5.3` 时必须停止，不得用其他版本生成项目配置。
 
-中国大陆环境可在当前终端临时加速 Managed Component 归档下载：
+使用中国大陆线路时，在当前终端设置 Managed Component 存储端点：
 
 ```bash
 export IDF_COMPONENT_STORAGE_URL="https://components-file.espressif.cn"
@@ -169,16 +169,16 @@ git status --short --branch
 
 ## 初始化 checkout
 
-在仓库根目录首次编译时，优先运行固件门禁。它会生成并验证用于交付和烧录的
+在仓库根目录首次编译时运行固件门禁。它会生成并验证用于交付和烧录的
 合并固件：
 
 ```bash
 ./tools/validate.sh --firmware
 ```
 
-仅在需要增量开发编译时使用 `idf.py set-target esp32c3` 和 `idf.py build`。
-已有工作区运行 `set-target` 前，应检查并保留有意设置的本地配置，因为它可能把
-已有、被忽略的 `sdkconfig` 重命名为 `sdkconfig.old`。
+只有首次固件门禁已经通过且任务需要更快增量构建时，才使用 `idf.py set-target esp32c3` 和 `idf.py build`。
+已有工作区运行 `set-target` 前，必须检查并保留被忽略的 `sdkconfig`；`set-target`
+重新生成目标配置时会把已有 `sdkconfig` 重命名为 `sdkconfig.old`。
 
 `idf.py fullclean` 只删除构建输出，不能让已有 `sdkconfig` 完整同步新 defaults。
 
@@ -197,13 +197,15 @@ grep -E 'CONFIG_IDF_TARGET|CONFIG_ESPTOOLPY_FLASHSIZE|CONFIG_ESP_CONSOLE_USB_SER
 先运行静态门禁，再运行固件门禁：
 
 ```bash
+export ACTIONLINT_BIN="$(./tools/install-actionlint.sh)"
 ./tools/validate.sh --static
 ./tools/validate.sh --firmware
 ./tools/validate.sh
 ```
 
 静态门禁需要 Python 3、C 编译器、`curl`、`tar` 和 SHA-256 工具；未安装
-`actionlint` 时，会把带固定校验和的版本下载到 `/tmp`。固件门禁是默认优先的
+`actionlint` 时，`install-actionlint.sh` 会把锁定版本下载到 `/tmp` 并校验；
+`validate.sh` 不再隐式下载工具，而会把 workflow lint 报告为未运行。固件门禁是交付时必须使用的
 编译方式，它使用隔离的临时构建，并生成经过验证的 `0x0` 镜像：
 
 ```text
@@ -225,13 +227,13 @@ Docker 本身不会提供安全的 USB 烧录访问，挂载 checkout 后容器�
 
 ## 烧录与监视
 
-编译不要求设备，硬件验证必须访问设备。使用支持数据传输的 USB 线，发现实际端口，不得在仓库中硬编码：
+编译不要求设备，硬件验证必须连接设备。使用支持数据传输的 USB 线，发现实际端口，不得在仓库中硬编码：
 
 ```bash
 ls /dev/ttyACM* /dev/ttyUSB* 2>/dev/null
 ```
 
-Linux 串口访问通常要求用户属于 `dialout`（部分发行版为 `uucp`）。修改用户组前必须获得授权，且修改后需要重新登录：
+Linux 出现串口权限错误后先运行 `ls -l <port>` 和 `id`。端口组为 `dialout` 或 `uucp` 且当前用户不属于该组时，修改用户组前必须获得授权，修改后必须重新登录：
 
 ```bash
 sudo usermod -aG dialout "${USER}"
@@ -239,7 +241,7 @@ sudo usermod -aG dialout "${USER}"
 
 烧录前关闭 WebSerial 页面和其他串口监视器。不要长期以 root 身份运行日常开发流程。使用 `Ctrl+]` 退出 ESP-IDF monitor。
 
-优先从 `0x0` 烧录经过验证的合并镜像：
+交付与验收必须从 `0x0` 烧录经过验证的合并镜像：
 
 ```bash
 python -m esptool --chip esp32c3 -p <port> -b 460800 \

@@ -1,34 +1,40 @@
-name: Pull request checks
+name: Firmware checks
 
 on:
   pull_request:
+    paths:
+      - ".github/workflows/firmware-checks.yml"
+      - "CMakeLists.txt"
+      - "components/**"
+      - "dependencies.lock"
+      - "main/**"
+      - "partitions.csv"
+      - "sdkconfig.defaults"
+      - "tools/validate.sh"
+      - "tools/verify_firmware.py"
   push:
     branches:
       - main
+    paths:
+      - ".github/workflows/firmware-checks.yml"
+      - "CMakeLists.txt"
+      - "components/**"
+      - "dependencies.lock"
+      - "main/**"
+      - "partitions.csv"
+      - "sdkconfig.defaults"
+      - "tools/validate.sh"
+      - "tools/verify_firmware.py"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: firmware-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  static:
-    name: Repository and host checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-
-      - name: Install verified actionlint
-        run: |
-          actionlint_bin="$(./tools/install-actionlint.sh "$RUNNER_TEMP/actionlint")"
-          echo "ACTIONLINT_BIN=${actionlint_bin}" >> "$GITHUB_ENV"
-
-      - name: Validate repository and run host tests
-        run: ./tools/validate.sh --static
-
   firmware:
     name: ESP-IDF 5.5.3 firmware
     runs-on: ubuntu-latest

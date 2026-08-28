@@ -10,7 +10,7 @@
 - Use `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `chore`, `build`, or `ci`. Keep the subject at most 72 characters and omit the final period.
 - Keep each commit independently reviewable. Describe the final diff, not the debugging journey.
 - Review the complete diff, run applicable checks, and exclude credentials, generated firmware, and unrelated files.
-- Update `docs/CHANGELOG.md` only for user-visible behavior, compatibility, or release-flow changes.
+- Do not append application-branch changes to the upstream changelog. Release maintainers update it for released baseline behavior, compatibility, and release-flow changes.
 - Creating a commit does not authorize pushing, opening a PR, releasing, or merging.
 - Write durable product constraints, data formats, architecture decisions, and acceptance criteria back to their authoritative document. Do not preserve transient debugging notes.
 

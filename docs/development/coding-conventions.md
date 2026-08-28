@@ -4,14 +4,36 @@
 
 # Coding Conventions
 
-- Write C with four-space indentation and K&R braces, following neighboring files. Use `snake_case`, `BSP_*` public constants, `s_` file-local state, `bsp_` public BSP APIs, and `demo_<feature>_<action>` demo entry points. Prefer `static` for internal symbols.
-- Keep UI text and default documentation in English. Explanatory source comments may use Chinese while retaining established English technical terms.
-- The baseline enables only LVGL Montserrat 14 and 20, which do not contain CJK glyphs. Chinese UTF-8 text therefore renders as missing-glyph boxes; changing source-file encoding does not fix it. Before adding Chinese UI text, compile and select a CJK font that covers every displayed character, prefer a glyph subset over a full font, configure a suitable fallback for mixed-language text, budget Flash and internal RAM, and verify the result on the device.
-- Put reusable hardware behavior in `components/bsp`; keep menus, animations, product interaction, and validation pages in `main`.
-- The `ui_pixel` theme (sky background, grass, title plate, mascot, ink-outlined panels) is part of the user interface, not a removable component. When trimming components or routing straight to a feature screen, keep the theme and build the screen through `ui_pixel_screen_create()` / `ui_pixel_panel_create()`.
-- Show the battery level in the top-right corner of a user interface by default, unless the developer specifies a different placement or explicitly does not want it. Read it from `bsp_battery_soc()` (and `bsp_battery_mv()` where useful); render it as a small battery indicator or percentage in the top-right area of the screen, and degrade gracefully when it reads `-1` (unavailable). Place it where it does not overlap the existing cloud decoration (`add_cloud`, around `x≈188, y≈8`): use the clear sky space beside or below the cloud, or the very top-right edge, rather than covering the cloud.
-- Document non-trivial functions, state, ownership, blocking behavior, task context, initialization order, failure values, register choices, timing, synchronization, and hardware-specific constants. Explain why, not merely what.
-- Add or update tests with code changes. If automation is not practical, record the test gap and exact manual validation path.
-- If adding a cache, define expiration and cleanup unless durable retention is explicitly justified.
-- The ESP32-C3 has no PSRAM. Review internal RAM and largest-contiguous-block impact before increasing LVGL buffers, audio allocations, network state, or task stacks.
-- **Watch power consumption.** This is a wearable powered by a small battery; keep it efficient. Avoid keeping the screen lit for long periods: dim or turn off the backlight, and return to a low-power state (light/deep sleep) whenever the screen is idle, so the device is not left displaying a bright screen while doing nothing. See the guidance on sleep in [`../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`](../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md).
+## C and naming
+
+- Use four-space indentation and K&R braces.
+- Use `snake_case` for functions and variables, `s_` for file-local state, `BSP_*` for public board constants, `bsp_` for public BSP APIs, and `demo_<feature>_<action>` for demo entry points.
+- Declare every symbol `static` unless another translation unit consumes it.
+- Keep UI strings in English. Source comments may use Chinese while retaining established English technical identifiers.
+
+## Ownership and runtime
+
+- Reusable board behavior, buses, drivers, and firmware constants belong in `components/bsp`; pages, application state, animations, and application tasks belong in `main`.
+- Every non-LVGL task or callback locks LVGL with `bsp_lvgl_lock()` before accessing an LVGL object and unlocks every successful lock path.
+- Button callbacks only enqueue or notify. Audio PCM, storage, networking, allocation, and waits run in worker tasks.
+- Page exit stops and joins every task, timer, callback, and event source that can reach the page before deleting its screen.
+- Each LVGL pointer keeps the type returned by its constructor. A pointer passed to `lv_label_set_text()` must come from `lv_label_create()`.
+
+## UI, fonts, and power
+
+- Preserve the existing `ui_pixel` visual system unless the requirement explicitly replaces it. A preserved screen uses `ui_pixel_screen_create()` and `ui_pixel_panel_create()`.
+- The baseline enables Montserrat 14 and 20 only; neither contains CJK glyphs. A change that adds CJK UI text also adds a glyph-subset font covering every displayed character, configures mixed-language fallback, reports Flash/RAM cost, and includes device glyph acceptance.
+- Every product application requirement defines an idle timeout, backlight behavior, and light/deep-sleep behavior. If any of these is omitted, ask the user before implementing power behavior.
+
+## Comments, data, and resources
+
+- Comment non-obvious ownership, blocking, task context, synchronization, failure values, register choices, timing, and hardware-specific constants. Do not comment a statement that is already self-explanatory.
+- Version every persistent on-device data format before release. A format change defines migration or explicitly authorizes erasure before code is written.
+- Create `main/assets/` only in a change that adds at least one tracked asset. Record source and license, register every embed/generation step, and report Flash and internal-RAM impact.
+- ESP32-C3 has no PSRAM. Any increase to an LVGL buffer, audio buffer, radio state, or task stack includes the build memory report and a device measurement of minimum free heap and largest free block.
+
+## Tests
+
+- A change to a hardware-independent state machine, protocol, timing rule, persistence codec, or layout calculation adds or updates `tests/test_*.c` in the same change.
+- A hardware-only change names the exact hardware-guide acceptance rows in the PR and reports them as `PASS`, `FAIL`, or `NOT RUN`.
+- Run `./tools/run-host-tests.sh` while iterating and `./tools/validate.sh` before delivery.

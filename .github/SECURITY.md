@@ -10,7 +10,7 @@ chat.
 
 ## Reporting a vulnerability
 
-The preferred channel is GitHub's private vulnerability reporting form:
+Use GitHub's private vulnerability reporting form:
 
 <https://github.com/FoloToy/ai-passport/security/advisories/new>
 
@@ -20,7 +20,7 @@ materials in that issue; wait for a maintainer to provide a private channel.
 
 ## What to include
 
-Please provide as much of the following as possible:
+Provide every available item below and write `not available` for each item you cannot obtain safely:
 
 - affected version, commit, or distribution channel;
 - affected board, component, and configuration;
@@ -28,9 +28,8 @@ Please provide as much of the following as possible:
   personal data;
 - potential impact, exploitation requirements, and any suggested mitigation.
 
-This repository contains firmware for a wearable AI device. Security issues may
-involve the ESP32-C3 firmware, the audio input, wireless capabilities, or
-protocol handling. If the issue also involves a separately maintained server or
+This policy covers the ESP32-C3 firmware, audio input, wireless capabilities,
+and protocol handling. If the issue also involves a separately maintained server or
 service, identify the affected endpoint and client version so that we can route
 it to the appropriate maintainers.
 
@@ -49,6 +48,6 @@ than 7 days, please ping us through the other channel (email or GitHub).
   in issues, test fixtures, or commits.
 - If you accidentally commit sensitive information, report it privately
   immediately. Deleting the file from the working tree does not invalidate
-  secrets that may exist in Git history.
+  copies that remain in Git history.
 - Use public issues for ordinary bugs, documentation problems, and feature
   requests. Do not use the security channel for those topics.

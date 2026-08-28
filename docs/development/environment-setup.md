@@ -25,8 +25,7 @@ Before installing anything:
    certificate verification, or package-manager configuration without explicit
    user authorization.
 6. Never use a machine-specific shell alias as a required command.
-7. Prefer official upstream and Espressif-operated download services. Do not
-   silently fall back to an unverified mirror.
+7. Use only official upstream or Espressif-operated download services. An additional mirror requires a URL explicitly supplied by the user.
 
 Start with read-only discovery:
 
@@ -44,9 +43,7 @@ If the correct environment is already active, continue at
 
 ## Choose a download route
 
-Use the international route by default. Use the mainland China route when the
-user requests it or direct GitHub/registry downloads are unavailable or too
-slow. Keep mirror variables scoped to the current terminal or command.
+Use the international route unless the user requests the mainland China route. Switch from the international route only when a download command returns non-zero or transfers no data for ten consecutive minutes. Keep mirror variables scoped to the current terminal or command.
 
 | Download | International default | Mainland China official route |
 | --- | --- | --- |
@@ -95,8 +92,7 @@ xcode-select --install
 brew install cmake ninja ccache dfu-util libusb python
 ```
 
-Do not launch `xcode-select --install` or install Homebrew without user approval;
-both are host-level changes and may require interaction.
+Do not launch `xcode-select --install` or install Homebrew without user approval. Both commands modify the host and can open an interactive installer.
 
 ### Windows and WSL2
 
@@ -173,8 +169,7 @@ printf 'IDF_PATH=%s\n' "${IDF_PATH}"
 Stop if the reported version is not exactly `ESP-IDF v5.5.3`. Do not generate
 project configuration with another version.
 
-For mainland China, optionally accelerate Managed Component archives in the
-current terminal:
+For the mainland China route, set the Managed Component storage endpoint in the current terminal:
 
 ```bash
 export IDF_COMPONENT_STORAGE_URL="https://components-file.espressif.cn"
@@ -199,17 +194,16 @@ or persist authentication data in repository files.
 
 ## Initialize the checkout
 
-From the repository root, prefer the firmware gate for the first build. It
+From the repository root, run the firmware gate for the first build. It
 creates and verifies the merged image intended for delivery and flashing:
 
 ```bash
 ./tools/validate.sh --firmware
 ```
 
-Use `idf.py set-target esp32c3` and `idf.py build` only when an incremental
-development build is useful. Before running `set-target` in an established
-workspace, inspect and preserve intentional local configuration because it may
-rename an existing ignored `sdkconfig` to `sdkconfig.old`.
+Use `idf.py set-target esp32c3` and `idf.py build` only after the first firmware gate has passed and the task needs a faster incremental build. Before running `set-target` in an established
+workspace, inspect and preserve the ignored `sdkconfig`; `set-target` renames an
+existing `sdkconfig` to `sdkconfig.old` when it regenerates the target configuration.
 
 `idf.py fullclean` removes build output but does not fully synchronize an
 existing `sdkconfig` with changed defaults.
@@ -231,14 +225,16 @@ Expected: ESP32-C3, 8 MB Flash, USB Serial/JTAG console, and no PSRAM.
 Run the static gate first, then the firmware gate:
 
 ```bash
+export ACTIONLINT_BIN="$(./tools/install-actionlint.sh)"
 ./tools/validate.sh --static
 ./tools/validate.sh --firmware
 ./tools/validate.sh
 ```
 
 The static gate requires Python 3, a C compiler, `curl`, `tar`, and a SHA-256
-tool. It downloads a checksum-pinned `actionlint` release into `/tmp` when one is
-not installed. The firmware gate is the preferred build path. It uses an
+tool. `install-actionlint.sh` downloads and verifies a pinned release in `/tmp`;
+`validate.sh` reports workflow lint as not run instead of downloading tools implicitly
+when `actionlint` is unavailable. The firmware gate is the required delivery build path. It uses an
 isolated temporary build and produces the verified `0x0` image at:
 
 ```text
@@ -263,7 +259,7 @@ pulling the image or using Docker.
 
 ## Flash and monitor
 
-Device access is optional for compilation but required for hardware validation.
+Compilation does not require a device. Hardware validation requires a connected device.
 Use a data-capable USB cable and discover the actual port; never hardcode it in
 the repository:
 
@@ -271,9 +267,7 @@ the repository:
 ls /dev/ttyACM* /dev/ttyUSB* 2>/dev/null
 ```
 
-On Linux, serial access commonly requires membership in `dialout` (or `uucp` on
-some distributions). Changing group membership requires user approval and a new
-login session:
+On Linux, run `ls -l <port>` and `id` after a permission error. If the port group is `dialout` or `uucp` and the user is not a member, changing group membership requires user approval and a new login session:
 
 ```bash
 sudo usermod -aG dialout "${USER}"
@@ -283,7 +277,7 @@ Close WebSerial pages and other serial monitors before flashing. Do not run the
 normal development flow permanently as root. Exit the ESP-IDF monitor with
 `Ctrl+]`.
 
-Prefer flashing the verified merged image from offset `0x0`:
+Flash the verified merged image from offset `0x0` for delivery and acceptance:
 
 ```bash
 python -m esptool --chip esp32c3 -p <port> -b 460800 \

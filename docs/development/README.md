@@ -4,18 +4,14 @@
 
 # Development Guidelines
 
-This directory contains AI Passport engineering rules and reusable workflows. Rules should identify their trigger, required action, prohibited action, validation, and exceptions. Hardware facts belong in `docs/hardware-design/`; automatable requirements must also be enforced by tooling or CI.
+This directory contains the complete engineering path from an application requirement to a verified merged firmware image. Hardware facts remain in `docs/hardware-design/`.
 
 ## Documents
 
-- [agent-guide.md](agent-guide.md): AI-assisted development workflow.
-- [environment-setup.md](environment-setup.md): clean-machine bootstrap for AI agents, including international and mainland China download routes.
-- [build-and-test.md](build-and-test.md): ESP-IDF build and validation.
-- [coding-conventions.md](coding-conventions.md): source-code and resource conventions.
-- [CI-validation.md](CI-validation.md): pull-request and main-branch checks.
-- [CI-build-and-release.md](CI-build-and-release.md): tagged firmware builds and releases.
-- [CI-sync-main.md](CI-sync-main.md): upstream synchronization for forks.
-- [publish-to-community.md](publish-to-community.md): publishing firmware to the AI Passport community market.
-- [after-release.md](after-release.md): post-release follow-up for suggestions and experience.
-- [file-issues.md](file-issues.md): filing a suggestion as an upstream GitHub issue.
-- [experience-notes.md](experience-notes.md): index of development experience entries under `docs/experiences/`.
+- [agent-guide.md](agent-guide.md): code-change workflow, source priorities, BSP boundary, runtime rules, and delivery fields.
+- [environment-setup.md](environment-setup.md): clean-machine ESP-IDF 5.5.3 setup for international and mainland-China networks.
+- [build-and-test.md](build-and-test.md): exact local checks, firmware output, CI triggers, release behavior, and device-test boundary.
+- [coding-conventions.md](coding-conventions.md): C, LVGL, naming, resources, and host-test rules.
+- [repository-optimization-plan.md](repository-optimization-plan.md): decisions and implementation record for the minimal AI-to-firmware baseline.
+
+Every new engineering rule states its trigger, required action, prohibited action, and validation command. Rules that can be automated must also be implemented in `tools/` or CI.

@@ -4,45 +4,42 @@
 
 # Documentation Conventions
 
-These rules apply equally to human contributors and AI agents. Documentation is reviewed and fact-checked like code; authority follows a document's responsibility, not its author.
+These rules apply to human contributors and AI agents. A document owns only the facts assigned to it by `docs/INDEX.md`.
 
-## Language and file layout
+## Language and pairing
 
-- English is mandatory at every maintained default Markdown path: `name.md`.
-- Simplified Chinese is provided at the paired path `name.zh_CN.md`.
-- Both files begin with reciprocal language links. Keep their headings, facts, examples, safety warnings, and links aligned in the same change.
-- English default prose must not contain Chinese text. The `简体中文` switch label is the only allowed CJK text on an English page.
-- Code, commands, paths, URLs, identifiers, and data fields remain unchanged between translations where appropriate.
-- The repository check rejects an unpaired document, a missing language switch, or CJK prose in an English default file.
+- Every maintained Markdown default path, `name.md`, contains English prose and has a Simplified Chinese `name.zh_CN.md` pair.
+- Both files begin with reciprocal language links and keep heading levels, facts, commands, code blocks, safety warnings, and local-link targets aligned in the same change.
+- Commands, paths, URLs, identifiers, and data fields remain byte-identical when translation does not change their meaning.
+- The English file contains no CJK prose except the `简体中文` language-switch label.
+- `python3 tools/check_repo.py` rejects missing pairs, missing language links, CJK English prose, broken links, and structural drift on mandatory AI-path documents.
 
-## Task-based context
+## Context and authority
 
-- Every task starts with root `AGENTS.md` only.
-- Follow its routing table and read only documents and source relevant to the change.
-- Use `docs/README.md` for the overview and `docs/INDEX.md` for discovery.
-- Update the authoritative source of a changed fact and documents that directly reference it; do not create a second source of truth.
-
-## Responsibilities
-
-- Upstream baseline documents cover AI Passport hardware, BSP behavior, baseline demos, engineering constraints, and acceptance methods.
-- Shared contribution and engineering documents cover code style, testing, commits, CI, and AI workflows grounded in this repository's real tools.
-- Fork-only product requirements, business logic, or assets stay in the fork's root README or `docs/assets/`.
+- Every task begins with root `AGENTS.md`; the task routing table names every additional mandatory document.
+- `docs/README.md` owns the capability contract. `docs/hardware-design/specifications.md` owns product hardware. The hardware guide owns engineering constraints and device acceptance. `bsp_pins.h` owns firmware constants.
+- Update the authoritative document and every direct reference in the same change. Do not create a second narrative source for the same rule or hardware fact.
+- The current checkout is self-contained. Maintained instructions must not require a remote branch, community archive, website content, private file, or untracked local configuration.
 
 ## Placement
 
-- Keep the tracked repository root limited to tool-discovery files (`AGENTS.md`, `CLAUDE.md` and their translations), an optional fork README pair, license/build manifests, and ESP-IDF configuration.
-- Put project documentation and history in `docs/`, grouped by contribution, development, hardware, and software responsibility.
-- Put GitHub-recognized community files, templates, issue forms, and workflows in `.github/`.
-- Put reusable binary/source assets in `assets/`, project skills in `skills/`, and automation in `tools/`.
-- Repository checks reject additional root Markdown. Do not add a root document merely for visibility; link it from `docs/INDEX.md` instead.
+- Root Markdown is limited to `AGENTS.md`, `AGENTS.zh_CN.md`, `CLAUDE.md`, and `CLAUDE.zh_CN.md`.
+- Product and engineering documents live in `docs/`; GitHub-recognized policy, templates, forms, and workflows live in `.github/`; automation lives in `tools/`.
+- Application assets live in `main/assets/`, created only in a change that adds at least one tracked asset. Reusable board resources consumed by BSP code live in `components/bsp`.
+- Do not create an empty directory, placeholder README, archive, experience log, brand library, publishing guide, fork guide, or project-operation skill in this firmware baseline.
+- Register every added document in `docs/INDEX.md` or its directory index and remove every inbound link when deleting a document.
 
-Do not create empty document scaffolding without a concrete purpose. Register added documents in `docs/INDEX.md` or their directory index and update links when moving or deleting files.
+## Writing and verification
 
-## Writing, safety, and file operations
+- State exact triggers, actions, prohibited actions, outputs, failure states, and validation commands. Replace “as needed,” “appropriate,” “relevant,” and similar qualifiers with a measurable condition.
+- State an unverified hardware claim as `Unverified`, identify the missing measurement, and prohibit code from depending on it. Ask the user before turning it into a product fact.
+- Explain ownership, rationale, failure mode, and acceptance; do not restate source code line by line.
+- Only the release maintainer updates `docs/CHANGELOG.md`, and only for released upstream baseline behavior or compatibility.
+- Run `./tools/validate.sh --static` after every documentation set is complete.
 
-- Explain rationale, boundaries, failure modes, and validation instead of restating source code.
-- State product facts and public hardware interfaces directly; omit provenance and source-availability commentary.
-- Enforce automatable rules in `tools/` and CI as well as documentation.
-- Record user-visible behavior, compatibility, and release-flow changes in `docs/CHANGELOG.md`.
-- Never commit credentials, tokens, keys, authorization files, private keys, personal data, internal endpoints, or unsanitized device QR parameters. Run `./tools/validate.sh --static` before committing.
-- Preserve existing user changes and untracked files. Use recoverable deletion for user files, and confirm intent before deleting branches, tags, or remote references.
+## Security and file operations
+
+- Never store credentials, tokens, authorization files, private keys, personal data, internal endpoints, device QR secrets, or unsanitized logs in files, tests, examples, commits, or PR text.
+- A sanitized device URL uses literal placeholders: `https://example.invalid/?s=<secret>&k=<key>`.
+- Preserve existing user changes and untracked files. Delete only targets explicitly authorized by the user or required by the accepted task scope.
+- Tracked deletions remain recoverable from Git history. Branch, tag, remote-reference, and history-rewrite operations require explicit authorization.

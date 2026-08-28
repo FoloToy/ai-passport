@@ -15,7 +15,7 @@
 - LVGL 非线程安全。LVGL 任务之外访问 LVGL 对象时必须持有 `bsp_lvgl_lock()`。
 - 按键回调不得阻塞。音频、存储、网络等慢操作必须放入工作任务。
 - demo 删除 screen 前，必须停止所有可能访问其 UI 的任务、定时器、回调和事件处理器。
-- 可测试的状态机、协议、计时和布局计算应与 ESP-IDF/LVGL 解耦，并由 host tests 覆盖。
+- 不依赖硬件的状态机、协议、计时规则、持久化格式和布局计算必须与 ESP-IDF/LVGL 解耦，并由 `tests/test_*.c` 覆盖。
 - 禁止提交凭证、设备二维码秘密、私钥、个人数据或未脱敏日志。
 - 所有维护中的 Markdown 默认 `.md` 路径必须为英文，简体中文使用配对的 `.zh_CN.md` 文件。两种语言必须保持一致并保留互相切换链接。
 
@@ -23,21 +23,20 @@
 
 | 任务 | 修改前读取 |
 | --- | --- |
-| 任意代码修改 | `docs/development/agent-guide.zh_CN.md`、相关头文件和相邻实现 |
+| 任意代码修改 | `docs/development/agent-guide.zh_CN.md`、声明被修改符号的每个头文件，以及本任务修改的实现与调用方 |
 | 环境引导或缺少工具链 | `docs/development/environment-setup.zh_CN.md` |
 | BSP、引脚、总线、显示、音频、电池 | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md`、`components/bsp/include/bsp_pins.h` |
 | Demo 或菜单 | `main/demo.h`、`main/main.c`、最近的 `main/demo_*.c` 实现 |
 | 构建、测试、依赖、分区 | `docs/development/build-and-test.zh_CN.md`、`sdkconfig.defaults`、`partitions.csv` |
-| CI 或发布 | `docs/development/CI-*.zh_CN.md` 中的对应文件与 `.github/workflows/` |
-| 发布后收尾 | `docs/development/after-release.zh_CN.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
+| CI 或发布 | `docs/development/build-and-test.zh_CN.md` 与 `.github/workflows/` |
 | 文档 | `docs/contribution/doc-conventions.zh_CN.md`、`docs/INDEX.zh_CN.md` |
 | Commit 或 PR | `docs/contribution/commit-and-pr.zh_CN.md` |
 
-产品概览见 `docs/README.zh_CN.md`；需要发现更多文档时读 `docs/INDEX.zh_CN.md`。Fork 专用流程见 `docs/fork-guide.zh_CN.md`，普通上游开发无需读取。
+产品概览见 `docs/README.zh_CN.md`；需要发现更多文档时读 `docs/INDEX.zh_CN.md`。
 
 ## 必须执行的验证与交付格式
 
-迭代时运行最小相关检查，交付前运行完整门禁：
+迭代期间：文档与仓库规则修改运行 `python3 tools/check_repo.py`；主机测试或纯逻辑修改运行 `./tools/run-host-tests.sh`；workflow 修改运行 `./tools/validate.sh --static`；固件修改运行 `./tools/validate.sh --firmware`。每次交付都运行完整门禁：
 
 ```bash
 ./tools/validate.sh --static    # 仓库检查 + host tests
@@ -54,6 +53,6 @@ Device tests: PASS / FAIL / NOT RUN
 Unverified: 仍需板卡、仪器或用户确认的事项
 ```
 
-仅在用户请求或当前工作流明确要求时创建 commit 和 push。用户可见变化记录到 `docs/CHANGELOG.zh_CN.md`；内部重构、CI 维护、拼写修复和生成文件刷新无需记录。
+仅在用户请求或当前工作流明确要求时创建 commit 和 push。普通功能分支在自己的 README 中记录应用行为，不追加上游 changelog。发布维护者在发布基线行为与兼容性变化时更新 `docs/CHANGELOG.zh_CN.md`。
 
 社区规范见 `.github/CONTRIBUTING.zh_CN.md`、`.github/CODE_OF_CONDUCT.zh_CN.md`、`.github/SECURITY.zh_CN.md` 与 `.github/SUPPORT.zh_CN.md`。

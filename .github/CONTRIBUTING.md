@@ -4,11 +4,7 @@
 
 # Contributing
 
-Thank you for contributing to FoloToy AI Passport — code, documentation,
-firmware, and feedback. This repository is the development baseline for
-open-source wearable AI hardware designed for AI agents. It is often forked for
-second development; the fork conventions are in
-[`docs/fork-guide.md`](../docs/fork-guide.md).
+Thank you for contributing code, documentation, firmware, or feedback to the self-contained FoloToy AI Passport firmware baseline.
 
 ## Before you start
 
@@ -20,34 +16,29 @@ second development; the fork conventions are in
 - Follow [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) when participating in the
   community. For ordinary usage questions, see [`SUPPORT.md`](SUPPORT.md).
 - Do not commit credentials, tokens, authorization files, or personal data.
-- The repository's `main` branch stays in sync with the upstream baseline; fork
-  users develop feature work in `feature/*` branches (see `docs/fork-guide.md`).
+- Create contribution branches from `main`; never make an application depend on a remote demo branch.
 
 ## Development and verification
 
 Use ESP-IDF 5.5.3. For a clean-machine setup, follow the
 [environment bootstrap](../docs/development/environment-setup.md).
 
-Prefer the repository firmware gate for builds and flash its verified merged
-image at `0x0`. The direct IDF commands below are for incremental development.
+Use the repository gates for delivery. Direct IDF commands are limited to incremental development.
 
 ```bash
 source <path-to-esp-idf-v5.5.3>/export.sh
 idf.py --version             # must report ESP-IDF v5.5.3
-./tools/validate.sh --firmware # preferred merged-image build
+./tools/validate.sh --firmware # required merged-image build
 idf.py set-target esp32c3     # Configure the target chip (fresh checkout / after target change)
-idf.py build                  # Optional incremental application build
-idf.py flash monitor          # Optional incremental application flash
+idf.py build                  # Incremental application build only
+idf.py flash monitor          # Incremental application flash only
 idf.py fullclean              # Clear stale build state (never for user source changes)
 ```
 
-The current baseline includes a pure-logic test that runs without hardware:
+Run all hardware-independent tests through the repository runner:
 
 ```bash
-cc -std=c11 -Wall -Wextra -Werror -Imain \
-  tests/test_ui_pixel_math.c main/ui_pixel_math.c \
-  -o /tmp/test_ui_pixel_math
-/tmp/test_ui_pixel_math
+./tools/run-host-tests.sh
 ```
 
 The repository provides one validation entry point for local development and CI:
@@ -80,9 +71,7 @@ build as successful hardware validation.
 5. Wait for CI and review; do not push directly to `main` unless you are a
    maintainer handling an explicit exception.
 
-Small documentation fixes are welcome as pull requests. For larger changes to
-hardware, architecture, or user data, please open an issue first to discuss
-scope and compatibility.
+Open an issue before changing electrical mappings, public BSP APIs, partition layout, or an on-device persistent-data format. Open a pull request directly for every other single-scope change.
 
 ## Licensing of contributions
 

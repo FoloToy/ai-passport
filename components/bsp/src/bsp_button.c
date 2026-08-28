@@ -8,6 +8,7 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "esp_log.h"
+#include "driver/gpio.h"
 
 static const char *TAG = "bsp_btn";
 
@@ -100,4 +101,34 @@ int bsp_button_read_mv(void) {
     if (adc_oneshot_read(s_adc, BSP_BTN_ADC_CHANNEL, &raw) != ESP_OK) return -1;
     if (adc_cali_raw_to_voltage(s_cali, raw, &mv) != ESP_OK) return -1;
     return mv;
+}
+
+esp_err_t bsp_button_prepare_wakeup(void) {
+    if (!s_adc) return ESP_ERR_INVALID_STATE;
+
+    esp_err_t e = iot_button_stop();
+    if (e != ESP_OK) return e;
+
+    const gpio_config_t cfg = {
+        .pin_bit_mask = 1ULL << BSP_BTN_GPIO,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    e = gpio_config(&cfg);
+    if (e != ESP_OK) iot_button_resume();
+    return e;
+}
+
+esp_err_t bsp_button_resume_after_wakeup(void) {
+    if (!s_adc) return ESP_ERR_INVALID_STATE;
+
+    const adc_oneshot_chan_cfg_t cfg = {
+        .atten = BSP_BTN_ATTEN,
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
+    };
+    esp_err_t e = adc_oneshot_config_channel(s_adc, BSP_BTN_ADC_CHANNEL, &cfg);
+    if (e != ESP_OK) return e;
+    return iot_button_resume();
 }

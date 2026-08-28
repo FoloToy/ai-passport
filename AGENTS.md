@@ -15,7 +15,7 @@ This file is the only mandatory entry point for AI-assisted work in this reposit
 - LVGL is not thread-safe. Code outside the LVGL task must hold `bsp_lvgl_lock()` while accessing LVGL objects.
 - Button callbacks must stay non-blocking. Audio, storage, networking, and other slow operations belong in worker tasks.
 - A demo must stop every task, timer, callback, and event handler that can access its UI before deleting the screen.
-- Keep testable state machines, protocols, timing, and layout calculations independent from ESP-IDF/LVGL and cover them with host tests.
+- State machines, protocols, timing rules, persistence formats, and layout calculations that do not require hardware must be independent from ESP-IDF/LVGL and covered by `tests/test_*.c`.
 - Never commit credentials, device QR secrets, private keys, personal data, or unsanitized logs.
 - Every maintained Markdown document uses English at its default `.md` path and Simplified Chinese in a paired `.zh_CN.md` file. Keep both versions aligned and retain reciprocal language links.
 
@@ -23,21 +23,20 @@ This file is the only mandatory entry point for AI-assisted work in this reposit
 
 | Task | Read before editing |
 | --- | --- |
-| Any code change | `docs/development/agent-guide.md`, relevant headers and neighboring implementation |
+| Any code change | `docs/development/agent-guide.md`, each header that declares a modified symbol, and the implementation and callers changed by the task |
 | Environment bootstrap or missing toolchain | `docs/development/environment-setup.md` |
 | BSP, pins, buses, display, audio, battery | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`, `components/bsp/include/bsp_pins.h` |
 | Demo or menu | `main/demo.h`, `main/main.c`, the nearest `main/demo_*.c` implementation |
 | Build, test, dependencies, partitions | `docs/development/build-and-test.md`, `sdkconfig.defaults`, `partitions.csv` |
-| CI or release | the matching file in `docs/development/CI-*.md` and `.github/workflows/` |
-| Post-release follow-up | `docs/development/after-release.md` (then the `issue-suggestions` or `experience-pr` skill) |
+| CI or release | `docs/development/build-and-test.md` and `.github/workflows/` |
 | Documentation | `docs/contribution/doc-conventions.md`, `docs/INDEX.md` |
 | Commit or PR | `docs/contribution/commit-and-pr.md` |
 
-Use `docs/README.md` for the product overview and `docs/INDEX.md` when a task needs additional documentation. Fork-specific workflow is in `docs/fork-guide.md` and is not required for ordinary upstream development.
+Use `docs/README.md` for the product overview and `docs/INDEX.md` when a task needs additional documentation.
 
 ## Required validation and delivery
 
-Run the smallest relevant check while iterating, then run the complete gate before delivery:
+During iteration, documentation and repository-policy changes run `python3 tools/check_repo.py`; host-test or pure-logic changes run `./tools/run-host-tests.sh`; workflow changes run `./tools/validate.sh --static`; firmware changes run `./tools/validate.sh --firmware`. Every delivery runs the complete gate:
 
 ```bash
 ./tools/validate.sh --static    # repository checks + host tests
@@ -54,6 +53,6 @@ Device tests: PASS / FAIL / NOT RUN
 Unverified: remaining board, instrument, or user checks
 ```
 
-Create commits and push only when the user requests them or the active workflow explicitly requires them. Record user-visible changes in `docs/CHANGELOG.md`; internal refactors, CI maintenance, typo fixes, and generated-file refreshes do not require a changelog entry.
+Create commits and push only when the user requests them or the active workflow explicitly requires them. Ordinary feature branches document application behavior in their own README and do not append to the upstream changelog. The release maintainer updates `docs/CHANGELOG.md` for released baseline behavior and compatibility.
 
 Community guidance is in `.github/CONTRIBUTING.md`, `.github/CODE_OF_CONDUCT.md`, `.github/SECURITY.md`, and `.github/SUPPORT.md`.

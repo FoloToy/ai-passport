@@ -4,9 +4,7 @@
 
 # 贡献指南
 
-感谢你为 FoloToy AI Passport 贡献代码、文档、固件和反馈。本仓库是面向 AI agent 的
-开源可穿戴 AI 硬件的开发基线。它常被 fork 后二次开发，fork 用户约定见
-[`docs/fork-guide.zh_CN.md`](../docs/fork-guide.zh_CN.md)。
+感谢你为自包含的 FoloToy AI Passport 固件基线贡献代码、文档、固件或反馈。
 
 ## 开始之前
 
@@ -15,33 +13,29 @@
   [AI 硬件开发指南](../docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md) 的完整硬件上下文。
 - 参与社区时请遵守 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)；普通使用问题见 [`SUPPORT.md`](SUPPORT.md)。
 - 不要提交凭证、令牌、授权文件或个人数据。
-- 仓库的 `main` 分支始终与上游基线保持同步；fork 用户在 `feature/*` 分支开发功能（见 `docs/fork-guide.md`）。
+- 贡献分支必须从 `main` 创建；应用不得依赖远程 demo 分支。
 
 ## 开发与验证
 
 使用 ESP-IDF 5.5.3。全新机器先按
 [环境引导](../docs/development/environment-setup.zh_CN.md)完成安装。
 
-编译优先运行仓库固件门禁，烧录优先把验证过的合并镜像写入 `0x0`。以下直接
-IDF 命令只用于增量开发。
+交付必须运行仓库门禁。直接 IDF 命令只用于增量开发。
 
 ```bash
 source <ESP-IDF-v5.5.3-路径>/export.sh
 idf.py --version             # 必须输出 ESP-IDF v5.5.3
-./tools/validate.sh --firmware # 优先生成合并固件
+./tools/validate.sh --firmware # 必须生成合并固件
 idf.py set-target esp32c3     # 配置目标芯片（fresh checkout 后/换 target 后运行）
-idf.py build                  # 可选：增量 app 编译
-idf.py flash monitor          # 可选：增量 app 烧录
+idf.py build                  # 仅用于增量 app 编译
+idf.py flash monitor          # 仅用于增量 app 烧录
 idf.py fullclean              # 配置过期时清空生成状态（勿用于清理用户源码改动）
 ```
 
-当前基线含一个可脱离硬件运行的纯逻辑测试：
+所有脱离硬件的测试通过仓库 runner 执行：
 
 ```bash
-cc -std=c11 -Wall -Wextra -Werror -Imain \
-  tests/test_ui_pixel_math.c main/ui_pixel_math.c \
-  -o /tmp/test_ui_pixel_math
-/tmp/test_ui_pixel_math
+./tools/run-host-tests.sh
 ```
 
 本仓库为本地开发和 CI 提供同一个验证入口：
@@ -67,8 +61,7 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
    ADC、DMA 改动显式记录观察到的真机结果。
 5. 等待 CI 和 review；除维护者显式例外外，不要直接向 `main` 推送。
 
-小型文档修正也欢迎直接提交 PR。涉及硬件、架构或用户数据的较大改动，建议先开 issue
-讨论范围和兼容性。
+修改电气映射、公开 BSP API、分区布局或设备持久化格式前必须先开 Issue。其它范围单一的变更直接建立 PR。
 
 ## 贡献的许可
 

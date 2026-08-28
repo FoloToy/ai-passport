@@ -4,11 +4,11 @@
 
 # Contribution Guidelines
 
-This directory contains human/AI collaboration, documentation, commit, and pull-request rules.
-
-Rules must state their trigger, required action, prohibited action, validation method, and exceptions. Product facts belong in the corresponding design document; fork-private business content does not return upstream. Automatable rules must also be enforced by tools or CI.
+This directory contains the complete documentation and pull-request rules for human contributors and AI agents.
 
 ## Documents
 
-- [doc-conventions.md](doc-conventions.md): context routing, English-default bilingual documents, ownership, maintenance, and content safety.
-- [commit-and-pr.md](commit-and-pr.md): commit and pull-request conventions.
+- [doc-conventions.md](doc-conventions.md): bilingual structure, authority, placement, writing, security, and file operations.
+- [commit-and-pr.md](commit-and-pr.md): commit format, PR evidence, validation fields, and review scope.
+
+Every rule states its trigger, required action, prohibited action, and validation command. Product and board facts remain in `docs/hardware-design/`.

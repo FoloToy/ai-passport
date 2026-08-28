@@ -47,14 +47,14 @@
 //
 // ⚠ 不能改用【内部上拉】:约 45kΩ 且精度差,会把三档全挤到 0~154mV 并随温漂重叠。
 //
-// ★ 换了分压/上拉阻值怎么办:进 demo 的 Button 页,它实时显示当前 ADC 电压;
-//   逐个按住三个键记下读数,取相邻两档的中点作为窗口边界,改下面的 BSP_BTN_MV 即可。
+// Button 页实时显示 ADC 电压,用于核对量产实测范围;不得用理论分压值替换实测窗口。
 // ============================================================================
 #define BSP_BTN_ADC_UNIT     ADC_UNIT_1
 #define BSP_BTN_ADC_CHANNEL  ADC_CHANNEL_0    // GPIO0
+#define BSP_BTN_GPIO         0                // light/deep sleep 低电平唤醒
 #define BSP_BTN_COUNT        3
 
-// 每键的电压窗口 {min_mV, max_mV};边界取相邻档中点。
+// 量产板实测电压窗口 {min_mV, max_mV}。
 // 确定键上界留宽到 1900,是为了和松开态的 3300mV 拉开距离。
 #define BSP_BTN_MV_TABLE  { {0, 150}, {150, 447}, {447, 1900} }
 
@@ -64,6 +64,9 @@
 #define BSP_I2C_PORT         I2C_NUM_0
 #define BSP_I2C_SDA          10
 #define BSP_I2C_SCL          7
+// 量产板 SDA/SCL 各自通过 2.2kΩ 外部电阻上拉到 3.3V。
+#define BSP_I2C_PULLUP_OHM   2200
+#define BSP_I2C_PULLUP_MV    3300
 #define BSP_I2C_ES8311_ADDR  0x18    // 7 位地址(8 位形式为 0x30)
 #define BSP_I2C_CW2017_ADDR  0x63    // 7 位地址
 
@@ -76,5 +79,5 @@
 #define BSP_I2S_WS           3
 #define BSP_I2S_DOUT         2       // 播放:MCU → codec
 #define BSP_I2S_DIN          4       // 录音:codec → MCU
-// -1 = 功放使能脚未接 MCU(常通)。若你的板子接了,填对应 GPIO。
+// -1 = 量产板功放无 MCU 使能脚,由电池直接供电。
 #define BSP_I2S_PA_CTRL      (-1)

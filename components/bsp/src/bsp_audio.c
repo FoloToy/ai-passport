@@ -104,7 +104,8 @@ esp_err_t bsp_audio_init(void) {
         .pa_reverted = false,
         .master_mode = false,          // MCU I2S 为 master,codec 为 slave
         .use_mclk    = true,
-        .hw_gain     = { .pa_voltage = 5.0f, .codec_dac_voltage = 3.3f },
+        // 量产板功放直接由电池供电。音量补偿按满电 4.2V 固定校准。
+        .hw_gain     = { .pa_voltage = 4.2f, .codec_dac_voltage = 3.3f },
         // ⚠ 单声道纯麦克风录音必须为 true。false 会让驱动写 REG44=0x58 进入
         //   ADCL+DACR 参考模式,单声道读到的那一路是 DAC 参考 → 【录音恒为 0】。
         .no_dac_ref  = true,

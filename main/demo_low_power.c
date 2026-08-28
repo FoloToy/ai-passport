@@ -1,9 +1,11 @@
-// main/demo_low_power.c —— light/deep sleep + RTC timer 唤醒验证。
-// 不使用按键唤醒：仓库尚无板级唤醒电路证据。
+// main/demo_low_power.c —— light/deep sleep + RTC timer/GPIO0 按键唤醒验证。
 #include "demo.h"
+#include "bsp_button.h"
 #include "bsp_display.h"
+#include "bsp_pins.h"
 #include "ui_pixel.h"
 
+#include "driver/gpio.h"
 #include "esp_attr.h"
 #include "esp_log.h"
 #include "esp_err.h"
@@ -36,6 +38,53 @@ static int s_selected;
 static RTC_DATA_ATTR uint32_t s_deep_sleep_magic;
 static RTC_DATA_ATTR uint32_t s_deep_sleep_count;
 
+static const char *wake_name(esp_sleep_wakeup_cause_t cause)
+{
+    return cause == ESP_SLEEP_WAKEUP_GPIO ? "BUTTON"
+         : cause == ESP_SLEEP_WAKEUP_TIMER ? "TIMER"
+         : "UNKNOWN";
+}
+
+static esp_err_t wait_button_released(void)
+{
+    for (int elapsed_ms = 0; elapsed_ms < 1000; elapsed_ms += 10) {
+        if (gpio_get_level(BSP_BTN_GPIO) != 0) return ESP_OK;
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    return ESP_ERR_TIMEOUT;
+}
+
+static esp_err_t prepare_button_wakeup(bool deep_sleep)
+{
+    esp_err_t err = bsp_button_prepare_wakeup();
+    if (err != ESP_OK) return err;
+
+    err = wait_button_released();
+    if (err == ESP_OK) {
+        if (deep_sleep) {
+            err = esp_deep_sleep_enable_gpio_wakeup(
+                1ULL << BSP_BTN_GPIO, ESP_GPIO_WAKEUP_GPIO_LOW);
+        } else {
+            err = gpio_wakeup_enable(BSP_BTN_GPIO, GPIO_INTR_LOW_LEVEL);
+            if (err == ESP_OK) err = esp_sleep_enable_gpio_wakeup();
+        }
+    }
+    if (err != ESP_OK) {
+        if (!deep_sleep) gpio_wakeup_disable(BSP_BTN_GPIO);
+        esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
+        bsp_button_resume_after_wakeup();
+    }
+    return err;
+}
+
+static esp_err_t resume_button_after_light_sleep(void)
+{
+    esp_err_t disable_err = gpio_wakeup_disable(BSP_BTN_GPIO);
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
+    esp_err_t resume_err = bsp_button_resume_after_wakeup();
+    return disable_err != ESP_OK ? disable_err : resume_err;
+}
+
 static void menu_refresh(void)
 {
     for (int i = 0; i < 2; i++) {
@@ -60,36 +109,54 @@ static void sleep_task(void *arg)
 
         s_busy = true;
         if (command == SLEEP_COMMAND_DEEP) {
-            set_status("DEEP SLEEP: 5 SEC\nApplication will restart");
+            set_status("DEEP SLEEP\n5 SEC OR ANY BUTTON");
             vTaskDelay(pdMS_TO_TICKS(250));
+            bool button_prepared = false;
             esp_err_t err = esp_sleep_enable_timer_wakeup(DEEP_SLEEP_TIME_US);
+            if (err == ESP_OK) {
+                err = prepare_button_wakeup(true);
+                button_prepared = err == ESP_OK;
+            }
             if (err == ESP_OK) {
                 if (s_deep_sleep_magic != DEEP_SLEEP_MAGIC) s_deep_sleep_count = 0;
                 s_deep_sleep_magic = DEEP_SLEEP_MAGIC;
                 s_deep_sleep_count++;
                 bsp_display_backlight(0);
                 esp_deep_sleep_start();
+                err = ESP_FAIL;
             }
+            esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+            esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
+            if (button_prepared) bsp_button_resume_after_wakeup();
             char text[96];
             snprintf(text, sizeof(text), "Deep sleep failed:\n%s", esp_err_to_name(err));
             set_status(text);
             ESP_LOGE(TAG, "deep sleep 失败: %s", esp_err_to_name(err));
         } else {
-            set_status("LIGHT SLEEP: 2 SEC\nTimer wakeup");
+            set_status("LIGHT SLEEP\n2 SEC OR ANY BUTTON");
             vTaskDelay(pdMS_TO_TICKS(150));
-            bsp_display_backlight(0);
 
+            bool button_prepared = false;
             esp_err_t err = esp_sleep_enable_timer_wakeup(LIGHT_SLEEP_TIME_US);
+            if (err == ESP_OK) {
+                err = prepare_button_wakeup(false);
+                button_prepared = err == ESP_OK;
+            }
+            bsp_display_backlight(0);
             int64_t before = esp_timer_get_time();
             if (err == ESP_OK) err = esp_light_sleep_start();
             int64_t slept_ms = (esp_timer_get_time() - before) / 1000;
             esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+            esp_err_t resume_err = button_prepared
+                ? resume_button_after_light_sleep()
+                : ESP_OK;
+            if (err == ESP_OK && resume_err != ESP_OK) err = resume_err;
             bsp_display_backlight(100);
 
             char text[128];
             if (err == ESP_OK) {
-                snprintf(text, sizeof(text), "LIGHT WAKE: TIMER\nSlept: %lld ms",
-                         (long long)slept_ms);
+                snprintf(text, sizeof(text), "LIGHT WAKE: %s\nSlept: %lld ms",
+                         wake_name(esp_sleep_get_wakeup_cause()), (long long)slept_ms);
             } else {
                 snprintf(text, sizeof(text), "Light sleep failed:\n%s", esp_err_to_name(err));
                 ESP_LOGE(TAG, "light sleep 失败: %s", esp_err_to_name(err));
@@ -109,18 +176,20 @@ void demo_low_power_enter(void)
     lv_obj_set_style_text_align(s_status, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_text_color(s_status, lv_color_hex(UI_INK), 0);
     lv_obj_align(s_status, LV_ALIGN_TOP_MID, 0, 1);
+    esp_sleep_wakeup_cause_t wake_cause = esp_sleep_get_wakeup_cause();
     if (s_deep_sleep_magic == DEEP_SLEEP_MAGIC &&
-        esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
+        (wake_cause == ESP_SLEEP_WAKEUP_TIMER || wake_cause == ESP_SLEEP_WAKEUP_GPIO)) {
         lv_label_set_text_fmt(s_status,
-                              "DEEP TIMER WAKE  #%lu\nUP/DOWN: SELECT  OK: RUN",
+                              "DEEP %s WAKE  #%lu\nUP/DOWN: SELECT  OK: RUN",
+                              wake_name(wake_cause),
                               (unsigned long)s_deep_sleep_count);
     } else {
-        lv_label_set_text(s_status, "UP/DOWN: SELECT  OK: RUN\nRTC TIMER WAKE ONLY");
+        lv_label_set_text(s_status, "UP/DOWN: SELECT  OK: RUN\nTIMER OR ANY BUTTON WAKE");
     }
 
     static const char *MODE_NAMES[] = {
-        "LIGHT SLEEP  |  2 SEC",
-        "DEEP SLEEP   |  5 SEC",
+        "LIGHT  |  BUTTON / 2 SEC",
+        "DEEP   |  BUTTON / 5 SEC",
     };
     for (int i = 0; i < 2; i++) {
         s_mode_cards[i] = ui_pixel_panel_create(panel, 7, 56 + i * 54,
@@ -151,6 +220,8 @@ void demo_low_power_exit(void)
     s_busy = false;
     bsp_display_backlight(100);
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+    gpio_wakeup_disable(BSP_BTN_GPIO);
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_GPIO);
     if (s_scr) {
         lv_obj_delete(s_scr);
         s_scr = NULL;

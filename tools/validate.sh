@@ -10,26 +10,32 @@ usage() {
 
 run_static_checks() {
     local actionlint_bin
-    local test_dir
+    local status=0
 
-    python3 tools/check_repo.py
+    if ! python3 tools/check_repo.py; then
+        status=1
+    fi
+
+    if ! ./tools/run-host-tests.sh; then
+        status=1
+    fi
 
     actionlint_bin="${ACTIONLINT_BIN:-}"
     if [[ -z "${actionlint_bin}" ]]; then
         actionlint_bin="$(command -v actionlint || true)"
     fi
     if [[ -z "${actionlint_bin}" || ! -x "${actionlint_bin}" ]]; then
-        actionlint_bin="$(./tools/install-actionlint.sh)"
+        echo "Workflow lint: NOT RUN (actionlint is unavailable)." >&2
+        echo "Install it with ./tools/install-actionlint.sh or set ACTIONLINT_BIN." >&2
+        status=1
+    elif "${actionlint_bin}" -color .github/workflows/*.yml; then
+        echo "Workflow lint: PASS"
+    else
+        echo "Workflow lint: FAIL" >&2
+        status=1
     fi
-    "${actionlint_bin}" -color .github/workflows/*.yml
 
-    test_dir="$(mktemp -d /tmp/ai-passport-host-tests.XXXXXX)"
-    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
-        tests/test_ui_pixel_math.c main/ui_pixel_math.c \
-        -o "${test_dir}/test_ui_pixel_math"
-    "${test_dir}/test_ui_pixel_math"
-    rm -rf "${test_dir}"
-    echo "Host tests: PASS"
+    return "${status}"
 }
 
 run_firmware_checks() (

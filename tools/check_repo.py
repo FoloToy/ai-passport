@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -24,9 +25,15 @@ ROOT_MARKDOWN_ALLOWLIST = {
     "AGENTS.zh_CN.md",
     "CLAUDE.md",
     "CLAUDE.zh_CN.md",
-    "README.md",
-    "README.zh_CN.md",
 }
+PROHIBITED_BASELINE_PREFIXES = (
+    "assets/",
+    "docs/assets/brand/",
+    "docs/experiences/",
+    "docs/software-design/",
+    "plays/",
+    "skills/",
+)
 
 
 def git_files() -> list[Path]:
@@ -59,6 +66,10 @@ def check_required_files(errors: list[str]) -> None:
         "AGENTS.zh_CN.md",
         "CLAUDE.md",
         "CLAUDE.zh_CN.md",
+        "docs/README.md",
+        "docs/README.zh_CN.md",
+        "docs/INDEX.md",
+        "docs/INDEX.zh_CN.md",
         "docs/CHANGELOG.md",
         ".github/CONTRIBUTING.md",
         ".github/CODE_OF_CONDUCT.md",
@@ -68,6 +79,11 @@ def check_required_files(errors: list[str]) -> None:
         "sdkconfig.defaults",
         "partitions.csv",
         ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/workflows/build-firmware.yml",
+        ".github/workflows/firmware-checks.yml",
+        ".github/workflows/static-checks.yml",
+        "tools/run-host-tests.sh",
+        "tools/validate.sh",
     )
     for name in required:
         if not (ROOT / name).is_file():
@@ -84,6 +100,14 @@ def check_required_files(errors: list[str]) -> None:
             errors.append(
                 f"{path.name}: root Markdown must move to docs/ or .github/"
             )
+
+    for path in git_files():
+        if not path.is_file():
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        for prefix in PROHIBITED_BASELINE_PREFIXES:
+            if relative.startswith(prefix):
+                errors.append(f"{relative}: content is outside the firmware baseline")
 
 
 def check_markdown_links(files: list[Path], errors: list[str]) -> None:
@@ -143,6 +167,60 @@ def check_document_languages(files: list[Path], errors: list[str]) -> None:
             )
 
 
+def normalized_local_links(path: Path, text: str) -> Counter[str]:
+    links: Counter[str] = Counter()
+    for raw_target in MARKDOWN_LINK_RE.findall(text):
+        target = raw_target.strip().split(maxsplit=1)[0].strip("<>")
+        if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+            continue
+        local = unquote(target.split("#", 1)[0])
+        resolved = (
+            (ROOT / local.lstrip("/"))
+            if local.startswith("/")
+            else (path.parent / local)
+        ).resolve()
+        try:
+            relative = resolved.relative_to(ROOT).as_posix()
+        except ValueError:
+            continue
+        links[relative.replace(".zh_CN.md", ".md")] += 1
+    return links
+
+
+def check_document_structure(files: list[Path], errors: list[str]) -> None:
+    """Keep every maintained translation structurally aligned."""
+    markdown = {path.resolve() for path in files if path.suffix.lower() == ".md"}
+    for default_path in sorted(markdown):
+        if default_path.name.endswith(".zh_CN.md"):
+            continue
+        chinese_path = default_path.with_name(f"{default_path.stem}.zh_CN.md")
+        if chinese_path.resolve() not in markdown:
+            continue
+
+        name = default_path.relative_to(ROOT).as_posix()
+
+        default_text = default_path.read_text(encoding="utf-8")
+        chinese_text = chinese_path.read_text(encoding="utf-8")
+        default_headings = [
+            len(match) for match in re.findall(r"(?m)^(#{1,6})\s+", default_text)
+        ]
+        chinese_headings = [
+            len(match) for match in re.findall(r"(?m)^(#{1,6})\s+", chinese_text)
+        ]
+        if default_headings != chinese_headings:
+            errors.append(f"{name}: bilingual heading levels are not aligned")
+
+        if len(re.findall(r"(?m)^```", default_text)) != len(
+            re.findall(r"(?m)^```", chinese_text)
+        ):
+            errors.append(f"{name}: bilingual fenced-code blocks are not aligned")
+
+        if normalized_local_links(default_path, default_text) != normalized_local_links(
+            chinese_path, chinese_text
+        ):
+            errors.append(f"{name}: bilingual local-link targets are not aligned")
+
+
 def check_action_pins(errors: list[str]) -> None:
     workflow_dir = ROOT / ".github" / "workflows"
     for path in sorted(workflow_dir.glob("*.y*ml")):
@@ -199,6 +277,7 @@ def main() -> int:
     check_required_files(errors)
     check_markdown_links(files, errors)
     check_document_languages(files, errors)
+    check_document_structure(files, errors)
     check_action_pins(errors)
     check_issue_forms(errors)
     check_sensitive_content(files, errors)
