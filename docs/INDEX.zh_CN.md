@@ -24,7 +24,7 @@
 | [development/CI-validation.zh_CN.md](./development/CI-validation.zh_CN.md) | CI 文档 | authoritative | PR/main 自动仓库检查、host tests 与固件验证 |
 | [development/CI-sync-main.zh_CN.md](./development/CI-sync-main.zh_CN.md) | CI 文档 | authoritative | 上游同步说明（定期同步上游 main 到 fork） |
 | [development/publish-to-community.zh_CN.md](./development/publish-to-community.zh_CN.md) | 工程规范 | authoritative | 发布到 AI Passport 社区市场 |
-| [development/after-release.zh_CN.md](./development/after-release.zh_CN.md) | 工程规范 | authoritative | 发布后收尾（建议与经验两条线） |
+| [development/project-completion.zh_CN.md](./development/project-completion.zh_CN.md) | 工程规范 | authoritative | 发布后收尾（建议与经验两条线） |
 | [development/file-issues.zh_CN.md](./development/file-issues.zh_CN.md) | 工程规范 | authoritative | 把建议提交成上游 GitHub issue |
 | [development/experience-notes.zh_CN.md](./development/experience-notes.zh_CN.md) | 沉淀记录 | 参考 | `docs/experiences/` 下开发经验条目的索引 |
 | [fork-guide.zh_CN.md](./fork-guide.zh_CN.md) | fork 工作流 | authoritative | 目录结构、main 保持干净、fork 约定、docs/assets 使用 |

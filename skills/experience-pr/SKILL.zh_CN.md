@@ -121,7 +121,7 @@ host-test 工作，因此这些上报为 NOT RUN 并说明原因。仅当变更�
 
 ## 相关文档
 
-- 发布后收尾总览：`docs/development/after-release.md`
+- 发布后收尾总览：`docs/development/project-completion.md`
 - 经验索引：`docs/development/experience-notes.md`
 - 经验条目：`docs/experiences/`
 - 固件发布：`docs/development/publish-to-community.md`

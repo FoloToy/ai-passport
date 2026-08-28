@@ -12,7 +12,7 @@ Use this when the project is being **released** — that is, when the code is fi
 
 When the developer says "publish" or "release", the first thing to decide is **where** to publish. Do not assume a route.
 
-- **To the community** — release the firmware to the [AI Passport Community market](https://ai-passport.folotoy.cn). Use the publisher workflow below. See also the post-release follow-up (`docs/development/after-release.md`) once it is published.
+- **To the community** — release the firmware to the [AI Passport Community market](https://ai-passport.folotoy.cn). Use the publisher workflow below. See also the post-release follow-up (`docs/development/project-completion.md`) once it is published.
 - **To Git** — publish the finished code to a version-controlled repository. The flow is: commit the finished code, then open a release for it. The release artifact may be produced by the CI/CD pipeline (**recommended**, tag-triggered via `.github/workflows/build-firmware.yml`), or it may be a local `.bin` the developer already built. Follow the repository commit and PR rules (`docs/contribution/commit-and-pr.md`) and the fork workflow (`docs/fork-guide.md`); see [`CI-build-and-release.md`](CI-build-and-release.md) for the automated build and release artifacts.
 - **Neither yet** — the code is not finished and usable; keep developing, do not publish.
 

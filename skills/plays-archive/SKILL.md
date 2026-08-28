@@ -128,6 +128,6 @@ and read it back to confirm. Opening a PR requires separate confirmation.
 ## Related documents
 
 - Application archive convention: `../plays/README.md`
-- Post-release follow-up overview: `docs/development/after-release.md`
+- Post-release follow-up overview: `docs/development/project-completion.md`
 - Firmware publishing: `docs/development/publish-to-community.md`
 - Contribution and commit rules: `docs/contribution/commit-and-pr.md`

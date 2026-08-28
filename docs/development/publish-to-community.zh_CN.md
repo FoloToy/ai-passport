@@ -12,7 +12,7 @@
 
 当开发者说"发布"或"发版"时，第一件事是决定**发到哪里**。不要默认其中一条。
 
-- **发布到社区** —— 把固件发布到 [AI Passport 社区市场](https://ai-passport.folotoy.cn)。走下面的 publisher 工作流；发布后见发布后收尾（`docs/development/after-release.md`）。
+- **发布到社区** —— 把固件发布到 [AI Passport 社区市场](https://ai-passport.folotoy.cn)。走下面的 publisher 工作流；发布后见发布后收尾（`docs/development/project-completion.md`）。
 - **发布到 Git** —— 把开发完成的代码发布到版本仓库。逻辑：先**提交**完成后的代码，再为它**开 release 流程**。release 产物可由 **CI/CD 流水线生成（推荐）**，tag 触发 `.github/workflows/build-firmware.yml` 自动构建；也**可用开发者本地已构建的 `.bin` 文件**。遵循仓库提交与 PR 规则（`docs/contribution/commit-and-pr.md`）与 fork 工作流（`docs/fork-guide.md`）；自动构建与产物见 [`CI-build-and-release.md`](CI-build-and-release.md)。
 - **还没到发布时机** —— 代码尚未开发完成、不能使用；继续开发，不发布。
 

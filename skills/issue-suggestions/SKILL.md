@@ -89,7 +89,7 @@ matching entry:
 
 ## Related documents
 
-- Post-release follow-up overview: `docs/development/after-release.md`
+- Post-release follow-up overview: `docs/development/project-completion.md`
 - Filing issues: `docs/development/file-issues.md`
 - Firmware publishing: `docs/development/publish-to-community.md`
 - Issue template: `.github/ISSUE_TEMPLATE/feature_request.yml`

@@ -67,6 +67,6 @@ data, or unsanitized logs. Security vulnerabilities must go through
 
 ## Related documents
 
-- Post-release follow-up overview: [after-release.md](after-release.md)
+- Post-release follow-up overview: [project-completion.md](project-completion.md)
 - Issue skill: [`../../skills/issue-suggestions/SKILL.md`](../../skills/issue-suggestions/SKILL.md)
 - Firmware publishing: [publish-to-community.md](publish-to-community.md)

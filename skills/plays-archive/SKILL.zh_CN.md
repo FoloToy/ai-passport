@@ -96,6 +96,6 @@ Unverified 分别上报。
 ## 相关文档
 
 - 应用档案约定：`../plays/README.md`
-- 发布后收尾总览：`docs/development/after-release.md`
+- 发布后收尾总览：`docs/development/project-completion.md`
 - 固件发布：`docs/development/publish-to-community.md`
 - 贡献与提交规则：`docs/contribution/commit-and-pr.md`

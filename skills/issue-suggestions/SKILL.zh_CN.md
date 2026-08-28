@@ -69,7 +69,7 @@ GitHub issue。它只在固件已发布（发布流程见 `docs/development/publ
 
 ## 相关文档
 
-- 发布后收尾总览：`docs/development/after-release.md`
+- 发布后收尾总览：`docs/development/project-completion.md`
 - 提交 issue：`docs/development/file-issues.md`
 - 固件发布：`docs/development/publish-to-community.md`
 - issue 模板：`.github/ISSUE_TEMPLATE/feature_request.yml`

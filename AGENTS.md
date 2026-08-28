@@ -29,7 +29,7 @@ This file is the only mandatory entry point for AI-assisted work in this reposit
 | Demo or menu | `main/demo.h`, `main/main.c`, the nearest `main/demo_*.c` implementation |
 | Build, test, dependencies, partitions | `docs/development/build-and-test.md`, `sdkconfig.defaults`, `partitions.csv` |
 | CI or release | the matching file in `docs/development/CI-*.md` and `.github/workflows/` |
-| Post-release follow-up | `docs/development/after-release.md` (then the `issue-suggestions` or `experience-pr` skill) |
+| Post-release follow-up | `docs/development/project-completion.md` (then the `issue-suggestions` or `experience-pr` skill) |
 | Documentation | `docs/contribution/doc-conventions.md`, `docs/INDEX.md` |
 | Commit or PR | `docs/contribution/commit-and-pr.md` |
 

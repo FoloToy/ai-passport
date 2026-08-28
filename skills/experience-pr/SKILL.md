@@ -159,7 +159,7 @@ change affects user-visible behavior, compatibility, or the release workflow.
 
 ## Related documents
 
-- Post-release follow-up overview: `docs/development/after-release.md`
+- Post-release follow-up overview: `docs/development/project-completion.md`
 - Experience index: `docs/development/experience-notes.md`
 - Experience entries: `docs/experiences/`
 - Firmware publishing: `docs/development/publish-to-community.md`

@@ -29,7 +29,7 @@
 | Demo 或菜单 | `main/demo.h`、`main/main.c`、最近的 `main/demo_*.c` 实现 |
 | 构建、测试、依赖、分区 | `docs/development/build-and-test.zh_CN.md`、`sdkconfig.defaults`、`partitions.csv` |
 | CI 或发布 | `docs/development/CI-*.zh_CN.md` 中的对应文件与 `.github/workflows/` |
-| 发布后收尾 | `docs/development/after-release.zh_CN.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
+| 发布后收尾 | `docs/development/project-completion.zh_CN.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
 | 文档 | `docs/contribution/doc-conventions.zh_CN.md`、`docs/INDEX.zh_CN.md` |
 | Commit 或 PR | `docs/contribution/commit-and-pr.zh_CN.md` |
 

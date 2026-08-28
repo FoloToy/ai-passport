@@ -55,6 +55,6 @@ issue 用于提交围绕固件、BSP、硬件或文档的用户建议、功能�
 
 ## 相关文档
 
-- 发布后收尾总览：[after-release.md](after-release.md)
+- 发布后收尾总览：[project-completion.md](project-completion.md)
 - issue skill：[`../../skills/issue-suggestions/SKILL.md`](../../skills/issue-suggestions/SKILL.md)
 - 固件发布：[publish-to-community.md](publish-to-community.md)
