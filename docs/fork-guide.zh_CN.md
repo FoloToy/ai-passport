@@ -41,6 +41,8 @@ sdkconfig.defaults            ESP32-C3、USB console、Flash、LVGL 默认配置
 
 fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `docs/assets/` 目录**（可建自己的说明/README 变体），**不允许改其它任何文件**——这样 fork 的 `main` 与上游保持最新同步、不产生冲突。任何其它修改（固件功能、文档规整等）一律在 `feature/*` 分支进行，用 PR 合并。
 
+**新开项目开发前**：从**与上游 `FoloToy/ai-passport:main` 保持一致**的基线创建 `feature/*` 分支——即以**上游最新 `main`** 作为分叉点（例如 fetch 上游后基于 `upstream/main` 开分支），而**不要**基于 fork 自己的 `main`。因为 fork 的 `main` 可能过期、或因为各种原因无法成功同步。这样每个新项目都从当前上游基线出发，避免基于过期/分歧的 fork `main`。
+
 ### 为什么根目录不放置 README
 
 **根目录的 `README.md` 是预留给开发者自行放置的，因此上游留空**：
