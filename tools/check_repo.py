@@ -28,7 +28,7 @@ ROOT_MARKDOWN_ALLOWLIST = {
 }
 PROHIBITED_BASELINE_PREFIXES = (
     "assets/",
-    "docs/assets/brand/",
+    "docs/assets/",
     "docs/experiences/",
     "docs/software-design/",
     "plays/",

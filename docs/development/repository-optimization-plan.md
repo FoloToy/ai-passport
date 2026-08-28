@@ -38,7 +38,7 @@ The repository owner authorized direct removal without migration. Git history re
 | `docs/assets/brand/` and `docs/brand-and-product.*` | Marketing assets and live website/catalog information are not firmware inputs |
 | Community publishing, post-release, and issue-filing guides | These define a second lifecycle after firmware output |
 | Fork guide and automatic fork-sync workflow | Downstream fleet synchronization is not part of building this checkout |
-| Empty root asset and software-design scaffolding | Empty tracked structure has no runnable or documentary responsibility |
+| `assets/`, `docs/assets/`, and `docs/software-design/` scaffolding | Empty tracked structure has no runnable or documentary responsibility |
 | Standalone CI guides | Their unique instructions are consolidated into `build-and-test.md` |
 
 ## Hardware decisions recorded on 2026-08-28

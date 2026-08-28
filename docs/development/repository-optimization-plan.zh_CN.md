@@ -38,7 +38,7 @@
 | `docs/assets/brand/` 与 `docs/brand-and-product.*` | 营销素材和实时网站/目录信息不是固件输入 |
 | 社区发布、发布后和 Issue 提交指南 | 这些文档在固件输出后定义第二套生命周期 |
 | Fork 指南与自动 fork 同步 workflow | 下游仓库群同步不属于当前 checkout 的构建流程 |
-| 空的根素材和软件设计骨架 | 空跟踪结构没有可运行或文档职责 |
+| `assets/`、`docs/assets/` 与 `docs/software-design/` 骨架 | 空跟踪结构没有可运行或文档职责 |
 | 独立 CI 指南 | 唯一有效内容已经合并到 `build-and-test.md` |
 
 ## 2026-08-28 确认的硬件决策

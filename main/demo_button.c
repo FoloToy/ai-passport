@@ -1,5 +1,5 @@
 // main/demo_button.c —— 按键事件流 + 实时 ADC 电压。
-// 电压显示是本页的核心:换了分压/上拉阻值的开发者靠它重标 BSP_BTN_MV_TABLE。
+// 电压显示用于核对量产实测窗口;只有新的量产实测结果才能修改 BSP_BTN_MV_TABLE。
 #include "demo.h"
 #include "bsp_button.h"
 #include "ui_pixel.h"
