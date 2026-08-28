@@ -50,8 +50,9 @@ skill 的 `SKILL.md` 定义了精确流程：检查项目、准备中英文标�
 
 固件发布后，询问开发者是否把该应用归档到上游仓库的 [`plays/`](../../plays/README.md)
 应用档案。若同意，在 `plays/<username>/<app-name>/` 下生成该应用的 AI 功能总结（双语
-`README.md` / `.zh_CN.md`），并添加封面图 `plays/<username>/<app-name>/<app-name>-cover.<webp|png|jpg>`。
-只提交总结与封面；**不要**在这里存固件 `.bin`。用 `plays-archive` skill，它会向上游
+`README.md` / `.zh_CN.md`）。档案为**纯文本**：封面图只记录文件名与格式作为发布元数据，
+**不要**把封面图提交进 `plays/`（约定见 [`plays/README.md`](../../plays/README.md)）。
+也不要在这里存固件 `.bin`。用 `plays-archive` skill，它会向上游
 `FoloToy/ai-passport` 开归档 PR。
 
 这样发布后的应用能在上游仓库留存、便于后续查询。
