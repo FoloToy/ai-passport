@@ -58,5 +58,5 @@ change off the developer's current branch.
 ## Related documents
 
 - `docs/development/publish-to-community.md` — the publishing workflow.
-- `docs/development/after-release.md` — the three follow-up tracks and gates.
+- `docs/development/project-completion.md` — the project completion flow and its gates.
 - `docs/development/experience-notes.md` — index for this entry.
