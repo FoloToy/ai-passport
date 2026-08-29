@@ -41,5 +41,5 @@ publisher skill 用设备码流程：跑 `authorize` 会打开官方创作者页
 ## 相关文档
 
 - `docs/development/publish-to-community.md` — 发布工作流。
-- `docs/development/after-release.md` — 三条收尾轨道与门槛。
+- `docs/development/project-completion.md` — 项目完成流程与门槛。
 - `docs/development/experience-notes.md` — 本条的索引。

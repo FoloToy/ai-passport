@@ -61,4 +61,4 @@ consistent with `docs/CHANGELOG.md` for user-visible behavior.
 ## Related documents
 
 - Firmware publishing to the community: [publish-to-community.md](publish-to-community.md)
-- Post-release follow-up: [after-release.md](after-release.md)
+- Post-release follow-up: [project-completion.md](project-completion.md)
