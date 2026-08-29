@@ -226,7 +226,10 @@ SOC 准确度取决于电芯与 profile 的匹配程度。本驱动给出的是�
 
 ## 10. Flash、控制台和资源预算
 
-当前产品与固件基线使用 8 MB Flash。`sdkconfig.defaults` 固定使用 8 MB Flash 镜像配置，并关闭 `CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE`（不按探测容量回写镜像头，便于 `idf.py merge-bin`）；`partitions.csv` 提供 24 KB NVS、4 KB PHY data 和 3 MB factory app 分区，无 OTA 槽。若实机探测结果不是 8 MB，则该设备不符合当前基线；修改项目默认值前应先确认板卡和 Flash 料号。
+当前产品与固件基线使用 8 MB Flash。`sdkconfig.defaults` 固定使用 8 MB Flash 镜像配置，并关闭 `CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE`（不按探测容量回写镜像头，便于 `idf.py merge-bin`）；`partitions.csv` 提供 24 KB NVS、4 KB PHY data、3 MB factory app、位于 `0x356000` 的保护 `cardid`，以及位于 `0x700000` 的永久 Recovery。这不是 ESP-IDF 双槽 OTA 布局；工厂预装 Recovery 负责 BLE 安装，且必须保持固定地址。开机持续按住上键/GPIO0 5 秒时，bootloader 会进入 Recovery。若实机探测结果不是 8 MB，则该设备不符合当前基线；修改项目默认值前应先确认板卡和 Flash 料号。
+
+不得擦除已写身份的设备，也不得移动或覆盖保护分区。社区固件既不包含单机身份，
+也不携带替换 Recovery 的数据。详见 [BLE 兼容契约](../development/ble-recovery-compatibility.zh_CN.md)。
 
 控制台固定为 USB Serial/JTAG，不使用 UART0 默认输出，因为其 TX GPIO21 与背光冲突。任何日志接口修改都必须同时检查引脚占用。
 

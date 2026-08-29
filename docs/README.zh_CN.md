@@ -30,7 +30,7 @@ FoloToy AI Passport 是一个开放式可穿戴 AI 硬件，本仓库是这款 A
 
 所有引脚、地址、面板参数和按键电压窗口只在 [`components/bsp/include/bsp_pins.h`](../components/bsp/include/bsp_pins.h) 定义。应用代码不得复制这些常量。完整引脚表、面板初始化、ADC 阈值、I2C 地址规则、音频时钟和内存说明见 [AI 硬件开发指南](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md)。
 
-应用也可以使用 ESP-IDF 提供的定时器、FreeRTOS 任务和内部 Flash/NVS；番茄钟分支提供了 NVS 示例。Wi-Fi 和 Bluetooth LE 仍是 ESP-IDF 应用服务而非 BSP API：其菜单页面仅在打开时初始化对应协议栈、退出时释放。`demo/claude-buddy-port` 仍是更完整的 BLE 应用架构参考，不能替代对当前板卡天线、射频表现、功耗和共存行为的实测。当前产品与固件基线使用 8 MB Flash，并包含 3 MB factory-app 分区。
+应用也可以使用 ESP-IDF 提供的定时器、FreeRTOS 任务和内部 Flash/NVS；番茄钟分支提供了 NVS 示例。Wi-Fi 和 Bluetooth LE 仍是 ESP-IDF 应用服务而非 BSP API：其菜单页面仅在打开时初始化对应协议栈、退出时释放。`demo/claude-buddy-port` 仍是更完整的 BLE 应用架构参考，不能替代对当前板卡天线、射频表现、功耗和共存行为的实测。当前产品与固件基线使用 8 MB Flash，包含 3 MB factory-app 分区，并固定保留设备身份与永久 Recovery 区域，使二创固件仍可通过小程序安装。
 
 ### 不属于当前能力契约的事项
 
@@ -103,7 +103,7 @@ tools/                   本地与 CI 共用的验证及固件校验脚本
 docs/                    项目说明、变更记录、工程/协作规范与设计参考
 .github/                 GitHub 社区文档、PR 模板、Issue Form 与 CI 工作流
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
-partitions.csv           NVS、PHY data 与 3 MB factory-app 分区布局
+partitions.csv           应用与设备身份/Recovery 保护分区布局
 dependencies.lock        可复现的 ESP-IDF Managed Component 解析结果
 AGENTS.md                AI agent 必读入口（与 AGENTS.zh_CN.md 配对）
 CLAUDE.md                Claude Code 指向 AGENTS.md 的入口（含中文配对）
