@@ -31,7 +31,9 @@ skill 的 `SKILL.md` 定义了精确流程：检查项目、准备中英文标�
 
 ## 你需要提供给助手的东西
 
-- **固件**：单个合并的 ESP `.bin`（从 `0x0` 烧录）。必要时用 `./tools/validate.sh --firmware` 或 `idf.py build` 构建。
+- **固件**：固定使用单个合并镜像 `build/FoloToy-AI-Passport-full.bin`，
+  且必须通过 `./tools/validate.sh --firmware` 与[小程序 BLE 兼容契约](ble-recovery-compatibility.zh_CN.md)。
+  不得用 `idf.py build` 生成的应用单镜像替代。
 - **封面**：一张代表产品的 JPEG / PNG / WebP 图（≤ 10 MiB）。
 - **源码**：固件仓库的公开 HTTPS Git 项目页——GitHub、Gitee、GitLab、Codeberg 或其它公开可达的 HTTPS Git 仓库页。fork 所有者从其 fork 的来源页发布，从 `git remote -v` 解析。
 
@@ -41,6 +43,7 @@ skill 的 `SKILL.md` 定义了精确流程：检查项目、准备中英文标�
 - 未经作者确认的验证、起草与预览**不授权上传**。
 - 助手绝不索取、接收或存储授权凭证。由创作者在官方站点注册或登录并批准显示的代码；助手不接触其密码。
 - 不自动重试被拒的上传。先把服务端响应展示给创作者，查清原因再处理。
+- 不得为了让社区提交通过而弱化、绕过或删除 BLE 兼容门禁；应修复镜像布局或打包流程。
 
 ## 助手如何安装该 skill
 

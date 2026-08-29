@@ -167,7 +167,11 @@ Accurate production SOC requires the cell parameters, CW2017 datasheet/vendor pr
 
 ## 10. Flash, console, and memory
 
-The current product and firmware baseline uses 8 MB Flash. `sdkconfig.defaults` fixes the image to 8 MB and disables automatic flash-size header rewriting. `partitions.csv` defines 24 KB NVS, 4 KB PHY data, and one 3 MB factory application without OTA slots. A detected non-8-MB device does not match this baseline; identify the board and flash part before changing the project default.
+The current product and firmware baseline uses 8 MB Flash. `sdkconfig.defaults` fixes the image to 8 MB and disables automatic flash-size header rewriting. `partitions.csv` defines 24 KB NVS, 4 KB PHY data, one 3 MB factory application, protected `cardid` at `0x356000`, and permanent Recovery at `0x700000`. This is not an ESP-IDF dual-slot OTA layout: the factory-installed Recovery performs BLE installation and must remain at its fixed address. The bootloader enters it when UP/GPIO0 is held for five seconds. A detected non-8-MB device does not match this baseline; identify the board and flash part before changing the project default.
+
+Do not erase a provisioned device or move/overlap the protected partitions.
+Community firmware contains neither device identity nor a replacement Recovery
+payload. See the [BLE compatibility contract](../development/ble-recovery-compatibility.md).
 
 The console is USB Serial/JTAG. Do not switch to the UART0 default output without resolving its GPIO21 conflict with the backlight.
 
