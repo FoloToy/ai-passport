@@ -15,3 +15,17 @@
 ## 目录说明
 
 > 当前为空骨架，用于存放后续加入的字库资源。加入资源时请同步更新本 `README.md` 的索引。
+
+## 已登记字库
+
+### font_sm_cjk_16（创智 Passport 中文 UI 字库）
+
+- **来源**：Noto Sans CJK SC Regular，取自
+  `https://github.com/notofonts/noto-cjk`（`Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf`）。
+- **授权**：SIL Open Font License 1.1（允许嵌入与子集化）。
+- **集成方式**：由 `tools/gen_font.sh` 子集化并转换为 LVGL C 数组字库；
+  生成物 `main/font_sm_cjk_16.c` 入库，16 MB 源 OTF 不入库（按脚本提示重新下载）。
+- **字符集**：ASCII 可打印区 + 创智 Passport UI 字符串字面量用到的 CJK 字符
+  （脚本自动提取）。
+- **参数**：16 px、4 bpp、关闭 autohint；约占 100 KB Flash。
+  修改任何 UI 文案后需重新生成。

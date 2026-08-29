@@ -6,6 +6,30 @@
 
 ## Unreleased
 
+- Added the SparkMinds student Passport application on the `feature/sparkminds-passport`
+  branch: a six-screen product UI (identity, login QR, points, daily check-in,
+  settings) that replaces the demo menu, with the upstream demo pages kept behind
+  a hidden entry (hold OK for five seconds in Settings).
+- Added `main/passport_core.c`: a dependency-free, host-testable implementation of the
+  HMAC-SHA256 login code and auth-signature contract (30-second windows,
+  `qr:`/`auth:` message formats), plus a student-ID-derived symmetric 8×8 pixel
+  avatar; covered by `tests/test_passport_core.c` against the public test vectors.
+- Vendored two MIT-licensed components: `components/qrcodegen` (Nayuki QR Code
+  generator v1.8.0) for offline login QR rendering, and `components/jsmn` (v1.1.0)
+  for parsing API responses without touching `idf_component.yml`/the dependency lock.
+- Added `main/passport_net.c`: burst-style Wi-Fi connect → SNTP → signed
+  `/passport/auth` → `/passport/me`, points history, idempotent daily check-in,
+  and a lab-SSID-gated 10-minute heartbeat (`SparkMinds_IoT` by default); Wi-Fi is
+  released after every burst and TLS certificate validation stays on.
+- Added `main/passport_store.c` as the sole owner of the `smpass` NVS namespace
+  (pid, device secret, two Wi-Fi credentials, session token, offline caches) with a
+  namespace-only factory erase.
+- Added power saving: 15 s backlight-off, 30 s light sleep with RTC 10-minute
+  heartbeat wakeups and button wake, QR-screen wipe before sleep.
+- Added the `smpass` USB Serial/JTAG console REPL for production-line provisioning
+  (`provision`/`wifi set`/`status`/`erase`); secrets are never echoed.
+- Added `main/font_sm_cjk_16.c`, a 16 px 4 bpp LVGL subset font (Noto Sans CJK SC,
+  OFL 1.1) covering the Chinese UI strings, with `tools/gen_font.sh` to regenerate it.
 - Made mini-program BLE install compatibility a template-level invariant: fixed
   protected `cardid`/Recovery partitions, retained the five-second UP-key
   Recovery boot hook, and added CI validation for merged-image structure,

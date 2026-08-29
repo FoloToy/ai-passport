@@ -6,6 +6,27 @@
 
 ## Unreleased
 
+- 在 `feature/sparkminds-passport` 分支新增创智学员 Passport 应用：六屏产品界面
+  （身份、登录二维码、积分、每日签到、设置）接管主菜单，上游 demo 页保留为
+  隐藏入口（设置页长按 OK 5 秒）。
+- 新增 `main/passport_core.c`：零依赖、host 可测的 HMAC-SHA256 动态码与 auth 签名
+  契约实现（30 秒窗口、`qr:`/`auth:` 消息格式），含学号派生的 8×8 左右对称像素
+  头像；`tests/test_passport_core.c` 按公开测试向量对拍覆盖。
+- Vendor 两个 MIT 协议组件：`components/qrcodegen`（Nayuki QR Code generator
+  v1.8.0，离线二维码渲染）与 `components/jsmn`（v1.1.0，解析 API 响应，
+  不改动 `idf_component.yml` 与依赖锁）。
+- 新增 `main/passport_net.c`：突发式 Wi-Fi 连接 → SNTP 校时 → 签名
+  `/passport/auth` → `/passport/me`、积分流水、幂等每日签到，以及按校区 SSID
+  门控的 10 分钟在馆心跳（默认 `SparkMinds_IoT`）；每次突发结束释放 Wi-Fi，
+  TLS 证书校验全程开启。
+- 新增 `main/passport_store.c` 作为 `smpass` NVS 命名空间的唯一属主
+  （pid、设备密钥、两组 Wi-Fi 凭证、会话令牌、离线缓存），恢复出厂只清该命名空间。
+- 新增省电策略：15 秒关背光、30 秒浅睡，RTC 10 分钟定时唤醒做心跳、按键唤醒，
+  浅睡前清二维码防残影。
+- 新增 `smpass` USB Serial/JTAG 控制台 REPL 用于产线激活
+  （`provision`/`wifi set`/`status`/`erase`），密钥绝不回显。
+- 新增 `main/font_sm_cjk_16.c`：16 px 4 bpp LVGL 子集字库（Noto Sans CJK SC，
+  OFL 1.1），覆盖中文 UI 文案，附 `tools/gen_font.sh` 重新生成脚本。
 - 将小程序 BLE 安装兼容提升为二创模板强制契约：固定保护 `cardid`/Recovery 分区，
   保留上键持续 5 秒进入 Recovery 的 bootloader hook，并在 CI 强制校验合并镜像结构、
   分区表 MD5/范围、3 MB 应用上限和保护分区数据不入包。

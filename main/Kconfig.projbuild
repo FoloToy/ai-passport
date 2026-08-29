@@ -1,0 +1,10 @@
+menu "SparkMinds Passport"
+
+    config PASSPORT_API_BASE
+        string "SparkMinds API base URL"
+        default "https://api.sparkminds.cn/api"
+        help
+            创智 Passport 服务端 API 基址（实现文档 6.1 节）。
+            编译期固定白名单；调试构建如需改地址在此配置，正式固件不得改。
+
+endmenu
