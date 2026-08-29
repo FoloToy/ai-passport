@@ -9,6 +9,9 @@
 ## 项目与安全基线
 
 - 目标平台：ESP32-C3、8 MB Flash、无 PSRAM、ESP-IDF 5.5.3。
+- 必须保持小程序 BLE 安装兼容：3 MB 应用上限、`cardid@0x356000`、
+  永久 `recovery@0x700000` 以及上键持续 5 秒进入 Recovery 的 bootloader hook
+  均为模板强制契约。
 - 保留用户已有修改。先执行 `git status --short --branch`，不得覆盖或清理无关文件。
 - 硬件事实优先级：产品规格与实测结果 → `components/bsp/include/bsp_pins.h` → BSP 头文件与实现 → 硬件指南 → README/demo。任务所需硬件细节未在这些来源中定义时，直接询问用户，不得猜测。
 - 可复用板级逻辑放入 `components/bsp`；页面、状态机、动画和应用任务放入 `main`。
@@ -27,7 +30,7 @@
 | 环境引导或缺少工具链 | `docs/development/environment-setup.zh_CN.md` |
 | BSP、引脚、总线、显示、音频、电池 | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md`、`components/bsp/include/bsp_pins.h` |
 | Demo 或菜单 | `main/demo.h`、`main/main.c`、最近的 `main/demo_*.c` 实现 |
-| 构建、测试、依赖、分区 | `docs/development/build-and-test.zh_CN.md`、`sdkconfig.defaults`、`partitions.csv` |
+| 构建、测试、依赖、分区 | `docs/development/build-and-test.zh_CN.md`、`docs/development/ble-recovery-compatibility.zh_CN.md`、`sdkconfig.defaults`、`partitions.csv` |
 | CI 或发布 | `docs/development/CI-*.zh_CN.md` 中的对应文件与 `.github/workflows/` |
 | 发布后收尾 | `docs/development/after-release.zh_CN.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
 | 文档 | `docs/contribution/doc-conventions.zh_CN.md`、`docs/INDEX.zh_CN.md` |

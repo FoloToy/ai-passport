@@ -26,7 +26,11 @@ The skill's `SKILL.md` defines the exact workflow: inspect the project, prepare 
 
 ## What the assistant will need from you
 
-- **Firmware**: a single merged ESP `.bin` (flashed from `0x0`). Build it with `./tools/validate.sh --firmware` or `idf.py build` when needed.
+- **Firmware**: the single merged ESP image
+  `build/FoloToy-AI-Passport-full.bin`. It must pass
+  `./tools/validate.sh --firmware`, including the
+  [mini-program BLE compatibility contract](ble-recovery-compatibility.md).
+  Never substitute the app-only `.bin` produced by `idf.py build`.
 - **Cover**: a representative JPEG / PNG / WebP image (<= 10 MiB).
 - **Source**: the public HTTPS Git page for the firmware repository — GitHub, Gitee, GitLab, Codeberg, or another publicly reachable HTTPS Git repository page. A fork owner publishes from their fork's source page, resolved from `git remote -v`.
 
@@ -36,6 +40,8 @@ The skill's `SKILL.md` defines the exact workflow: inspect the project, prepare 
 - Validation, drafting, and preview that is not confirmed by the author does **not** authorize upload.
 - Authorization credentials are never requested, received, or stored by the assistant. The creator registers or signs in on the official site and approves the displayed code; the assistant never handles their password.
 - Never retry a rejected upload automatically. Report the server response and resolve the cause with the creator first.
+- Do not weaken, bypass, or remove the BLE compatibility gate merely to make a
+  community submission pass. Fix the image layout or build packaging instead.
 
 ## How the assistant installs the skill
 
@@ -53,4 +59,3 @@ Only commit the summary and cover; do not store the firmware `.bin` here. Use th
 `FoloToy/ai-passport`.
 
 This keeps the release's application discoverable in-repository for later querying.
-
