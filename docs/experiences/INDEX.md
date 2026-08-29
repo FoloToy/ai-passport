@@ -24,3 +24,5 @@ rather than merged into an existing one.
 
 - [Audio Compression Trade-offs on ESP32-C3](shinku-chen/audio-compression-trade-offs.md) — how a voice-playback codec was chosen on limited flash (IMA-ADPCM vs Opus vs MP3), with measured capacity and decoder cost.
 - [Post-Release Follow-up for the AI Passport Publishing Flow](shinku-chen/post-release-follow-up.md) — confirm the publish destination, include the data partition in a release, and the consent gates for the post-release tracks.
+- [Network Audio Streaming and Memory Budgeting on AI Passport](shinku-chen/network-audio-streaming.md) — how to stream MP3, drive the on-board ES8311, and budget internal RAM when HTTP, DMA, task stacks, and the LVGL UI all compete for no-PSRAM memory.
+- [SoftAP Provisioning, DHCP, and Captive Portal on AI Passport](shinku-chen/softap-provisioning.md) — how to build the SoftAP + DHCP + HTTP provisioning flow, auto-open the captive portal, and avoid form-buffer overflow.

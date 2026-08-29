@@ -37,3 +37,5 @@ fork 上自行创建或变更的 `docs/` 文档。每条经验一个 `.md` 及�
 
 - **ESP32-C3 上音频压缩方式的权衡**（Shinku-Chen）— 在有限 Flash 上如何为语音播放应用选编解码（IMA-ADPCM vs Opus vs MP3），含实测容量与解码器成本。见 [`../experiences/shinku-chen/audio-compression-trade-offs.zh_CN.md`](../experiences/shinku-chen/audio-compression-trade-offs.zh_CN.md)。
 - **发布后收尾：AI Passport 发布流程的衔接**（Shinku-Chen）— 确认发布目的地、发布时包含数据分区、以及发布后收尾各轨道的同意门槛。见 [`../experiences/shinku-chen/post-release-follow-up.zh_CN.md`](../experiences/shinku-chen/post-release-follow-up.zh_CN.md)。
+- **AI Passport 上的网络音频流式播放与内存预算**（Shinku-Chen）— 如何流式解码 MP3、驱动板载 ES8311，以及在 HTTP、DMA、任务栈与 LVGL 界面争抢无 PSRAM 内存时做内存预算。见 [`../experiences/shinku-chen/network-audio-streaming.zh_CN.md`](../experiences/shinku-chen/network-audio-streaming.zh_CN.md)。
+- **AI Passport 上的 SoftAP 配网、DHCP 与认证弹窗**（Shinku-Chen）— 如何搭 SoftAP + DHCP + HTTP 配网流程、让手机自动弹出认证页，以及避免表单缓冲溢出。见 [`../experiences/shinku-chen/softap-provisioning.zh_CN.md`](../experiences/shinku-chen/softap-provisioning.zh_CN.md)。
