@@ -8,7 +8,10 @@ Use ESP-IDF 5.5.3. On a clean machine or when the toolchain is missing, follow
 the [environment bootstrap](environment-setup.md) first.
 
 > Prefer `./tools/validate.sh --firmware` for firmware builds and flash its
-> verified `build/FoloToy-AI-Passport-full.bin` at offset `0x0`. Treat
+> verified `build/FoloToy-AI-Passport-full.bin` at offset `0x0` only when the
+> target is blank or the merged byte range ends before protected `cardid`.
+> On a provisioned device, prefer mini-program install or segmented
+> `idf.py flash`. Treat
 > `idf.py build` and `idf.py flash` as incremental development commands, not the
 > default delivery path.
 
@@ -29,7 +32,7 @@ regenerated.
 
 The tracked `dependencies.lock` pins Managed Component resolution. After changing an `idf_component.yml`, regenerate the lock with ESP-IDF 5.5.3, review version changes, and commit it with the manifest. An ordinary build must not leave an unexplained lock-file diff.
 
-Firmware validation uses a fresh temporary build directory and an isolated `sdkconfig` generated from the tracked defaults. It does not consume or overwrite a developer's root `sdkconfig`, and it copies only the verified merged image to `build/FoloToy-AI-Passport-full.bin`.
+Firmware validation uses a fresh temporary build directory and an isolated `sdkconfig` generated from the tracked defaults. It does not consume or overwrite a developer's root `sdkconfig`, and it copies only the verified merged image to `build/FoloToy-AI-Passport-full.bin`. The gate also enforces the [mini-program BLE compatibility contract](ble-recovery-compatibility.md): protected partition addresses, application size, partition-table MD5, absence of protected payload data, and the Recovery bootloader hook.
 
 The baseline also has a hardware-independent logic test:
 
@@ -44,10 +47,14 @@ Use the unified validation entry point:
 
 ```bash
 ./tools/validate.sh --static    # repository checks, workflows, links, secrets, host tests
-./tools/validate.sh --firmware  # build, merge-bin, image offsets and byte verification
+./tools/validate.sh --firmware  # build, merge-bin, offsets, and BLE compatibility
 ./tools/validate.sh             # complete gate; requires an activated ESP-IDF environment
 ```
 
 CI calls the same script. Fix the shared script or environment if local and CI behavior differs; do not duplicate command sequences in workflows.
 
 Hardware-affecting changes must also run the applicable on-device checklist in the hardware guide. Report compilation separately from physical-device validation.
+
+Never upload the app-only `build/FoloToy-AI-Passport.bin` to the community. Only
+the validated `build/FoloToy-AI-Passport-full.bin` contains the structure the
+mini-program can inspect and transform safely.

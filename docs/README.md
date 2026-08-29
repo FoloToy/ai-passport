@@ -30,7 +30,7 @@ The table below describes the application capabilities implemented by the curren
 
 All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](../components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
 
-Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. Wi-Fi and Bluetooth LE remain ESP-IDF application services rather than BSP APIs: their menu pages initialize each stack only while open and release it on exit. `demo/claude-buddy-port` remains a fuller BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior. The current product and firmware baseline uses 8 MB Flash with a 3 MB factory-app partition.
+Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. Wi-Fi and Bluetooth LE remain ESP-IDF application services rather than BSP APIs: their menu pages initialize each stack only while open and release it on exit. `demo/claude-buddy-port` remains a fuller BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior. The current product and firmware baseline uses 8 MB Flash with a 3 MB factory-app partition plus fixed protected identity and permanent-Recovery regions so derivative firmware stays installable through the mini-program.
 
 ### Capabilities outside the current contract
 
@@ -104,7 +104,7 @@ tools/                   Shared local/CI validation and firmware verification sc
 docs/                    Project docs, changelog, engineering/contribution rules, and design references
 .github/                 GitHub community files, PR template, issue forms, and CI workflows
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
-partitions.csv           NVS, PHY data, and 3 MB factory application layout
+partitions.csv           App plus protected identity/Recovery layout
 dependencies.lock        Reproducible ESP-IDF Managed Component resolution
 AGENTS.md                Mandatory AI-agent entry point (paired with AGENTS.zh_CN.md)
 CLAUDE.md                Claude Code pointer to AGENTS.md (paired Chinese version)
