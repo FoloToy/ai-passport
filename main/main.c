@@ -3,7 +3,7 @@
 // 按键语义(全局统一):
 //   上/下 短按   菜单中=移动选中项;演示页中=该页自定义
 //   确定  短按   菜单中=进入选中项;演示页中=该页自定义
-//   确定  长按   演示页中=返回菜单(由本文件统一拦截)
+//   确定  长按   普通演示页=返回菜单;趣玩盒子中=打开告白彩蛋
 #include "bsp_i2c.h"
 #include "bsp_display.h"
 #include "bsp_button.h"
@@ -26,8 +26,12 @@ static const demo_entry_t DEMOS[] = {
     { "Wi-Fi",   demo_wifi_enter,    demo_wifi_exit,    demo_wifi_key    },
     { "BLE",     demo_ble_enter,     demo_ble_exit,     demo_ble_key     },
     { "Low Power", demo_low_power_enter, demo_low_power_exit, demo_low_power_key },
+    { "Tetris", demo_tetris_enter, demo_tetris_exit, demo_tetris_key },
+    { "Funbox 11", demo_funbox_enter, demo_funbox_exit, demo_funbox_key },
 };
 #define DEMO_COUNT (sizeof(DEMOS) / sizeof(DEMOS[0]))
+#define TETRIS_DEMO_INDEX ((int)DEMO_COUNT - 2)
+#define FUNBOX_DEMO_INDEX ((int)DEMO_COUNT - 1)
 
 // 各外设初始化结果:失败的项在菜单里标 [FAIL] 且不允许进入。
 static bool s_ok[DEMO_COUNT];
@@ -77,6 +81,19 @@ static void enter_menu(void) {
 // 按键回调运行在 button 组件的任务里,操作 LVGL 必须加锁。
 static void on_key(bsp_btn_t btn, bsp_btn_ev_t ev, void *user) {
     (void)user;
+
+    /* Tetris consumes input from its own queue. The callback stays non-blocking,
+       while the LVGL timer performs every game-model and UI mutation. */
+    if (s_active == TETRIS_DEMO_INDEX &&
+        !(btn == BSP_BTN_OK && ev == BSP_BTN_LONG)) {
+        DEMOS[s_active].key(btn, ev);
+        return;
+    }
+    if (s_active == FUNBOX_DEMO_INDEX) {
+        DEMOS[s_active].key(btn, ev);
+        return;
+    }
+
     if (!bsp_lvgl_lock(500)) return;
 
     if (s_active >= 0) {
@@ -131,8 +148,15 @@ void app_main(void) {
     s_ok[4] = true;                                    // 页面内按需初始化并显示错误
     s_ok[5] = true;
     s_ok[6] = true;
+    s_ok[TETRIS_DEMO_INDEX] = s_ok[1];                // 游戏至少需要三键输入
+    s_ok[FUNBOX_DEMO_INDEX] = s_ok[1];                // 趣玩盒子至少需要三键输入
 
-    if (bsp_lvgl_lock(1000)) { enter_menu(); bsp_lvgl_unlock(); }
+    /* This product branch boots directly into the 11-in-1 application. */
+    if (bsp_lvgl_lock(1000)) {
+        s_active = FUNBOX_DEMO_INDEX;
+        DEMOS[s_active].enter();
+        bsp_lvgl_unlock();
+    }
 
     ESP_LOGI(TAG, "就绪:Display=%d Button=%d Audio=%d Battery=%d",
              s_ok[0], s_ok[1], s_ok[2], s_ok[3]);

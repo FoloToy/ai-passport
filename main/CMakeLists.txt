@@ -10,6 +10,12 @@ idf_component_register(
          "demo_wifi.c"
          "demo_ble.c"
          "demo_low_power.c"
+         "demo_tetris.c"
+         "rtttl_player.c"
+         "tetris_model.c"
+         "demo_funbox.c"
+         "funbox_audio.c"
+         "funbox_model.c"
     INCLUDE_DIRS "."
     REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
 )

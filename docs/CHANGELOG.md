@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Added a cartoon 11-in-1 Funbox application with eleven randomized activities, a settings page, battery and volume indicators, adjustable audio/backlight, button feedback, an original wind-themed background chiptune, and a global confession easter egg.
+- Added an interactive Tetris demo with a host-tested game model, low-latency three-button controls, ghost-piece and next-piece previews, score and level progression, RTTTL feedback, and microphone-triggered hard drop.
 - Simplified the tracked repository root: moved GitHub-recognized community documents into `.github/`, moved the changelog into `docs/`, updated every reference, and added a root-document allowlist to repository checks.
 - Repository-wide language policy: every maintained Markdown default `.md` file is English, Simplified Chinese uses a paired `.zh_CN.md`, and both provide language switches. Static checks reject missing peers, missing switches, and Chinese prose in English defaults.
 - Phase one of the AI development workflow: streamlined task-based context routing, unified local/CI validation, added PR checks and a template, and committed the dependency lock for reproducible builds.
