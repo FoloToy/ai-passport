@@ -14,4 +14,17 @@
 
 ## 目录说明
 
-> 当前为空骨架，用于存放后续加入的字库资源。加入资源时请同步更新本 `README.md` 的索引。
+## 老人安心牌嵌入字库
+
+`main/lv_font_cn_16.c` 由 Source Han Sans SC Regular（思源黑体）生成，字号 16 px、
+2 bpp，字符集为 ASCII 加 GB2312 一级汉字。思源黑体采用 SIL Open Font License 1.1。
+
+安装 Pillow 并准备一份本地 OFL 字体后，可重新生成：
+
+```bash
+python3 tools/gen_safety_font.py \
+  --font /path/to/SourceHanSansSC-Regular.otf --size 16
+```
+
+生成的 C 源码从 `main/` 编译，字形数据以只读形式存入 Flash。字库不支持的字符会显示为 `?`，
+不会显示成空白方框。

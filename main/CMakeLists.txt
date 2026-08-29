@@ -1,15 +1,16 @@
 idf_component_register(
     SRCS "main.c"
          "ui_pixel.c"
-         "ui_pixel_math.c"
-         "demo_display.c"
-         "demo_button.c"
-         "demo_audio.c"
-         "demo_battery.c"
-         "demo_radio.c"
-         "demo_wifi.c"
-         "demo_ble.c"
-         "demo_low_power.c"
+         "safety_profile.c"
+         "safety_store.c"
+         "safety_portal.c"
+         "ui_safety.c"
+         "jpeg_probe.c"
+         "jpeg_store.c"
+         "jpeg_view.c"
+         "lv_font_cn_16.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
+    REQUIRES bsp esp_event esp_http_server esp_hw_support esp_netif esp_partition
+             esp_timer esp_wifi json lwip mbedtls nvs_flash
+    PRIV_REQUIRES esp_new_jpeg lvgl
 )

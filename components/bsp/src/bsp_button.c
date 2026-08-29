@@ -39,6 +39,7 @@ static void cb_double(void *a, void *u) { on_event(a, u, BSP_BTN_DOUBLE); }
 static void cb_long  (void *a, void *u) { on_event(a, u, BSP_BTN_LONG);   }
 
 esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user) {
+    if (s_adc) return ESP_ERR_INVALID_STATE;
     s_cb = cb; s_user = user;
 
     // 先由 BSP 建 unit,再把句柄交给 button 组件(button_adc.h:adc_handle 非 NULL 即复用),
@@ -65,6 +66,7 @@ esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user) {
         if (e != ESP_OK || !s_btn[i]) {
             ESP_LOGE(TAG, "按键 %d 创建失败 (%s) —— 检查 GPIO%d 的 ADC 配置与分压电阻",
                      i, esp_err_to_name(e), BSP_BTN_ADC_CHANNEL);
+            bsp_button_deinit();
             return e == ESP_OK ? ESP_FAIL : e;
         }
         void *idx = (void *)(intptr_t)i;
@@ -89,6 +91,35 @@ esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user) {
 
     ESP_LOGI(TAG, "按键就绪:ADC1_CH%d 三键分压", BSP_BTN_ADC_CHANNEL);
     return ESP_OK;
+}
+
+esp_err_t bsp_button_deinit(void) {
+    esp_err_t first_error = ESP_OK;
+    s_cb = NULL;
+    s_user = NULL;
+
+    for (int i = 0; i < BSP_BTN_COUNT; i++) {
+        if (!s_btn[i]) continue;
+        esp_err_t err = iot_button_delete(s_btn[i]);
+        if (first_error == ESP_OK && err != ESP_OK) first_error = err;
+        s_btn[i] = NULL;
+    }
+    if (s_cali) {
+        esp_err_t err = adc_cali_delete_scheme_curve_fitting(s_cali);
+        if (first_error == ESP_OK && err != ESP_OK) first_error = err;
+        s_cali = NULL;
+    }
+    if (s_adc) {
+        esp_err_t err = adc_oneshot_del_unit(s_adc);
+        if (first_error == ESP_OK && err != ESP_OK) first_error = err;
+        s_adc = NULL;
+    }
+    return first_error;
+}
+
+bool bsp_button_any_pressed(void) {
+    int mv = bsp_button_read_mv();
+    return mv >= 0 && mv < BSP_BTN_RELEASE_MIN_MV;
 }
 
 int bsp_button_read_mv(void) {

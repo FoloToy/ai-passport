@@ -6,6 +6,11 @@
 
 ## Unreleased
 
+- Added the Senior Safety Card application: offline profile setup over a local
+  Wi-Fi portal, five safety-information pages, family WeChat QR storage/display,
+  PIN-protected reconfiguration, phone/address privacy controls, battery status,
+  one-minute deep sleep, function-key wake, migration compatibility with the
+  original release, and the template's protected mini-program Recovery layout.
 - Made mini-program BLE install compatibility a template-level invariant: fixed
   protected `cardid`/Recovery partitions, retained the five-second UP-key
   Recovery boot hook, and added CI validation for merged-image structure,

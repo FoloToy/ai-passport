@@ -1,6 +1,8 @@
-# Name,   Type, SubType, Offset,   Size,     Flags
-nvs,      data, nvs,     0x9000,   0x6000,
-phy_init, data, phy,     0xf000,   0x1000,
-factory,  app,  factory, 0x10000,  0x300000,
-cardid,   data, nvs,     0x356000, 0x4000,
-recovery, app,  test,    0x700000, 0x100000,
+# Name,    Type, SubType, Offset,   Size,     Flags
+nvs,       data, nvs,     0x9000,   0x6000,
+phy_init,  data, phy,     0xf000,   0x1000,
+factory,   app,  factory, 0x10000,  0x300000,
+imgstore,  data, 0x40,    0x310000, 0x20000,
+imgframe,  data, 0x41,    0x330000, 0x26000,
+cardid,    data, nvs,     0x356000, 0x4000,
+recovery,  app,  test,    0x700000, 0x100000,

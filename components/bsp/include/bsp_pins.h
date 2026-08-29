@@ -52,11 +52,13 @@
 // ============================================================================
 #define BSP_BTN_ADC_UNIT     ADC_UNIT_1
 #define BSP_BTN_ADC_CHANNEL  ADC_CHANNEL_0    // GPIO0
+#define BSP_BTN_GPIO         0                // ADC 节点对应的数字 GPIO；深睡低电平唤醒使用
 #define BSP_BTN_COUNT        3
 
 // 每键的电压窗口 {min_mV, max_mV};边界取相邻档中点。
 // 确定键上界留宽到 1900,是为了和松开态的 3300mV 拉开距离。
 #define BSP_BTN_MV_TABLE  { {0, 150}, {150, 447}, {447, 1900} }
+#define BSP_BTN_RELEASE_MIN_MV 1900
 
 // ============================================================================
 // I2C:ES8311(音频 codec)与 CW2017(电量计)共用一条总线
