@@ -44,6 +44,11 @@ CONFIG_LV_MEM_SIZE_KILOBYTES=24
 # --- 系统 ---
 CONFIG_FREERTOS_HZ=1000
 
+# --- SNTP ---
+# 校时需要配置多个 NTP 服务器：pool.ntp.org 在国内网络经常不可达，
+# 首选阿里云/国内池，pool.ntp.org 兜底。至少 3 个槽位。
+CONFIG_LWIP_SNTP_MAX_SERVERS=3
+
 # --- Bluetooth LE / NimBLE ---
 # ESP32-C3 仅支持 BLE；示例只启用单连接 peripheral 所需的最小 host 配置。
 CONFIG_BT_ENABLED=y

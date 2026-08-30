@@ -289,7 +289,11 @@ static esp_err_t sntp_sync_if_needed(void)
     }
 
     esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    esp_sntp_setservername(0, "pool.ntp.org");
+    // pool.ntp.org 国内经常不可达导致校时超时（联网成功也报 SNTP 失败）。
+    // 首选阿里云 NTP（国内 anycast 稳定），国内池次之，官方池兜底。
+    esp_sntp_setservername(0, "ntp.aliyun.com");
+    esp_sntp_setservername(1, "cn.pool.ntp.org");
+    esp_sntp_setservername(2, "pool.ntp.org");
     if (!esp_sntp_enabled()) esp_sntp_init();
 
     int64_t deadline = esp_timer_get_time() + (int64_t)SNTP_WAIT_TIMEOUT_MS * 1000;
