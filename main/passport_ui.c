@@ -29,8 +29,15 @@
 static const char *TAG = "smpass_ui";
 
 // 中文字体由 tools/gen_font.sh 生成（font_sm_cjk_16.c），仅含 UI 用到的字。
+// 它是 lv_font_conv 的 RLE 压缩位图，需 CONFIG_LV_USE_FONT_COMPRESSED=y 才能渲染。
+// s_font_cjk 在原有字体上挂 LVGL 内置思源黑体（1000 常用字）作 fallback，
+// 覆盖服务端下发的姓名/积分文本等无法预先子集化的字符。
 extern const lv_font_t font_sm_cjk_16;
-#define FONT_CJK   (&font_sm_cjk_16)
+extern const lv_font_t lv_font_source_han_sans_sc_16_cjk;
+
+static lv_font_t s_font_cjk;
+
+#define FONT_CJK   (&s_font_cjk)
 #define FONT_LATIN (&lv_font_montserrat_14)
 #define FONT_BIG   (&lv_font_montserrat_20)
 
@@ -508,6 +515,9 @@ static void teardown(void)
 // ---------------------------------------------------------------------------
 void passport_ui_init(QueueHandle_t ui_queue)
 {
+    // 结构体复制保持原字体的位图/字距数据，仅补 fallback 指针。
+    s_font_cjk = font_sm_cjk_16;
+    s_font_cjk.fallback = &lv_font_source_han_sans_sc_16_cjk;
     s_ui_queue = ui_queue;
 }
 

@@ -31,6 +31,12 @@ CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
 CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_FONT_MONTSERRAT_14=y
 CONFIG_LV_FONT_MONTSERRAT_20=y
+# font_sm_cjk_16.c 由 lv_font_conv 生成时带 RLE 压缩位图（bitmap_format=1），
+# 必须启用压缩字体支持，否则字形不渲染（中文全空白）。
+CONFIG_LV_USE_FONT_COMPRESSED=y
+# 内置思源黑体 CJK（1000 常用字）作为 font_sm_cjk_16 的 fallback：
+# 学生姓名、积分记录等服务端下发文本无法预先做子集，靠它兜底显示。
+CONFIG_LV_FONT_SOURCE_HAN_SANS_SC_16_CJK=y
 # LVGL 内置 malloc 池大小(KB)。它是独立静态区、不与系统堆共享,配大了会白白占用 RAM。
 # 本 demo UI 简单,24KB 足够;若自建复杂界面出现绘制卡死/看门狗,调大此值。
 CONFIG_LV_MEM_SIZE_KILOBYTES=24
