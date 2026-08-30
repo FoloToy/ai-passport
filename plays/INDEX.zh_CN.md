@@ -16,6 +16,7 @@
 | 贡献者 | 应用 | 功能说明 | 源码 |
 | --- | --- | --- | --- |
 | Shinku-Chen | [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) | 把 AI Passport 变成口袋音频播放器的音效钥匙扣；按 OK 播放来自几十个角色包的数百条中文语音片段。 | [feature/voice-keychain](https://github.com/Shinku-Chen/ai-passport/tree/feature/voice-keychain) |
+| Shinku-Chen | [今天吃啥](shinku-chen/eat-what/README.zh_CN.md) | 按键驱动的食物轮盘，把 AI Passport 变成「今天吃什么」小转盘；按住按键循环食物选项，松手停在你想吃的那样上。 | [feature/cheerful-goodall](https://github.com/Shinku-Chen/ai-passport/tree/feature/cheerful-goodall) |
 
 音效钥匙扣档案还携带配套手册：
 
