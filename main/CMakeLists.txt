@@ -17,7 +17,7 @@ idf_component_register(
          "demo_ble.c"
          "demo_low_power.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp bt console driver esp_event esp_hw_support esp_netif esp_timer
-             esp_wifi nvs_flash esp_http_client mbedtls lwip
+    REQUIRES bsp bt console driver esp_app_format esp_event esp_hw_support
+             esp_netif esp_timer esp_wifi nvs_flash esp_http_client mbedtls lwip
              qrcodegen jsmn
 )

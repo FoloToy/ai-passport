@@ -559,7 +559,7 @@ static void stamp_balance_time(void)
     time_t now = time(NULL);
     struct tm tm_now;
     localtime_r(&now, &tm_now);
-    char stamp[20];
+    char stamp[64];
     snprintf(stamp, sizeof(stamp), "%02d-%02d %02d:%02d",
              tm_now.tm_mon + 1, tm_now.tm_mday, tm_now.tm_hour, tm_now.tm_min);
     passport_store_set_string(PASSPORT_KEY_BALANCE_TS, stamp);
@@ -647,19 +647,19 @@ static esp_err_t do_history(void)
     return ESP_OK;
 }
 
-static void today_str(char out[11])
+static void today_str(char out[64])
 {
     time_t now = time(NULL);
     struct tm tm_now;
     localtime_r(&now, &tm_now);
-    snprintf(out, 11, "%04d-%02d-%02d",
+    snprintf(out, 64, "%04d-%02d-%02d",
              tm_now.tm_year + 1900, tm_now.tm_mon + 1, tm_now.tm_mday);
 }
 
 // 每日签到（R4，幂等）：本地日期短路 + 服务端幂等双保险
 static esp_err_t do_checkin(void)
 {
-    char today[11];
+    char today[64];
     today_str(today);
     char last[11] = { 0 };
     passport_store_get_string(PASSPORT_KEY_LAST_CHECKIN, last, sizeof(last));

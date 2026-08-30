@@ -395,7 +395,7 @@ static void build_checkin(void)
     lv_obj_center(s_body);
 
     // 本地日期短路：当日已签直接显示结果（实现文档 7.3 节）
-    char today[11];
+    char today[64];
     {
         time_t now = time(NULL);
         struct tm tm_now;

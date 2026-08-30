@@ -6,6 +6,8 @@
 //   LVGL 任务内的 dispatch 定时器 = 唯一 UI 上下文，统一消费两个队列
 #pragma once
 
+#include <stdbool.h>
+
 // BSP（显示/LVGL）与 passport_store 初始化完成后由 app_main 调用。
 void passport_app_start(void);
 
