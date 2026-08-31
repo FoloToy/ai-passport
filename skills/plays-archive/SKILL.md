@@ -96,13 +96,13 @@ The archive is **text-only**: do **not** commit the cover image. Record only its
 file name and format in the summary as publish metadata. The image itself lives
 with the community publication; if a cover must be generated for the publication
 (not the archive), use the official product references under
-[`docs/assets/brand/`](../../docs/brand/README.md): pass a reference (e.g.
+[`docs/brand/`](../../docs/brand/README.md): pass a reference (e.g.
 `ai-passport-front.png` or a colorway shell render) as input to the generation
 call, keep its shell, buttons, ports, and key-ring hole as they are, and redraw
 only the reference's screen region into the play's actual on-screen content,
 keeping the screen's size, aspect ratio, corners, and position identical to the
 reference. See the full
-convention in [`docs/assets/brand/README.md`](../../docs/brand/README.md).
+convention in [`docs/brand/README.md`](../../docs/brand/README.md).
 
 ## Commit
 
