@@ -10,7 +10,7 @@ description: 固件发布之后，把发布固件的开发者本人遇到的改�
 # 收集建议并提交 issue
 
 本 skill 把发布固件的开发者本人的改进点，整理成提交到上游 `FoloToy/ai-passport` 项目的
-GitHub issue。它只在固件已发布（发布流程见 `docs/development/publish-to-community.md`）、
+GitHub issue。它只在固件已发布（发布流程见 `docs/development/release/publish-to-community.md`）、
 且开发者明确要求收集建议时运行。
 
 ## 安全与同意门槛（必须先做）
@@ -69,8 +69,8 @@ GitHub issue。它只在固件已发布（发布流程见 `docs/development/publ
 
 ## 相关文档
 
-- 项目开发完成流程总览：`docs/development/project-completion.md`
-- 提交 issue：`docs/development/file-issues.md`
-- 固件发布：`docs/development/publish-to-community.md`
+- 项目开发完成流程总览：`docs/development/release/project-completion.md`
+- 提交 issue：`docs/development/release/file-issues.md`
+- 固件发布：`docs/development/release/publish-to-community.md`
 - issue 模板：`.github/ISSUE_TEMPLATE/feature_request.yml`
 - 贡献与提交规则：`docs/contribution/commit-and-pr.md`

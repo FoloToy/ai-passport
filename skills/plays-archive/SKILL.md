@@ -12,7 +12,7 @@ description: After a firmware release, archive the published application into th
 This skill archives a published application into the upstream
 `FoloToy/ai-passport` repository's `plays/` application archive so it is
 discoverable in-repository for later querying. It runs after a firmware release
-(see `docs/development/publish-to-community.md` for publishing itself) and only
+(see `docs/development/release/publish-to-community.md` for publishing itself) and only
 when the developer asks to archive the application.
 
 ## Safety and consent gate (run first)
@@ -37,7 +37,7 @@ Confirm the application name, the source it belongs to (for example a `demo/*`
 branch or `main/`), and the contributor's GitHub username. Use the
 lowercase-kebab-case username and application name as the two-level path:
 `plays/<username>/<app-name>/`. See
-[`../../plays/README.md`](../../plays/README.md) for the full convention.
+[`../../docs/reference/README.md`](../../docs/reference/README.md) for the full convention.
 
 ## Check the project README
 
@@ -129,7 +129,7 @@ and read it back to confirm. Opening a PR requires separate confirmation.
 
 ## Related documents
 
-- Application archive convention: `../plays/README.md`
-- Post-release follow-up overview: `docs/development/project-completion.md`
-- Firmware publishing: `docs/development/publish-to-community.md`
+- Application archive convention: `../../docs/reference/README.md`
+- Post-release follow-up overview: `docs/development/release/project-completion.md`
+- Firmware publishing: `docs/development/release/publish-to-community.md`
 - Contribution and commit rules: `docs/contribution/commit-and-pr.md`

@@ -8,12 +8,11 @@
 
 ```
 docs/
-  software-design/README.md   软件设计文档子目录骨架
   hardware-design/
     README.md                 硬件设计文档子目录骨架
     AI_HARDWARE_DEVELOPMENT_GUIDE.md   完整硬件开发指南与排障参考（上游）
   contribution/               协作规范（doc-conventions.md、commit-and-pr.md，见 README.md 索引）
-  development/                工程规范与 AI 开发工作流（build-and-test.md、coding-conventions.md、agent-guide.md，见 README.md 索引）
+  development/                工程规范与 AI 开发工作流（build-and-test.md、coding-conventions.md、ai-guide.md，见 README.md 索引）
   README.md                   上游英文说明（FoloToy AI Passport；GitHub 主 README）
   README.zh_CN.md             上游中文说明（FoloToy AI Passport）
   INDEX.md                    仓库根总索引（各目录索引表格 + 根治理文档）
@@ -33,7 +32,7 @@ sdkconfig.defaults            ESP32-C3、USB console、Flash、LVGL 默认配置
 
 有两个原因——(1) **随时与上游保持一致、无冲突**，给多任务并行开发提供最新基线；(2) **默认用户会开发很多小项目**，为了便于整理，通过分支（`feature/*`）保存每个项目，`main` 只作为同步基线不混入具体项目改动。
 
-**例外**：如果用户**执意要在 `main` 分支直接开发**，需要**停用/关闭 CI 的自动同步任务**（见 `.github/workflows/sync-main.yml`，说明见 [docs/development/CI-sync-main.md](development/CI-sync-main.md)），否则自动同步会把上游改动强行合入，产生冲突或覆盖本地开发内容。
+**例外**：如果用户**执意要在 `main` 分支直接开发**，需要**停用/关闭 CI 的自动同步任务**（见 `.github/workflows/sync-main.yml`，说明见 [docs/development/ci/CI-sync-main.zh_CN.md](development/ci/CI-sync-main.zh_CN.md)），否则自动同步会把上游改动强行合入，产生冲突或覆盖本地开发内容。
 
 **fork 用户注意（整个 CI 通用）**：fork 默认的 GitHub Actions 是**关闭**的，需要**手动打开启用**（GitHub 仓库 Actions 页面 → 找到需要的 workflow，如 CI 自动同步 → Enable）后，对应的 CI 才会生效。
 
@@ -67,4 +66,4 @@ fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `do
 fork，放在 `docs/assets/` 下，不提交回上游。通用、上游也受益的文档或经验改进——持续的硬件事实、
 可复用的接口、能帮助任何 AI Passport 用户的构建或发布流程改进——作为 PR 提交回上游。
 `plays/` 应用档案与发布后的经验沉淀属于上游，作为 PR 提案回上游。发布后的工作请用
-`experience-pr` 与 `plays-archive` skill，见 `docs/development/project-completion.md`。
+`experience-pr` 与 `plays-archive` skill，见 `docs/development/release/project-completion.md`。

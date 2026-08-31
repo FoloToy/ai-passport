@@ -171,7 +171,7 @@ The current product and firmware baseline uses 8 MB Flash. `sdkconfig.defaults` 
 
 Do not erase a provisioned device or move/overlap the protected partitions.
 Community firmware contains neither device identity nor a replacement Recovery
-payload. See the [BLE compatibility contract](../development/ble-recovery-compatibility.md).
+payload. See the [BLE compatibility contract](../development/engineering/ble-recovery-compatibility.md).
 
 The console is USB Serial/JTAG. Do not switch to the UART0 default output without resolving its GPIO21 conflict with the backlight.
 
@@ -187,7 +187,7 @@ Menu initialization status arrays implicitly follow `DEMOS[]` order; update and 
 
 ## 12. Development environment
 
-Follow the canonical [environment bootstrap](../development/environment-setup.md)
+Follow the canonical [environment bootstrap](../development/engineering/environment-setup.md)
 for clean-machine installation, OS-specific prerequisites, and international or
 mainland China download routes. Use ESP-IDF 5.5.3 outside the repository,
 activate its `export.sh` in every terminal, and confirm the exact version.

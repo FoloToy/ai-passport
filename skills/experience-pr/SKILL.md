@@ -109,14 +109,14 @@ customization to the upstream PR.
 ## Write the experience entry
 
 Each experience capture may produce **one or more** entries, each as its own
-`.md` file with its paired `.zh_CN.md` under `docs/experiences/<username>/`,
+`.md` file with its paired `.zh_CN.md` under `docs/reference/<username>/`,
 named after the entry's content summary in lowercase-kebab-case (for example
 `audio-compression-trade-offs.md`), where `<username>` is the contributing
 developer's GitHub username (lowercase-kebab-case) grouping that developer's
 entries together. This repository requires English at the default `.md` path and a
 paired `.zh_CN.md`, with reciprocal language links and no Chinese prose in the
 English file. Link each new entry from the index at
-`docs/development/experience-notes.md`.
+`docs/reference/README.md`.
 
 A developer is not limited to one entry. The archive holds **one or more entries
 per developer**, each as its own `.md` file (with its paired `.zh_CN.md`) under
@@ -159,10 +159,10 @@ change affects user-visible behavior, compatibility, or the release workflow.
 
 ## Related documents
 
-- Project completion overview: `docs/development/project-completion.md`
-- Experience index: `docs/development/experience-notes.md`
-- Experience entries: `docs/experiences/`
-- Firmware publishing: `docs/development/publish-to-community.md`
+- Project completion overview: `docs/development/release/project-completion.md`
+- Experience index: `docs/reference/README.md`
+- Experience entries: `docs/reference/`
+- Firmware publishing: `docs/development/release/publish-to-community.md`
 - PR template: `.github/PULL_REQUEST_TEMPLATE.md`
 - Contribution and commit rules: `docs/contribution/commit-and-pr.md`
 - Fork branch and PR workflow: `docs/fork-guide.md`

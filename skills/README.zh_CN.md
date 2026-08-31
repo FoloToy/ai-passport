@@ -24,6 +24,6 @@
 
 | 技能 | 功能 |
 | --- | --- |
-| [issue-suggestions](issue-suggestions/SKILL.md) | 发布后，收集开发者的改进点，整理成提交到上游的功能建议 issue。 |
-| [experience-pr](experience-pr/SKILL.md) | 发布后，收集可复用的开发经验，并作为文档 PR 提交。 |
-| [plays-archive](plays-archive/SKILL.md) | 发布后，把已发布应用归档到上游 `plays/`，附 AI 生成的双语说明与封面图。 |
+| [issue-suggestions](issue-suggestions/SKILL.zh_CN.md) | 发布后，收集开发者的改进点，整理成提交到上游的功能建议 issue。 |
+| [experience-pr](experience-pr/SKILL.zh_CN.md) | 发布后，收集可复用的开发经验，并作为文档 PR 提交。 |
+| [plays-archive](plays-archive/SKILL.zh_CN.md) | 发布后，把已发布应用归档到上游 `plays/`，附 AI 生成的双语说明与封面图。 |
