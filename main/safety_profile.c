@@ -68,21 +68,11 @@ bool safety_profile_has_pin(const safety_profile_t *profile)
 void safety_profile_mask_phone(const safety_profile_t *profile,
                                char *output, size_t capacity)
 {
+    /* Retain the legacy API and stored flag, but always expose a usable number. */
     if (!output || capacity == 0) return;
     output[0] = '\0';
     if (!profile) return;
 
-    size_t length = strnlen(profile->phone, sizeof(profile->phone));
-    if (profile->show_full_phone || length < 7) {
-        strncpy(output, profile->phone, capacity - 1);
-        output[capacity - 1] = '\0';
-        return;
-    }
-
-    size_t used = 0;
-    for (size_t i = 0; i < length && used + 1 < capacity; ++i) {
-        bool hidden = i >= 3 && i + 4 < length;
-        output[used++] = hidden ? '*' : profile->phone[i];
-    }
-    output[used] = '\0';
+    strncpy(output, profile->phone, capacity - 1);
+    output[capacity - 1] = '\0';
 }

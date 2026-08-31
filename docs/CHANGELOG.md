@@ -6,6 +6,10 @@
 
 ## Unreleased
 
+- Reworked all five Senior Safety Card pages from physical-device framebuffer
+  captures, added a larger 22 px emergency font and Chinese punctuation, made
+  phone numbers always visible, and added automatic QR cropping plus scan-safe
+  antialiased enlargement. The device-rendered QR passes macOS Vision decoding.
 - Added the Senior Safety Card application: offline profile setup over a local
   Wi-Fi portal, five safety-information pages, family WeChat QR storage/display,
   PIN-protected reconfiguration, phone/address privacy controls, battery status,

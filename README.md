@@ -31,7 +31,8 @@ device.
   internet service.
 - The family QR image stays in the device's `imgstore` partition.
 - A management PIN is stored only as a random salt and SHA-256 digest.
-- Full home address display is opt-in, and the main phone number can be masked.
+- Full home address display is opt-in. Phone numbers are always shown in full so
+  a helper can contact the family immediately.
 - Wi-Fi and its local web server run only during setup. Bluetooth is disabled
   during normal application use.
 

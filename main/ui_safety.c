@@ -9,6 +9,7 @@
 #include <string.h>
 
 LV_FONT_DECLARE(lv_font_cn_16);
+LV_FONT_DECLARE(lv_font_cn_22);
 
 static lv_obj_t *s_screen;
 
@@ -75,19 +76,32 @@ static lv_obj_t *new_screen(const char *title)
     return s_screen;
 }
 
-static lv_obj_t *safe_label(lv_obj_t *parent, const char *text, int width,
-                            uint32_t color)
+static lv_obj_t *safe_label_font(lv_obj_t *parent, const char *text, int width,
+                                 uint32_t color, const lv_font_t *font,
+                                 int line_space)
 {
     char safe[640];
-    display_safe_text(text ? text : "", &lv_font_cn_16, safe, sizeof(safe));
+    display_safe_text(text ? text : "", font, safe, sizeof(safe));
     lv_obj_t *label = lv_label_create(parent);
     lv_label_set_text(label, safe);
     lv_obj_set_width(label, width);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_set_style_text_font(label, &lv_font_cn_16, 0);
+    lv_obj_set_style_text_font(label, font, 0);
     lv_obj_set_style_text_color(label, lv_color_hex(color), 0);
-    lv_obj_set_style_text_line_space(label, 5, 0);
+    lv_obj_set_style_text_line_space(label, line_space, 0);
     return label;
+}
+
+static lv_obj_t *safe_label(lv_obj_t *parent, const char *text, int width,
+                            uint32_t color)
+{
+    return safe_label_font(parent, text, width, color, &lv_font_cn_16, 5);
+}
+
+static lv_obj_t *large_safe_label(lv_obj_t *parent, const char *text,
+                                  int width, uint32_t color)
+{
+    return safe_label_font(parent, text, width, color, &lv_font_cn_22, 7);
 }
 
 static void add_status(lv_obj_t *screen, int page, int battery_percent)
@@ -111,14 +125,16 @@ static void add_status(lv_obj_t *screen, int page, int battery_percent)
 
 static lv_obj_t *content_panel(lv_obj_t *screen)
 {
-    return ui_pixel_panel_create(screen, 10, 64, 220, 214, UI_PAPER);
+    lv_obj_t *panel = ui_pixel_panel_create(screen, 8, 61, 224, 219, UI_PAPER);
+    lv_obj_set_style_pad_all(panel, 4, 0);
+    return panel;
 }
 
 static void add_footer(lv_obj_t *screen, const char *text)
 {
     lv_obj_t *footer = safe_label(screen, text, 232, UI_INK);
     lv_obj_set_style_text_align(footer, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_pos(footer, 4, 292);
+    lv_obj_set_pos(footer, 4, 291);
 }
 
 static void center_body(lv_obj_t *panel, const char *text)
@@ -126,6 +142,36 @@ static void center_body(lv_obj_t *panel, const char *text)
     lv_obj_t *body = safe_label(panel, text, 188, UI_INK);
     lv_obj_set_style_text_align(body, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_center(body);
+}
+
+static int card_heading(lv_obj_t *panel, const char *text, bool large)
+{
+    lv_obj_t *badge = lv_obj_create(panel);
+    lv_obj_remove_flag(badge, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_pos(badge, 0, 0);
+    lv_obj_set_size(badge, 208, large ? 45 : 36);
+    lv_obj_set_style_radius(badge, 0, 0);
+    lv_obj_set_style_border_width(badge, 3, 0);
+    lv_obj_set_style_border_color(badge, lv_color_hex(UI_INK), 0);
+    lv_obj_set_style_bg_color(badge, lv_color_hex(UI_YELLOW), 0);
+    lv_obj_set_style_pad_all(badge, 0, 0);
+
+    lv_obj_t *label = large
+        ? large_safe_label(badge, text, 198, UI_INK)
+        : safe_label(badge, text, 198, UI_INK);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(label);
+    return large ? 55 : 42;
+}
+
+static void card_details(lv_obj_t *panel, const char *text, bool large, int y)
+{
+    lv_obj_t *details = large
+        ? large_safe_label(panel, text, 208, UI_INK)
+        : safe_label_font(panel, text, 208, UI_INK, &lv_font_cn_16, 3);
+    if (large) lv_obj_set_style_text_letter_space(details, -2, 0);
+    lv_obj_set_style_text_align(details, LV_TEXT_ALIGN_LEFT, 0);
+    lv_obj_set_pos(details, 0, y);
 }
 
 void ui_safety_show_profile(const safety_profile_t *profile, int page,
@@ -138,43 +184,52 @@ void ui_safety_show_profile(const safety_profile_t *profile, int page,
     lv_obj_t *screen = new_screen("SAFE CARD");
     add_status(screen, page, battery_percent);
     lv_obj_t *panel = content_panel(screen);
-    char body[560];
+    char heading[96];
+    char details[560];
+    bool large_details = false;
+    bool large_heading = page < 2;
 
     if (page == 0) {
-        snprintf(body, sizeof(body), "%s\n\n%s",
-                 profile->name[0] ? profile->name : "请帮助我",
+        snprintf(heading, sizeof(heading), "%s",
+                 profile->name[0] ? profile->name : "请帮助我");
+        snprintf(details, sizeof(details), "%s",
                  profile->help_text[0] ? profile->help_text :
                  "您好，我可能迷路了，请帮我联系家人");
+        large_details = true;
     } else if (page == 1) {
-        char phone[40];
-        safety_profile_mask_phone(profile, phone, sizeof(phone));
-        snprintf(body, sizeof(body), "联系家人\n\n%s%s%s\n\n%s%s%s",
+        snprintf(heading, sizeof(heading), "联系家人");
+        snprintf(details, sizeof(details), "%s%s%s\n%s%s%s",
                  profile->contact_name[0] ? profile->contact_name : "家属",
                  profile->relation[0] ? " / " : "", profile->relation,
-                 phone[0] ? phone : "未填写电话",
-                 profile->backup_phone[0] ? "\n备用: " : "",
+                 profile->phone[0] ? profile->phone : "未填写电话",
+                 profile->backup_phone[0] ? "\n备用：" : "",
                  profile->backup_phone);
+        large_details = true;
     } else if (page == 2) {
         const char *address = profile->show_full_address &&
                               profile->home_address[0]
                                   ? profile->home_address
                                   : profile->home_area;
-        snprintf(body, sizeof(body), "帮我回家\n\n%s",
+        snprintf(heading, sizeof(heading), "帮我回家");
+        snprintf(details, sizeof(details), "%s",
                  address[0] ? address : "未填写居住信息");
     } else if (page == 3) {
-        snprintf(body, sizeof(body), "健康提醒\n\n%s",
+        snprintf(heading, sizeof(heading), "健康提醒");
+        snprintf(details, sizeof(details), "%s",
                  profile->medical[0] ? profile->medical :
                  "暂无特别健康提醒");
     } else {
-        snprintf(body, sizeof(body), "微信联系\n\n%s\n\n%s",
+        snprintf(heading, sizeof(heading), "微信联系");
+        snprintf(details, sizeof(details), "%s\n\n%s",
                  has_wechat_qr ? "按确认键显示家属微信二维码" :
                                  "尚未上传微信二维码",
                  profile->wechat_note[0] ? profile->wechat_note : "");
     }
-    center_body(panel, body);
+    int details_y = card_heading(panel, heading, large_heading);
+    card_details(panel, details, large_details, details_y);
     add_footer(screen, page == UI_SAFETY_PAGE_COUNT - 1
-                           ? "上下键翻页 | 确认显示二维码"
-                           : "上下键翻页 | 长按确认重新设置");
+                           ? "上下翻页  确认显示二维码"
+                           : "上下翻页  长按确认设置");
 }
 
 void ui_safety_show_setup(const char *ssid, const char *password,

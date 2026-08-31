@@ -27,6 +27,9 @@ FALLBACK_FONT_PATH = FONT_PATH
 BPP = 2
 OUT_DIR = os.path.join(os.path.dirname(__file__), "../main")
 
+# 表单正文会自然包含中文标点；它们不属于 GB2312 汉字区，必须显式加入。
+COMMON_SYMBOLS = "，。！？：；、‘’“”（）【】《》…—·￥↑↓"
+
 # GB2312/ASCII 之外、产品昵称中确认需要显示的姓名用字和符号。集中维护，
 # 避免为了少量字形引入整个 GBK/CJK 字库而超过 ESP32-C3 的应用分区容量。
 NICKNAME_EXTRA_CHARS = (
@@ -116,6 +119,9 @@ def gen(size, out_path, font_name):
     # 逯、仉、佘、亓、訾、琰、珩等姓名用字，也避免把 16px 字体同步膨胀。
     include_level2 = size == 24
     cjk_chars = nickname_hanzi() if include_level2 else gb2312_hanzi()
+    for ch in COMMON_SYMBOLS:
+        if ch not in cjk_chars:
+            cjk_chars.append(ch)
     cjk_chars.sort(key=ord)
     all_chars = ascii_chars + cjk_chars
 

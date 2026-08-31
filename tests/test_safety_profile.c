@@ -17,17 +17,17 @@ int main(void)
     assert(safety_profile_is_valid(&profile));
     assert(profile.configured == 1);
 
-    char masked[32];
-    safety_profile_mask_phone(&profile, masked, sizeof(masked));
-    assert(strcmp(masked, "138****8000") == 0);
+    char shown[32];
+    safety_profile_mask_phone(&profile, shown, sizeof(shown));
+    assert(strcmp(shown, "13800138000") == 0);
 
     safety_profile_t tampered = profile;
     tampered.phone[0] = '9';
     assert(!safety_profile_is_valid(&tampered));
 
     profile.show_full_phone = 1;
-    safety_profile_mask_phone(&profile, masked, sizeof(masked));
-    assert(strcmp(masked, "13800138000") == 0);
+    safety_profile_mask_phone(&profile, shown, sizeof(shown));
+    assert(strcmp(shown, "13800138000") == 0);
 
     profile.pin_hash[0] = 1;
     assert(safety_profile_has_pin(&profile));

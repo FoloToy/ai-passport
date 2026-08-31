@@ -9,6 +9,7 @@ idf_component_register(
          "jpeg_store.c"
          "jpeg_view.c"
          "lv_font_cn_16.c"
+         "lv_font_cn_22.c"
     INCLUDE_DIRS "."
     REQUIRES bsp esp_event esp_http_server esp_hw_support esp_netif esp_partition
              esp_timer esp_wifi json lwip mbedtls nvs_flash

@@ -80,10 +80,10 @@ static const char PAGE_HTML[] =
 "<input id=contact maxlength=12 placeholder='王女士'></div><div><label>与老人关系</label>"
 "<input id=relation maxlength=8 placeholder='女儿'></div></div><label>联系电话</label>"
 "<input id=phone inputmode=tel maxlength=24 placeholder='138 0000 0000'><label>备用联系电话</label>"
-"<input id=backup inputmode=tel maxlength=24><label class=check><input id=showPhone type=checkbox checked>"
-"<span>显示完整联系电话；关闭后中间数字显示为星号</span></label><label>家属微信二维码</label>"
-"<input id=qr type=file accept='image/jpeg,image/png,image/webp'><p class=tip>手机会把图片缩放为设备可识别的 200×200 JPEG。"
-"建议上传清晰、边缘完整的二维码截图。</p><label>微信联系说明</label>"
+"<input id=backup inputmode=tel maxlength=24><p class=tip>联系电话会完整显示，方便帮助者直接联系家人。</p>"
+"<label>家属微信二维码</label><input id=qr type=file accept='image/jpeg,image/png,image/webp'>"
+"<p class=tip>手机会把图片居中裁成清晰的 220×220 二维码。建议上传边缘完整、正对屏幕的二维码截图。</p>"
+"<label>微信联系说明</label>"
 "<input id=wechat maxlength=25 value='请添加我的家人，备注安心牌'></section>"
 "<section class=card><h2>健康提醒</h2><label>过敏、疾病、常用药或照护提醒</label>"
 "<textarea id=medical maxlength=70 placeholder='例如：对青霉素过敏；患有高血压'></textarea></section>"
@@ -98,19 +98,20 @@ static const char PAGE_HTML[] =
 "async function load(){try{let st=await(await fetch('/status')).json();if(st.pin_required){adminPin=prompt('请输入安心牌管理密码')||'';}"
 "let p=await(await api('/profile')).json();let map={name:'name',help_text:'help',home_area:'area',home_address:'address',"
 "contact_name:'contact',relation:'relation',phone:'phone',backup_phone:'backup',medical:'medical',wechat_note:'wechat'};"
-"for(let k in map)$(map[k]).value=p[k]||'';$('showAddress').checked=!!p.show_full_address;$('showPhone').checked=!!p.show_full_phone"
+"for(let k in map)$(map[k]).value=p[k]||'';$('showAddress').checked=!!p.show_full_address"
 "}catch(e){alert(e.message)}}"
 "function jpeg(file){return new Promise((resolve,reject)=>{let u=URL.createObjectURL(file),im=new Image;im.onload=()=>{"
-"let c=document.createElement('canvas'),s=200;c.width=s;c.height=s;let x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,s,s);"
-"x.imageSmoothingEnabled=false;let q=Math.min(s/im.width,s/im.height),w=im.width*q,h=im.height*q;"
-"x.drawImage(im,(s-w)/2,(s-h)/2,w,h);c.toBlob(b=>{URL.revokeObjectURL(u);b?resolve(b):reject(new Error('二维码处理失败'))},"
-"'image/jpeg',.92)};im.onerror=()=>reject(new Error('无法读取二维码图片'));im.src=u})}"
+"let c=document.createElement('canvas'),s=220,p=8,side=Math.min(im.width,im.height),sx=(im.width-side)/2,sy=(im.height-side)/2;"
+"c.width=s;c.height=s;let x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,s,s);"
+"x.imageSmoothingEnabled=false;x.drawImage(im,sx,sy,side,side,p,p,s-p*2,s-p*2);"
+"c.toBlob(b=>{URL.revokeObjectURL(u);b?resolve(b):reject(new Error('二维码处理失败'))},'image/jpeg',1)};"
+"im.onerror=()=>reject(new Error('无法读取二维码图片'));im.src=u})}"
 "$('form').onsubmit=async e=>{e.preventDefault();let b=$('save'),s=$('status');b.disabled=true;b.textContent='正在写入...';"
 "try{let f=$('qr').files[0];if(f){let blob=await jpeg(f);await api('/wechat-qr',{method:'POST',headers:{'Content-Type':'image/jpeg'},body:blob})}"
 "let data={name:$('name').value,help_text:$('help').value,home_area:$('area').value,home_address:$('address').value,"
 "contact_name:$('contact').value,relation:$('relation').value,phone:$('phone').value,backup_phone:$('backup').value,"
 "medical:$('medical').value,wechat_note:$('wechat').value,show_full_address:$('showAddress').checked,"
-"show_full_phone:$('showPhone').checked,pin:$('pin').value};await api('/save',{method:'POST',headers:{'Content-Type':'application/json'},"
+"show_full_phone:true,pin:$('pin').value};await api('/save',{method:'POST',headers:{'Content-Type':'application/json'},"
 "body:JSON.stringify(data)});s.style.display='block';s.textContent='保存成功。设备正在关闭热点并返回安心牌。';b.textContent='已保存'"
 "}catch(err){s.style.display='block';s.style.background='#fff0ec';s.textContent=err.message;b.disabled=false;b.textContent='重新保存'}};load();"
 "</script></body></html>";
@@ -348,7 +349,7 @@ static esp_err_t save_post(httpd_req_t *request)
                  copy_json_string(root, "wechat_note", next.wechat_note,
                                   sizeof(next.wechat_note));
     next.show_full_address = json_bool(root, "show_full_address", false);
-    next.show_full_phone = json_bool(root, "show_full_phone", true);
+    next.show_full_phone = 1; /* Always show a callable family number. */
 
     cJSON *pin = cJSON_GetObjectItemCaseSensitive(root, "pin");
     if (valid && cJSON_IsString(pin) && pin->valuestring &&

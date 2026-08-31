@@ -13,9 +13,9 @@ Store reusable source images and generated display assets here.
 
 ## Senior Safety Card cover
 
-`senior-safety-card-cover.png` is a 1152 × 1536 (3:4) community-publishing
-cover. It was generated with the built-in image generation tool from the
-official `docs/assets/brand/ai-passport-front.png` hardware reference. The
-prompt required the external hardware to remain unchanged and replaced only the
-screen with the implemented pixel-style safety-card page. The image is a
-publishing asset and is not compiled into firmware.
+`senior-safety-card-cover.png` is a 240 × 320 (3:4) community-publishing cover
+captured directly from the physical device's LVGL framebuffer over USB. It is
+the verified first information page, not a camera photo or a hardware mockup.
+The selected page contains no phone number, QR payload, credential, or other
+private contact data. The image is a publishing asset and is not compiled into
+firmware.

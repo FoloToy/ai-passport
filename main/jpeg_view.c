@@ -28,6 +28,72 @@ static jpeg_view_result_cb_t s_callback;
 static void *s_callback_user;
 static uint8_t s_block[SCREEN_WIDTH * 16 * 2] __attribute__((aligned(16)));
 
+static bool qr_pixel_is_dark(const uint8_t *data, size_t offset)
+{
+    uint16_t pixel = (uint16_t)data[offset] |
+                     ((uint16_t)data[offset + 1] << 8);
+    int red = ((pixel >> 11) & 0x1F) * 255 / 31;
+    int green = ((pixel >> 5) & 0x3F) * 255 / 63;
+    int blue = (pixel & 0x1F) * 255 / 31;
+    return (red * 3 + green * 6 + blue) / 10 < 170;
+}
+
+static bool find_qr_crop(const uint8_t *frame, int width, int height,
+                         int *crop_x, int *crop_y, int *crop_side)
+{
+    int min_y = height;
+    int max_y = -1;
+    int row_threshold = width / 8;
+    for (int y = 0; y < height; ++y) {
+        int dark = 0;
+        for (int x = 0; x < width; ++x) {
+            size_t offset = ((size_t)y * width + x) * 2;
+            if (qr_pixel_is_dark(frame, offset)) ++dark;
+        }
+        if (dark >= row_threshold) {
+            if (y < min_y) min_y = y;
+            max_y = y;
+        }
+    }
+    if (max_y < min_y || max_y - min_y + 1 < width / 3) return false;
+
+    int qr_height = max_y - min_y + 1;
+    int min_x = width;
+    int max_x = -1;
+    int column_threshold = qr_height / 8;
+    for (int x = 0; x < width; ++x) {
+        int dark = 0;
+        for (int y = min_y; y <= max_y; ++y) {
+            size_t offset = ((size_t)y * width + x) * 2;
+            if (qr_pixel_is_dark(frame, offset)) ++dark;
+        }
+        if (dark >= column_threshold) {
+            if (x < min_x) min_x = x;
+            max_x = x;
+        }
+    }
+    if (max_x < min_x) return false;
+
+    int qr_width = max_x - min_x + 1;
+    int side = qr_width > qr_height ? qr_width : qr_height;
+    side += side / 4; /* Preserve roughly four modules of quiet zone. */
+    if (side > width) side = width;
+    if (side > height) side = height;
+
+    int center_x = (min_x + max_x) / 2;
+    int center_y = (min_y + max_y) / 2;
+    int x = center_x - side / 2;
+    int y = center_y - side / 2;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x + side > width) x = width - side;
+    if (y + side > height) y = height - side;
+    *crop_x = x;
+    *crop_y = y;
+    *crop_side = side;
+    return true;
+}
+
 static bool decode_to_frame(int *width, int *height)
 {
     const uint8_t *jpeg = NULL;
@@ -106,11 +172,17 @@ static bool show_frame(int width, int height)
     memset(&s_descriptor, 0, sizeof(s_descriptor));
     s_descriptor.header.magic = LV_IMAGE_HEADER_MAGIC;
     s_descriptor.header.cf = LV_COLOR_FORMAT_RGB565;
-    s_descriptor.header.w = width;
-    s_descriptor.header.h = height;
+    int crop_x = 0;
+    int crop_y = 0;
+    int crop_side = 0;
+    bool cropped = find_qr_crop(frame, width, height,
+                                &crop_x, &crop_y, &crop_side);
+    s_descriptor.header.w = cropped ? crop_side : width;
+    s_descriptor.header.h = cropped ? crop_side : height;
     s_descriptor.header.stride = width * 2;
-    s_descriptor.data = frame;
-    s_descriptor.data_size = frame_bytes;
+    size_t data_offset = ((size_t)crop_y * width + crop_x) * 2;
+    s_descriptor.data = frame + data_offset;
+    s_descriptor.data_size = frame_bytes - data_offset;
 
     if (!bsp_lvgl_lock(1000)) {
         jpeg_frame_unmap();
@@ -124,6 +196,15 @@ static bool show_frame(int width, int height)
     lv_obj_remove_flag(s_screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *image = lv_image_create(s_screen);
     lv_image_set_src(image, &s_descriptor);
+    int longest_side = (int)(s_descriptor.header.w > s_descriptor.header.h
+                                 ? s_descriptor.header.w
+                                 : s_descriptor.header.h);
+    if (longest_side > 0 && longest_side < 220) {
+        lv_image_set_scale(image,
+                           (uint32_t)LV_SCALE_NONE * 220u /
+                           (uint32_t)longest_side);
+        lv_image_set_antialias(image, true);
+    }
     lv_obj_center(image);
     lv_screen_load(s_screen);
     bsp_lvgl_unlock();
