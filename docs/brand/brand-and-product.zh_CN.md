@@ -6,7 +6,7 @@
 
 > **面向读者**：用户、开发者、AI agent 以及任何想了解 AI Passport 品牌与产品的人
 > **读取时机**：首次接触本产品、需要了解品牌定位 / 产品名称 / 官方入口 / 产品规格，或准备对外引用产品信息之前
-> **关联文档**：设备硬件规格见 [hardware-design/specifications.zh_CN.md](hardware-design/specifications.zh_CN.md)；凭证与隐私入仓红线见 [contribution/doc-conventions.zh_CN.md](contribution/doc-conventions.zh_CN.md)。
+> **关联文档**：设备硬件规格见 [hardware-design/specifications.zh_CN.md](../hardware-design/specifications.zh_CN.md)；凭证与隐私入仓红线见 [contribution/doc-conventions.zh_CN.md](../contribution/doc-conventions.zh_CN.md)。
 
 ---
 
@@ -74,13 +74,13 @@ FoloToy 提供两处浏览器刷机入口，均可安全写入本地固件，固
 
 ## 3.1 品牌视觉素材
 
-官方产品与品牌视觉参考图存于 [`docs/assets/brand/`](assets/brand/README.zh_CN.md)（索引见同目录 `README.md` / `README.zh_CN.md`）。包含产品**正面**与**背面**实拍图，以及三种品牌配色外壳的正面渲染图（EVA 紫 / 橙 / 红三款）。
+官方产品与品牌视觉参考图存于 [`docs/assets/brand/`](README.zh_CN.md)（索引见同目录 `README.md` / `README.zh_CN.md`）。包含产品**正面**与**背面**实拍图，以及三种品牌配色外壳的正面渲染图（EVA 紫 / 橙 / 红三款）。
 
-这些图是 AI Passport 市场宣传与展示物料的**视觉基线**。可用 AI 图像工具基于这些参考图生成效果图：把参考图作为整张图的基底，保留其外壳、按键、接口、挂绳孔、Logo 文字与配色原样，只把参考图的屏幕区域**重绘**成用户要求的内容。参考图的屏幕区域只是占位——屏幕的尺寸、比例、圆角与外壳内位置要与参考完全一致，而不是重新塑形或移动。生成设备图时必须传一张参考图作为输入，不能只靠文字描述。新生成的渲染图请登记进 [`assets/brand/README.md`](assets/brand/README.zh_CN.md) 索引。素材作为内部视觉基线使用，除非参考图本身允许复用，否则不要原样搬运到公开发布物料中。
+这些图是 AI Passport 市场宣传与展示物料的**视觉基线**。可用 AI 图像工具基于这些参考图生成效果图：把参考图作为整张图的基底，保留其外壳、按键、接口、挂绳孔、Logo 文字与配色原样，只把参考图的屏幕区域**重绘**成用户要求的内容。参考图的屏幕区域只是占位——屏幕的尺寸、比例、圆角与外壳内位置要与参考完全一致，而不是重新塑形或移动。生成设备图时必须传一张参考图作为输入，不能只靠文字描述。新生成的渲染图请登记进 [`assets/brand/README.md`](README.zh_CN.md) 索引。素材作为内部视觉基线使用，除非参考图本身允许复用，否则不要原样搬运到公开发布物料中。
 
 ## 4. 产品规格
 
-设备产品规格见 [hardware-design/specifications.zh_CN.md](hardware-design/specifications.zh_CN.md)（尺寸、重量、电池、充电、NFC、按键等）。
+设备产品规格见 [hardware-design/specifications.zh_CN.md](../hardware-design/specifications.zh_CN.md)（尺寸、重量、电池、充电、NFC、按键等）。
 
 ## 5. 开源与授权
 
@@ -97,6 +97,6 @@ FoloToy 提供两处浏览器刷机入口，均可安全写入本地固件，固
 ## 7. 与工程事实源的关系
 
 - 本文档是**品牌与产品层**的说明，承载对外展示口径（名称、定位、官方入口、规格引用）。
-- 设备产品规格见 [hardware-design/specifications.zh_CN.md](hardware-design/specifications.zh_CN.md)。
+- 设备产品规格见 [hardware-design/specifications.zh_CN.md](../hardware-design/specifications.zh_CN.md)。
 - 硬件引脚、资源边界等工程事实以仓库 `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md` 与 `components/bsp/include/bsp_pins.h` 为准，本文档不替代工程文档。
 - 网站入口以官网实际页面为准；如官网结构变化，优先更新官网并回同步本文档。

@@ -70,10 +70,10 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 
 档案为**纯文本**：**不要**提交封面图，只在功能说明里记录其文件名与格式作为发布元数据。图片本身随
 社区发布留存。若需为发布（而非归档）生成封面，参考
-[`docs/assets/brand/`](../../docs/assets/brand/README.zh_CN.md) 下的官方产品图：生成时必须传一张参考图
+[`docs/assets/brand/`](../../docs/brand/README.zh_CN.md) 下的官方产品图：生成时必须传一张参考图
 （如 `ai-passport-front.png` 或某款配色外壳渲染图）作为生成调用输入，保留其外壳、按键、接口与
 钥匙扣孔原样，只把参考图的屏幕区域**重绘**成该玩法的真实屏显内容，屏幕的尺寸、比例、圆角与外壳内
-位置与参考保持一致。完整约定见 [`docs/assets/brand/README.md`](../../docs/assets/brand/README.zh_CN.md)。
+位置与参考保持一致。完整约定见 [`docs/assets/brand/README.md`](../../docs/brand/README.zh_CN.md)。
 
 ## 提交
 
