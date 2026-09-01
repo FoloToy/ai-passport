@@ -7,9 +7,10 @@
 在「今天吃啥」单应用固件发布后沉淀。这些是通用、上游受益的经验，适用于任何
 AI Passport 应用，而非 fork 专属定制。
 
-> **验证状态 — Unverified。** 下面的硬件与运行时事实（GPIO 唤醒电平、LCD 字节序、
-> 崩溃特征）来自本项目自身的观察，但尚未附上固定来源 commit/tag、确切测试板版本或
-> 复现实测。请将其视为未经验证的现场笔记，而非已确认的上游行为。
+> **验证状态。** “ESP32-C3 的深睡 GPIO 唤醒”一节已在本项目「音效钥匙扣」固件上真机验证
+> （提交 `63f0ebd`）：空闲 5 分钟入睡，任意按键可唤醒重进应用。其余事实（LCD 字节序、
+> LVGL 崩溃特征）仍来自本项目自身观察，尚未附上固定来源 commit/tag、确切测试板版本或
+> 复现实测，请视为未经验证的现场笔记。
 
 ## 直接刷新单个图片矩形
 
@@ -33,12 +34,23 @@ ESP32-C3 **没有 EXT0/EXT1** 唤醒。用 `esp_deep_sleep_enable_gpio_wakeup()`
 RTC GPIO 上唤醒。本板按键 ADC 节点是 GPIO0，带外部 10k 上拉（常态高），故**低电平**
 唤醒（`ESP_GPIO_WAKEUP_GPIO_LOW`）在任意按键按下时触发。
 
-- 在 `esp_deep_sleep_start()` 前把该 GPIO 配成数字输入。注意 ESP-IDF 5.5.3 默认会
-  启用 RTC GPIO 内部电阻（`CONFIG_ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS=y`），
-  会在外部 10 kΩ 上拉之上叠加内部上拉。若意图是**只**依靠外部上拉，需显式关闭该
-  配置——此行为尚未在真机验证。
+> **坑（已在真机验证）。** `esp_deep_sleep_enable_gpio_wakeup()` 的第一个参数是
+> **引脚位掩码**，不是引脚号。若传 `GPIO_NUM_0`（值 0），函数把 `gpio_pin_mask == 0`
+> 视为非法，直接返回 `ESP_ERR_INVALID_ARG`，**什么唤醒源都不会配**；再忽略返回值
+> 调用 `esp_deep_sleep_start()`，就是一次没有任何唤醒源的深睡——按键拉低 GPIO0 永远
+> 无法唤醒（表现为“睡了按不醒”）。必须传 `1ULL << GPIO_NUM_0`，并对返回值做判断 +
+> 日志，失败时打日志而不是静默睡死。排查“睡了按不醒”时，先确认唤醒源是否真的配上了。
+
+- 顺序：先用 `gpio_config()` 把该 GPIO 配成数字输入，再
+  `esp_deep_sleep_enable_gpio_wakeup(1ULL << GPIO_NUM_0, ESP_GPIO_WAKEUP_GPIO_LOW)`，
+  最后 `esp_deep_sleep_start()`。
 - `esp_deep_sleep_start()` 不返回；唤醒后应用冷启动，需重新初始化休眠所替换的
-  外设与 ADC 按键句柄。
+  外设与 ADC 按键句柄。ESP32-C3 深睡会让 USB-Serial/JTAG 控制台失效（端口操作报
+  “设备不识别此命令”）；重开机后控制台恢复，启动日志会打印 `esp_sleep_get_wakeup_cause()`
+  的唤醒原因——这就是在真机确认 GPIO 唤醒的方法。
+- 注意 ESP-IDF 5.5.3 默认会启用 RTC GPIO 内部电阻
+  （`CONFIG_ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS=y`），会在外部 10 kΩ 上拉之上
+  叠加内部上拉。若意图是**只**依靠外部上拉，需显式关闭该配置——此行为尚未在真机验证。
 - 仅定时器唤醒会造成周期性重启，而非真正的“关机”；意图是睡到用户操作时应使用
   GPIO 唤醒。
 

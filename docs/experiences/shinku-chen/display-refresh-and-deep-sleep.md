@@ -8,11 +8,12 @@ Captured after the **"What to Eat Today"** single-app firmware release. These ar
 general, upstream-benefiting learnings that apply to any AI Passport app, not
 fork-specific customization.
 
-> **Verification status — Unverified.** The hardware and runtime facts below
-> (GPIO wakeup level, LCD byte order, and the crash signature) are captured from
-> this project's own observations but are not yet backed by a pinned source
-> commit/tag, the exact test-board revision, or reproduced measurements. Treat
-> them as unverified field notes rather than confirmed upstream behavior.
+> **Verification status.** The "Deep-sleep GPIO wakeup on ESP32-C3" section has
+> since been verified on this project's sound-keychain firmware (commit `63f0ebd`):
+> it sleeps after 5 min idle and wakes on any button. The remaining facts (LCD byte
+> order, LVGL crash signature) are still this project's own observations, not yet
+> backed by a pinned source commit/tag, the exact test-board revision, or
+> reproduced measurements — treat them as unverified field notes.
 
 ## Direct panel refresh of a single image rect
 
@@ -42,14 +43,30 @@ on an RTC GPIO. On this board the key ADC node is GPIO0 with an external 10 kΩ
 pull-up (high at idle), so a **low-level** wake (`ESP_GPIO_WAKEUP_GPIO_LOW`) fires
 on any key press.
 
-- Configure the GPIO as a digital input before `esp_deep_sleep_start()`. Note
-  that ESP-IDF 5.5.3 by default enables the RTC GPIO internal resistors
+> **Gotcha (verified on hardware).** `esp_deep_sleep_enable_gpio_wakeup()`'s first
+> argument is a **pin bitmask**, not a pin number. Passing `GPIO_NUM_0` (value 0)
+> is treated as an empty mask: the function returns `ESP_ERR_INVALID_ARG` and arms
+> **no wake source at all**. If that return value is ignored and
+> `esp_deep_sleep_start()` runs, the chip sleeps with no way to wake — GPIO0 pulled
+> low by a key press never wakes it (presents as "it sleeps but won't wake"). Pass
+> `1ULL << GPIO_NUM_0`, and check the return value (log the error rather than
+> sleeping silently). When debugging "slept but won't wake", confirm the wake
+> source was actually armed first.
+
+- Order: `gpio_config()` to make the GPIO a digital input, then
+  `esp_deep_sleep_enable_gpio_wakeup(1ULL << GPIO_NUM_0, ESP_GPIO_WAKEUP_GPIO_LOW)`,
+  then `esp_deep_sleep_start()`.
+- `esp_deep_sleep_start()` does not return; on wake the app boots fresh, so
+  re-initialize peripherals and the ADC button handle that sleep replaced. On
+  ESP32-C3 deep sleep the USB-Serial/JTAG console goes down (port ops report
+  "device does not recognize the command"); after wake the console returns and the
+  boot log prints `esp_sleep_get_wakeup_cause()`. That is how to confirm the GPIO
+  wake on real hardware.
+- Note that ESP-IDF 5.5.3 by default enables the RTC GPIO internal resistors
   (`CONFIG_ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS=y`), which stacks an internal
   pull on top of the external 10 kΩ pull-up. If the intent is to rely on the
   external pull-up **only**, that config must be explicitly disabled — a behavior
   not yet verified on hardware.
-- `esp_deep_sleep_start()` does not return; on wake the app boots fresh, so
-  re-initialize peripherals and the ADC button handle that sleep replaced.
 - A timer-only wakeup causes a periodic reboot cycle, not a true "power off"; use
   GPIO wakeup when the intent is to sleep until a user action.
 
