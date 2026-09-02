@@ -156,7 +156,7 @@ The audio demo's three-second recording buffer is about 96 KB and is the largest
 
 ## 9. CW2017 fuel gauge
 
-Initialization reads VERSION, writes CONFIG `0x00`, waits 100 ms, and uses the chip's built-in Li-Poly profile. The repository intentionally does not write a custom cell profile.
+Initialization reads VERSION and checks the profile update flag plus all 80 profile bytes. When needed, it puts the gauge to sleep, writes and verifies the supplied profile for the specified 520 mAh cell, sets the update flag, restarts the gauge with the required `0x30` to `0x00` sequence, and waits up to five seconds for a valid SOC. Replacing the cell requires a matching vendor-generated profile and renewed charge/discharge validation.
 
 - SOC uses registers `0x04–0x05`; values above 100 are treated as not ready and return `-1`.
 - Voltage uses the 14-bit value at `0x02–0x03`, converted as `raw × 312.5 µV`, and returned in mV.
