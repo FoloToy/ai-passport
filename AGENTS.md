@@ -26,17 +26,17 @@ This file is the only mandatory entry point for AI-assisted work in this reposit
 
 | Task | Read before editing |
 | --- | --- |
-| Any code change | `docs/development/agent-guide.md`, relevant headers and neighboring implementation |
-| Environment bootstrap or missing toolchain | `docs/development/environment-setup.md` |
+| Any code change | `docs/development/ai-guide.md`, relevant headers and neighboring implementation |
+| Environment bootstrap or missing toolchain | `docs/development/engineering/environment-setup.md` |
 | BSP, pins, buses, display, audio, battery | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md`, `components/bsp/include/bsp_pins.h` |
 | Demo or menu | `main/demo.h`, `main/main.c`, the nearest `main/demo_*.c` implementation |
-| Build, test, dependencies, partitions | `docs/development/build-and-test.md`, `docs/development/ble-recovery-compatibility.md`, `sdkconfig.defaults`, `partitions.csv` |
-| CI or release | the matching file in `docs/development/CI-*.md` and `.github/workflows/` |
-| Project completion | `docs/development/project-completion.md` (then the `issue-suggestions` or `experience-pr` skill) |
-| Documentation | `docs/contribution/doc-conventions.md`, `docs/INDEX.md` |
+| Build, test, dependencies, partitions | `docs/development/engineering/build-and-test.md`, `docs/development/engineering/ble-recovery-compatibility.md`, `sdkconfig.defaults`, `partitions.csv` |
+| CI or release | the matching file in `docs/development/ci/CI-*.md` and `.github/workflows/` |
+| Project completion | `docs/development/release/project-completion.md` (then the `issue-suggestions` or `experience-pr` skill) |
+| Documentation | `docs/contribution/doc-conventions.md`, `docs/README.md` |
 | Commit or PR | `docs/contribution/commit-and-pr.md` |
 
-Use `docs/README.md` for the product overview and `docs/INDEX.md` when a task needs additional documentation. Fork-specific workflow is in `docs/fork-guide.md` and is not required for ordinary upstream development.
+Use `docs/README.md` for the product overview and the documentation index. For the detailed AI development workflow — context setup, source-of-truth priority, application/BSP boundary, runtime invariants, material placement, and delivery format — read `docs/development/ai-guide.md`. Fork-specific workflow is in `docs/fork-guide.md` and is not required for ordinary upstream development.
 
 ## Required validation and delivery
 

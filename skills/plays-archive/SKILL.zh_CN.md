@@ -11,7 +11,7 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 
 本 skill 把已发布的应用归档到上游 `FoloToy/ai-passport` 仓库的 `plays/` 应用档案库，让它在
 仓库内可被检索、便于后续查询。它只在固件发布后（发布流程见
-`docs/development/publish-to-community.md`）运行，且仅在开发者要求归档该应用时执行。
+`docs/development/release/publish-to-community.md`）运行，且仅在开发者要求归档该应用时执行。
 
 ## 安全与同意门槛（必须先做）
 
@@ -29,7 +29,7 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 
 确认应用名、其所属源码（例如某个 `demo/*` 分支或 `main/`），以及贡献者的 GitHub 用户名。
 用小写连字符的用户名和应用名作为两级路径：`plays/<username>/<app-name>/`。
-完整约定见 [`../../plays/README.md`](../../plays/README.md)。
+完整约定见 [`../../docs/reference/README.md`](../../docs/reference/README.zh_CN.md)。
 
 ## 检查项目 README
 
@@ -70,10 +70,10 @@ description: 固件发布之后，把已发布的应用归档到上游 FoloToy a
 
 档案为**纯文本**：**不要**提交封面图，只在功能说明里记录其文件名与格式作为发布元数据。图片本身随
 社区发布留存。若需为发布（而非归档）生成封面，参考
-[`docs/assets/brand/`](../../docs/assets/brand/README.md) 下的官方产品图：生成时必须传一张参考图
+[`docs/brand/`](../../docs/brand/README.zh_CN.md) 下的官方产品图：生成时必须传一张参考图
 （如 `ai-passport-front.png` 或某款配色外壳渲染图）作为生成调用输入，保留其外壳、按键、接口与
 钥匙扣孔原样，只把参考图的屏幕区域**重绘**成该玩法的真实屏显内容，屏幕的尺寸、比例、圆角与外壳内
-位置与参考保持一致。完整约定见 [`docs/assets/brand/README.md`](../../docs/assets/brand/README.md)。
+位置与参考保持一致。完整约定见 [`docs/brand/README.md`](../../docs/brand/README.zh_CN.md)。
 
 ## 提交
 
@@ -96,7 +96,7 @@ Unverified 分别上报。
 
 ## 相关文档
 
-- 应用档案约定：`../plays/README.md`
-- 发布后收尾总览：`docs/development/project-completion.md`
-- 固件发布：`docs/development/publish-to-community.md`
+- 应用档案约定：`../../docs/reference/README.md`
+- 发布后收尾总览：`docs/development/release/project-completion.md`
+- 固件发布：`docs/development/release/publish-to-community.md`
 - 贡献与提交规则：`docs/contribution/commit-and-pr.md`

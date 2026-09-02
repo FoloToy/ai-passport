@@ -76,18 +76,18 @@ comm -23 \
   作为 PR 提交到上游 `FoloToy/ai-passport`。
 - **留在 fork：纯 fork 产品定制** —— 产品定制内容、fork 私有的业务规则、或 fork 专属资源，
   按 `fork-guide.md` 的规定**不得**提交回上游。这些**不要**提交上游；作为本地文档变更记录即可
-  （见 [`docs/fork-guide.md`](../../docs/fork-guide.md) 与 fork README / `docs/assets/`）。
+  （见 [`docs/fork-guide.md`](../../docs/fork-guide.zh_CN.md) 与 fork README / `docs/assets/`）。
 
 按这个分流为每条经验定归属；不要把 fork 专属定制塞进上游 PR。
 
 ## 写入经验条目
 
 每次经验采集可产出**一条或多条**经验，每条是一个独立的 `.md` 文件并配其 `.zh_CN.md`，放在
-`docs/experiences/<username>/` 下，按条目内容概要命名（小写连字符，例如
+`docs/reference/<username>/` 下，按条目内容概要命名（小写连字符，例如
 `audio-compression-trade-offs.md`），其中 `<username>` 是贡献开发者的 GitHub 用户名
 （英文小写连字符），把该开发者的条目聚在一起。
 本仓库要求默认 `.md` 路径用英文、配套 `.zh_CN.md`，两者互指语言链接，且英文文件中不得混入中文。
-从 `docs/development/experience-notes.md` 索引链接它。
+从 `docs/reference/README.md` 索引链接它。
 
 开发者不限于一条经验。档案保存**每位开发者一条或多条经验**，每条都是该开发者文件夹下的独立
 `.md` 文件（含其配对 `.zh_CN.md`）。每一次可复用的、发布后沉淀的经验都应**新增一条**，而不是
@@ -121,10 +121,10 @@ host-test 工作，因此这些上报为 NOT RUN 并说明原因。仅当变更�
 
 ## 相关文档
 
-- 项目开发完成流程总览：`docs/development/project-completion.md`
-- 经验索引：`docs/development/experience-notes.md`
-- 经验条目：`docs/experiences/`
-- 固件发布：`docs/development/publish-to-community.md`
+- 项目开发完成流程总览：`docs/development/release/project-completion.md`
+- 经验索引：`docs/reference/README.md`
+- 经验条目：`docs/reference/`
+- 固件发布：`docs/development/release/publish-to-community.md`
 - PR 模板：`.github/PULL_REQUEST_TEMPLATE.md`
 - 贡献与提交规则：`docs/contribution/commit-and-pr.md`
 - fork 分支与 PR 工作流：`docs/fork-guide.md`

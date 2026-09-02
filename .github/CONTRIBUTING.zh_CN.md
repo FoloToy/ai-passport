@@ -20,7 +20,7 @@
 ## 开发与验证
 
 使用 ESP-IDF 5.5.3。全新机器先按
-[环境引导](../docs/development/environment-setup.zh_CN.md)完成安装。
+[环境引导](../docs/development/engineering/environment-setup.zh_CN.md)完成安装。
 
 编译优先运行仓库固件门禁，烧录优先把验证过的合并镜像写入 `0x0`。以下直接
 IDF 命令只用于增量开发。
@@ -52,7 +52,7 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 ./tools/validate.sh             # 完整门禁
 ```
 
-遵守 [`docs/development/build-and-test.zh_CN.md`](../docs/development/build-and-test.zh_CN.md) 的
+遵守 [`docs/development/build-and-test.zh_CN.md`](../docs/development/engineering/build-and-test.zh_CN.md) 的
 验证要求：干净的 `idf.py build` 是最低自动检查，不是硬件验收；构建结果与真机结果
 分开记录，禁止把编译通过描述成硬件验证通过。
 

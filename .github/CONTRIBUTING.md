@@ -26,7 +26,7 @@ second development; the fork conventions are in
 ## Development and verification
 
 Use ESP-IDF 5.5.3. For a clean-machine setup, follow the
-[environment bootstrap](../docs/development/environment-setup.md).
+[environment bootstrap](../docs/development/engineering/environment-setup.md).
 
 Prefer the repository firmware gate for builds and flash its verified merged
 image at `0x0`. The direct IDF commands below are for incremental development.
@@ -59,7 +59,7 @@ The repository provides one validation entry point for local development and CI:
 ```
 
 Follow the verification requirements in
-[`docs/development/build-and-test.md`](../docs/development/build-and-test.md):
+[`docs/development/build-and-test.md`](../docs/development/engineering/build-and-test.md):
 a clean `idf.py build` is the minimum automated check, not hardware validation.
 Record build results and on-device results separately; never present a successful
 build as successful hardware validation.
