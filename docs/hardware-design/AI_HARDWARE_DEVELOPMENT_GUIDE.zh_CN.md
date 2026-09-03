@@ -215,7 +215,7 @@ Audio demo 使用独立 4 KB 栈任务：OK 播放 1 秒 1 kHz 方波，UP 录 3
 
 ## 9. CW2017 电池计
 
-CW2017 在共享 I2C 地址 0x63。初始化读取 VERSION 确认在线，将 CONFIG 写为 0x00 进入正常模式，等待 100 ms 后使用芯片自带 Li-Poly profile。仓库刻意不写自定义电池 profile，因为开源用户的电池可能不同。
+CW2017 在共享 I2C 地址 0x63。初始化读取 VERSION 确认在线，并检查 profile 更新标志以及全部 80 字节内容。需要更新时，驱动让电量计进入睡眠态，写入并读回校验优特利 520mAh 电芯的厂家 profile，置更新标志，再按 `0x30` 到 `0x00` 的规定时序重启，最长等待 5 秒取得有效 SOC。更换电芯时必须取得匹配的厂家 profile，并重新完成充放电验证。
 
 - SOC：读 0x04–0x05，仅返回高字节整数百分比；大于 100 视为未就绪并返回 `-1`。
 - 电压：读 0x02–0x03 的 14 bit 值，换算为 `raw × 312.5 µV`，API 返回 mV。
@@ -229,7 +229,7 @@ SOC 准确度取决于电芯与 profile 的匹配程度。本驱动给出的是�
 当前产品与固件基线使用 8 MB Flash。`sdkconfig.defaults` 固定使用 8 MB Flash 镜像配置，并关闭 `CONFIG_ESPTOOLPY_HEADER_FLASHSIZE_UPDATE`（不按探测容量回写镜像头，便于 `idf.py merge-bin`）；`partitions.csv` 提供 24 KB NVS、4 KB PHY data、3 MB factory app、位于 `0x356000` 的保护 `cardid`，以及位于 `0x700000` 的永久 Recovery。这不是 ESP-IDF 双槽 OTA 布局；工厂预装 Recovery 负责 BLE 安装，且必须保持固定地址。开机持续按住上键/GPIO0 5 秒时，bootloader 会进入 Recovery。若实机探测结果不是 8 MB，则该设备不符合当前基线；修改项目默认值前应先确认板卡和 Flash 料号。
 
 不得擦除已写身份的设备，也不得移动或覆盖保护分区。社区固件既不包含单机身份，
-也不携带替换 Recovery 的数据。详见 [BLE 兼容契约](../development/ble-recovery-compatibility.zh_CN.md)。
+也不携带替换 Recovery 的数据。详见 [BLE 兼容契约](../development/engineering/ble-recovery-compatibility.zh_CN.md)。
 
 控制台固定为 USB Serial/JTAG，不使用 UART0 默认输出，因为其 TX GPIO21 与背光冲突。任何日志接口修改都必须同时检查引脚占用。
 
@@ -268,7 +268,7 @@ SOC 准确度取决于电芯与 profile 的匹配程度。本驱动给出的是�
 ## 12. 开发环境搭建
 
 全新机器安装、各操作系统依赖以及国际/中国大陆下载线路统一以
-[环境引导](../development/environment-setup.zh_CN.md)为准。项目严格使用
+[环境引导](../development/engineering/environment-setup.zh_CN.md)为准。项目严格使用
 **ESP-IDF 5.5.3**。不要直接使用系统中的任意 `idf.py`，也不要将 Arduino、
 PlatformIO 或其他 ESP-IDF 版本生成的配置混入当前工程。
 编译优先使用 `./tools/validate.sh --firmware` 生成并验证合并固件，烧录优先把该

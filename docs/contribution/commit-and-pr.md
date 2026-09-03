@@ -21,3 +21,4 @@
 - Report Build, Host tests, and Device tests separately. Put unperformed hardware work under `Unverified`.
 - Pin, rotation, codec-clock, ADC, DMA, Flash-layout, and power changes require the board revision and observed hardware results before the PR is ready to merge.
 - Attach a photo or screenshot for display changes and explicitly describe wiring, pin-map, persistent-format, and compatibility impacts.
+- In a PR opened to the upstream `FoloToy/ai-passport` project, do not add or modify the repository-root `README.md` / `README.zh_CN.md` — the root README is fork-owner reserved content (upstream keeps its overview at `docs/README.md`).

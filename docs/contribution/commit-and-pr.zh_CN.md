@@ -21,3 +21,4 @@
 - Build、Host tests 和 Device tests 必须分开报告；未执行的真机项目写入 `Unverified`，不能用编译成功代替实机验证。
 - 对引脚、显示旋转、codec 时钟、ADC、DMA、Flash 布局或电源行为的修改，必须记录板卡版本和观察到的真机结果；未验证时不得标记 ready for merge。
 - 显示类改动附照片或截图；涉及接线、引脚映射、持久化格式或兼容性的改动必须显式说明。
+- 开往上游 `FoloToy/ai-passport` 项目的 PR 中，不得新增或修改根目录 `README.md` / `README.zh_CN.md` —— 根 README 是 fork owner 自留内容（上游概览在 `docs/README.md`）。

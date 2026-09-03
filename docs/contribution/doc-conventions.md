@@ -19,7 +19,7 @@ These rules apply equally to human contributors and AI agents. Documentation is 
 
 - Every task starts with root `AGENTS.md` only.
 - Follow its routing table and read only documents and source relevant to the change.
-- Use `docs/README.md` for the overview and `docs/INDEX.md` for discovery.
+- Use `docs/README.md` for the overview and `docs/README.md` for discovery.
 - Update the authoritative source of a changed fact and documents that directly reference it; do not create a second source of truth.
 
 ## Responsibilities
@@ -34,9 +34,9 @@ These rules apply equally to human contributors and AI agents. Documentation is 
 - Put project documentation and history in `docs/`, grouped by contribution, development, hardware, and software responsibility.
 - Put GitHub-recognized community files, templates, issue forms, and workflows in `.github/`.
 - Put reusable binary/source assets in `assets/`, project skills in `skills/`, and automation in `tools/`.
-- Repository checks reject additional root Markdown. Do not add a root document merely for visibility; link it from `docs/INDEX.md` instead.
+- Repository checks reject additional root Markdown. Do not add a root document merely for visibility; link it from `docs/README.md` instead.
 
-Do not create empty document scaffolding without a concrete purpose. Register added documents in `docs/INDEX.md` or their directory index and update links when moving or deleting files.
+Do not create empty document scaffolding without a concrete purpose. Register added documents in `docs/README.md` or their directory index and update links when moving or deleting files.
 
 ## Writing, safety, and file operations
 

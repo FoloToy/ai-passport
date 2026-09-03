@@ -26,17 +26,17 @@
 
 | 任务 | 修改前读取 |
 | --- | --- |
-| 任意代码修改 | `docs/development/agent-guide.zh_CN.md`、相关头文件和相邻实现 |
-| 环境引导或缺少工具链 | `docs/development/environment-setup.zh_CN.md` |
+| 任意代码修改 | `docs/development/ai-guide.zh_CN.md`、相关头文件和相邻实现 |
+| 环境引导或缺少工具链 | `docs/development/engineering/environment-setup.zh_CN.md` |
 | BSP、引脚、总线、显示、音频、电池 | `docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md`、`components/bsp/include/bsp_pins.h` |
 | Demo 或菜单 | `main/demo.h`、`main/main.c`、最近的 `main/demo_*.c` 实现 |
-| 构建、测试、依赖、分区 | `docs/development/build-and-test.zh_CN.md`、`docs/development/ble-recovery-compatibility.zh_CN.md`、`sdkconfig.defaults`、`partitions.csv` |
-| CI 或发布 | `docs/development/CI-*.zh_CN.md` 中的对应文件与 `.github/workflows/` |
-| 项目开发完成 | `docs/development/project-completion.zh_CN.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
-| 文档 | `docs/contribution/doc-conventions.zh_CN.md`、`docs/INDEX.zh_CN.md` |
+| 构建、测试、依赖、分区 | `docs/development/engineering/build-and-test.zh_CN.md`、`docs/development/engineering/ble-recovery-compatibility.zh_CN.md`、`sdkconfig.defaults`、`partitions.csv` |
+| CI 或发布 | `docs/development/ci/CI-*.zh_CN.md` 中的对应文件与 `.github/workflows/` |
+| 项目开发完成 | `docs/development/release/project-completion.zh_CN.md`（再进入 `issue-suggestions` 或 `experience-pr` skill） |
+| 文档 | `docs/contribution/doc-conventions.zh_CN.md`、`docs/README.zh_CN.md` |
 | Commit 或 PR | `docs/contribution/commit-and-pr.zh_CN.md` |
 
-产品概览见 `docs/README.zh_CN.md`；需要发现更多文档时读 `docs/INDEX.zh_CN.md`。Fork 专用流程见 `docs/fork-guide.zh_CN.md`，普通上游开发无需读取。
+产品概览与文档索引见 `docs/README.zh_CN.md`。详细的 AI 开发工作流（上下文建立、事实来源优先级、应用/BSP 边界、运行时规则、素材放置、交付格式）见 `docs/development/ai-guide.zh_CN.md`。Fork 专用流程见 `docs/fork-guide.zh_CN.md`，普通上游开发无需读取。
 
 ## 必须执行的验证与交付格式
 
