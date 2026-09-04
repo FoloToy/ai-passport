@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Host tests for the mini-program firmware compatibility parser."""
+"""Host tests for the protected firmware-layout parser."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import hashlib
 import importlib.util
 import struct
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -60,6 +61,21 @@ class PartitionParserTest(unittest.TestCase):
         raw[28] ^= 1
         with self.assertRaisesRegex(ValueError, "MD5"):
             VERIFY.parse_partition_table(bytes(raw))
+
+
+class ProtectedLayoutTest(unittest.TestCase):
+    def test_layout_verification_does_not_require_bootloader_hook(self) -> None:
+        merged = bytearray(b"\xff" * (0x10000 + 1))
+        merged[
+            VERIFY.PARTITION_TABLE_OFFSET :
+            VERIFY.PARTITION_TABLE_OFFSET + VERIFY.PARTITION_TABLE_SIZE
+        ] = sample_table()
+        merged[0x10000] = 0xE9
+
+        with tempfile.TemporaryDirectory() as directory:
+            build_dir = Path(directory)
+            (build_dir / "FoloToy-AI-Passport.bin").write_bytes(b"\xe9")
+            VERIFY.verify_protected_layout(bytes(merged), build_dir)
 
 
 if __name__ == "__main__":

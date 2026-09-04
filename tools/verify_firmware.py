@@ -25,7 +25,6 @@ CARDID_SIZE = 0x4000
 RECOVERY_OFFSET = 0x700000
 RECOVERY_SIZE = 0x100000
 ENTRY = struct.Struct("<HBBII16sI")
-RECOVERY_BOOT_MARKER = b"UP held: booting permanent recovery"
 
 
 @dataclass(frozen=True)
@@ -73,8 +72,8 @@ def parse_partition_table(raw: bytes) -> tuple[list[Partition], bool]:
     return partitions, found_md5
 
 
-def verify_recovery_contract(merged: bytes, build_dir: Path) -> None:
-    """Enforce the artifact/layout contract used by mini-program BLE install."""
+def verify_protected_layout(merged: bytes, build_dir: Path) -> None:
+    """Enforce the protected partition and merged-artifact layout."""
     table = merged[
         PARTITION_TABLE_OFFSET : PARTITION_TABLE_OFFSET + PARTITION_TABLE_SIZE
     ]
@@ -105,7 +104,7 @@ def verify_recovery_contract(merged: bytes, build_dir: Path) -> None:
     app_path = build_dir / "FoloToy-AI-Passport.bin"
     app_size = app_path.stat().st_size
     if app_size > APP_MAX_SIZE:
-        raise ValueError(f"application is {app_size} bytes; BLE limit is {APP_MAX_SIZE}")
+        raise ValueError(f"application is {app_size} bytes; limit is {APP_MAX_SIZE}")
     if len(merged) <= 0x10000 or merged[0x10000] != 0xE9:
         raise ValueError("merged artifact has no ESP application image at 0x10000")
 
@@ -120,11 +119,7 @@ def verify_recovery_contract(merged: bytes, build_dir: Path) -> None:
         if any(byte != 0xFF for byte in payload):
             raise ValueError(f"merged artifact contains forbidden {label} payload bytes")
 
-    bootloader = (build_dir / "bootloader" / "bootloader.bin").read_bytes()
-    if RECOVERY_BOOT_MARKER not in bootloader:
-        raise ValueError("bootloader is missing the 5-second UP Recovery hook")
-
-    print(f"Mini-program BLE contract: PASS (app {app_size} / {APP_MAX_SIZE} bytes)")
+    print(f"Protected firmware layout: PASS (app {app_size} / {APP_MAX_SIZE} bytes)")
 
 
 def main() -> int:
@@ -158,7 +153,7 @@ def main() -> int:
         return 1
 
     try:
-        verify_recovery_contract(merged, build_dir)
+        verify_protected_layout(merged, build_dir)
     except (OSError, UnicodeDecodeError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1

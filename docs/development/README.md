@@ -14,7 +14,7 @@ This directory contains AI Passport engineering rules and reusable workflows, gr
 
 - [environment-setup.md](engineering/environment-setup.md): clean-machine bootstrap for AI agents, including international and mainland China download routes.
 - [build-and-test.md](engineering/build-and-test.md): ESP-IDF build and validation.
-- [ble-recovery-compatibility.md](engineering/ble-recovery-compatibility.md): mandatory mini-program BLE install artifact, partition, and bootloader contract.
+- [protected-flash-layout.md](engineering/protected-flash-layout.md): mandatory merged-artifact and protected-partition layout.
 - [coding-conventions.md](engineering/coding-conventions.md): source-code and resource conventions.
 
 ## CI

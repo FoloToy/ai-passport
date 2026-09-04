@@ -21,4 +21,4 @@ This page defines the user-facing product specifications. Firmware pin assignmen
 | Audio | Built-in microphone and speaker with ES8311 codec |
 | Charging | USB Type-C 2.0, 5 V input |
 | Battery | Built-in 520 mAh rechargeable lithium battery with CW2017 fuel gauge |
-| Other | Device-specific QR fallback with recovery-firmware entry |
+| Other | Device-specific QR fallback |
