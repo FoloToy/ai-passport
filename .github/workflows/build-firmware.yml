@@ -69,4 +69,4 @@ jobs:
         with:
           name: "${{ github.ref_name }}"
           files: release/FoloToy-AI-Passport-full.bin
-          if-no-files-found: error
+          fail_on_unmatched_files: true
