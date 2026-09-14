@@ -37,6 +37,16 @@ typedef struct {
     uint8_t value;
 } es8311_reg_value_t;
 
+// 校验项比写入项多一个掩码：本芯片上 REG0E 的 bit7 不锁存，写 0xFF 读回 0x7F，
+// 且与写入顺序无关（挪到 REG00 复位脉冲之后重写仍然是 0x7F）。只比较序列真正
+// 能控制的位，才能既不误报芯片固有行为，也不放过真正的写入失败。
+// value 必须只包含 mask 内的位。
+typedef struct {
+    uint8_t reg;
+    uint8_t value;
+    uint8_t mask;
+} es8311_reg_check_t;
+
 // 寄存器序列不依赖 esp_codec_dev 的 opened 标志。REG45=0x01 额外关闭
 // BCLK/LRCK 内部上拉，比当前 esp_codec_dev 1.6.2 的默认 suspend 更彻底。
 static const es8311_reg_value_t s_es8311_sleep_sequence[] = {
@@ -46,9 +56,9 @@ static const es8311_reg_value_t s_es8311_sleep_sequence[] = {
     {0x45, 0x01}, {0x0D, 0xFC}, {0x02, 0x00},
 };
 
-static const es8311_reg_value_t s_es8311_sleep_verify[] = {
-    {0x00, 0x1F}, {0x01, 0x00}, {0x0D, 0xFC},
-    {0x0E, 0xFF}, {0x12, 0x02}, {0x45, 0x01},
+static const es8311_reg_check_t s_es8311_sleep_verify[] = {
+    {0x00, 0x1F, 0xFF}, {0x01, 0x00, 0xFF}, {0x0D, 0xFC, 0xFF},
+    {0x0E, 0x7F, 0x7F}, {0x12, 0x02, 0xFF}, {0x45, 0x01, 0xFF},
 };
 
 static esp_err_t audio_disable_i2s_channels(void) {
@@ -100,14 +110,15 @@ static esp_err_t es8311_force_sleep_once(unsigned attempt) {
 
     for (size_t i = 0; i < sizeof(s_es8311_sleep_verify) /
                            sizeof(s_es8311_sleep_verify[0]); i++) {
-        const es8311_reg_value_t *item = &s_es8311_sleep_verify[i];
+        const es8311_reg_check_t *item = &s_es8311_sleep_verify[i];
         uint8_t actual = 0;
         int read_result = s_ctrl->read_reg(s_ctrl, item->reg, 1, &actual, 1);
-        if (read_result == ESP_CODEC_DEV_OK && actual == item->value) continue;
+        if (read_result == ESP_CODEC_DEV_OK &&
+            (actual & item->mask) == item->value) continue;
 
         ESP_LOGE(TAG, "ES8311 休眠校验失败 attempt=%u REG%02X "
-                      "expected=0x%02X actual=0x%02X error=%d",
-                 attempt, item->reg, item->value, actual, read_result);
+                      "expected=0x%02X mask=0x%02X actual=0x%02X error=%d",
+                 attempt, item->reg, item->value, item->mask, actual, read_result);
         valid = false;
     }
     return valid ? ESP_OK : ESP_FAIL;

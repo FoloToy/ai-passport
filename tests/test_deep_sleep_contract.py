@@ -46,6 +46,25 @@ def register_pairs(block: str) -> list[tuple[int, int]]:
     ]
 
 
+def register_checks(block: str) -> list[tuple[int, int, int]]:
+    """Read-back expectations as (register, expected value, comparison mask).
+
+    The mask is part of the contract, not an implementation detail: bits that are
+    read-only on the ES8311 must be outside it. REG0E bit 7 never latches on this
+    part (writing 0xFF reads back 0x7F regardless of write order), so requiring the
+    full byte makes every suspend report a verification failure. Entries without an
+    explicit mask compare the whole byte.
+    """
+    return [
+        (int(reg, 16), int(value, 16), int(mask, 16) if mask else 0xFF)
+        for reg, value, mask in re.findall(
+            r"\{\s*0x([0-9A-Fa-f]{2})\s*,\s*0x([0-9A-Fa-f]{2})"
+            r"\s*(?:,\s*0x([0-9A-Fa-f]{2}))?\s*\}",
+            block,
+        )
+    ]
+
+
 class DeepSleepContractTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -67,14 +86,15 @@ class DeepSleepContractTest(unittest.TestCase):
 
     def test_es8311_critical_registers_are_read_back(self) -> None:
         expected = [
-            (0x00, 0x1F), (0x01, 0x00), (0x0D, 0xFC),
-            (0x0E, 0xFF), (0x12, 0x02), (0x45, 0x01),
+            (0x00, 0x1F, 0xFF), (0x01, 0x00, 0xFF), (0x0D, 0xFC, 0xFF),
+            (0x0E, 0x7F, 0x7F), (0x12, 0x02, 0xFF), (0x45, 0x01, 0xFF),
         ]
-        actual = register_pairs(initializer(self.audio, "s_es8311_sleep_verify"))
+        actual = register_checks(initializer(self.audio, "s_es8311_sleep_verify"))
         self.assertEqual(actual, expected)
         body = function_body(self.audio, "es8311_force_sleep_once")
         self.assertIn("s_ctrl->write_reg", body)
         self.assertIn("s_ctrl->read_reg", body)
+        self.assertIn("(actual & item->mask) == item->value", body)
 
     def test_es8311_force_sleep_retries_once_after_five_ms(self) -> None:
         self.assertRegex(self.audio, r"#define\s+ES8311_SLEEP_ATTEMPTS\s+2\b")
