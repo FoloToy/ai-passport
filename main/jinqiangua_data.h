@@ -1,0 +1,798 @@
+// main/jinqiangua_data.h
+// King Wen 64 Hexagrams dataset for FoloToy AI Passport
+#pragma once
+
+#include <stdint.h>
+#include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct {
+    uint8_t number;            // 1..64
+    uint8_t code;              // 6-bit binary (bit 0 = Yao 1/bottom, bit 5 = Yao 6/top)
+    const char *name_zh;       // Chinese name, e.g. "Qian Wei Tian"
+    const char *name_pinyin;   // Pinyin name
+    const char *name_en;       // English name
+    const char *upper_trigram; // Upper trigram name
+    const char *lower_trigram; // Lower trigram name
+    const char *fortune;       // Fortune level
+    const char *poem;          // Hexagram verse / description
+    const char *advice;        // Actionable guidance
+} jinqiangua_item_t;
+
+static const jinqiangua_item_t G_JINQIANGUA_64[64] = {
+    {
+        .number = 1,
+        .code = 0x3F,
+        .name_zh = "乾为天",
+        .name_pinyin = "Qian Wei Tian",
+        .name_en = "The Creative (Heaven)",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "SUPREME FORTUNE",
+        .poem = "Dragon soaring high in the nine heavens.",
+        .advice = "Perseverance brings supreme success. Take bold initiative with integrity."
+    },
+    {
+        .number = 2,
+        .code = 0x00,
+        .name_zh = "坤为地",
+        .name_pinyin = "Kun Wei Di",
+        .name_en = "The Receptive (Earth)",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "The earth carries and nourishes all beings.",
+        .advice = "Be receptive, gentle, and cooperative. Success comes through supporting others."
+    },
+    {
+        .number = 3,
+        .code = 0x11,
+        .name_zh = "水雷屯",
+        .name_pinyin = "Shui Lei Zhun",
+        .name_en = "Difficulty at the Start",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "CAUTION / GROWING",
+        .poem = "Spring shoots pushing through frozen soil.",
+        .advice = "Initial hardships test your resolve. Build foundations patiently and seek allies."
+    },
+    {
+        .number = 4,
+        .code = 0x22,
+        .name_zh = "山水蒙",
+        .name_pinyin = "Shan Shui Meng",
+        .name_en = "Youthful Folly (Enlightening)",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "NEUTRAL / STUDY",
+        .poem = "Clear spring water bubbling beneath the mountain.",
+        .advice = "Humble study dispels confusion. Seek guidance from wise elders and mentors."
+    },
+    {
+        .number = 5,
+        .code = 0x17,
+        .name_zh = "水天需",
+        .name_pinyin = "Shui Tian Xu",
+        .name_en = "Waiting (Nourishment)",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "GOOD FORTUNE",
+        .poem = "Clouds gathering rain in the azure sky.",
+        .advice = "Timing is everything. Nourish strength patiently until the opportune moment arrives."
+    },
+    {
+        .number = 6,
+        .code = 0x3A,
+        .name_zh = "天水讼",
+        .name_pinyin = "Tian Shui Song",
+        .name_en = "Conflict (Contention)",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "CAUTION / STOP",
+        .poem = "Sky and water flowing in opposite directions.",
+        .advice = "Avoid litigations, anger, and ego disputes. Seek calm compromise and peace."
+    },
+    {
+        .number = 7,
+        .code = 0x02,
+        .name_zh = "地水师",
+        .name_pinyin = "Di Shui Shi",
+        .name_en = "The Army (Leadership)",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "AUSPICIOUS",
+        .poem = "Subterranean waters gathering disciplined power.",
+        .advice = "Maintain strict discipline, ethical leadership, and clear righteous purpose."
+    },
+    {
+        .number = 8,
+        .code = 0x10,
+        .name_zh = "水地比",
+        .name_pinyin = "Shui Di Bi",
+        .name_en = "Holding Together (Union)",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Rivers flowing smoothly across the fertile earth.",
+        .advice = "Unity, loyal partnerships, and sincere alliances yield lasting prosperity."
+    },
+    {
+        .number = 9,
+        .code = 0x37,
+        .name_zh = "风天小畜",
+        .name_pinyin = "Feng Tian Xiao Chu",
+        .name_en = "Small Accumulating",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "SMOOTH",
+        .poem = "Dense clouds in the sky, awaiting gentle rain.",
+        .advice = "Refine details and accumulate small advantages before attempting grand moves."
+    },
+    {
+        .number = 10,
+        .code = 0x3B,
+        .name_zh = "天泽履",
+        .name_pinyin = "Tian Ze Lu",
+        .name_en = "Treading (Conduct)",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "GOOD FORTUNE",
+        .poem = "Treading carefully behind a tiger without getting bitten.",
+        .advice = "High decorum, humility, and cautious courtesy turn dangerous ground into safety."
+    },
+    {
+        .number = 11,
+        .code = 0x07,
+        .name_zh = "地天泰",
+        .name_pinyin = "Di Tian Tai",
+        .name_en = "Peace and Harmony",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "SUPREME FORTUNE",
+        .poem = "Heaven descends and Earth ascends in golden union.",
+        .advice = "Golden season of prosperity, creative harmony, and universal good fortune."
+    },
+    {
+        .number = 12,
+        .code = 0x38,
+        .name_zh = "天地否",
+        .name_pinyin = "Tian Di Pi",
+        .name_en = "Standstill (Obstruction)",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "CAUTION / PATIENCE",
+        .poem = "Heaven rises away while Earth sinks below.",
+        .advice = "Stagnation and misunderstanding; guard core values and preserve strength quietly."
+    },
+    {
+        .number = 13,
+        .code = 0x3D,
+        .name_zh = "天火同人",
+        .name_pinyin = "Tian Huo Tong Ren",
+        .name_en = "Fellowship with Men",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Bright flames illuminating the open horizon.",
+        .advice = "Cooperate openly with genuine companions; broad-minded collaboration thrives."
+    },
+    {
+        .number = 14,
+        .code = 0x2F,
+        .name_zh = "火天大有",
+        .name_pinyin = "Huo Tian Da You",
+        .name_en = "Great Possession (Abundance)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "SUPREME FORTUNE",
+        .poem = "The midday sun casting golden light over the world.",
+        .advice = "Abundance, recognition, and great influence. Remain modest, generous, and wise."
+    },
+    {
+        .number = 15,
+        .code = 0x04,
+        .name_zh = "地山谦",
+        .name_pinyin = "Di Shan Qian",
+        .name_en = "Modesty (Humility)",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "A lofty mountain bowing deep beneath the earth.",
+        .advice = "True greatness lies in humility. Modesty wins all hearts and conquers envy."
+    },
+    {
+        .number = 16,
+        .code = 0x08,
+        .name_zh = "雷地豫",
+        .name_pinyin = "Lei Di Yu",
+        .name_en = "Enthusiasm (Joy)",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "AUSPICIOUS",
+        .poem = "Spring thunder awakening life across dormant fields.",
+        .advice = "Mobilize spirits, inspire positive energy, and prepare defenses while rejoicing."
+    },
+    {
+        .number = 17,
+        .code = 0x19,
+        .name_zh = "泽雷随",
+        .name_pinyin = "Ze Lei Sui",
+        .name_en = "Following (Adaptation)",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "GOOD FORTUNE",
+        .poem = "Thunder resting peacefully inside a tranquil lake.",
+        .advice = "Adapt gracefully to changing times and follow sound principles with open mind."
+    },
+    {
+        .number = 18,
+        .code = 0x26,
+        .name_zh = "山风蛊",
+        .name_pinyin = "Shan Feng Gu",
+        .name_en = "Work on Corruption (Repair)",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "REFORM / HOPE",
+        .poem = "Wind trapped stagnantly at the mountain base.",
+        .advice = "Recognize and rectify past decay. Decisive reform and repair restore vitality."
+    },
+    {
+        .number = 19,
+        .code = 0x03,
+        .name_zh = "地泽临",
+        .name_pinyin = "Di Ze Lin",
+        .name_en = "Approach (Advancement)",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Nourishing lake swelling toward the fertile earth.",
+        .advice = "A promising wave of opportunity approaches. Act promptly while fortune peaks."
+    },
+    {
+        .number = 20,
+        .code = 0x30,
+        .name_zh = "风地观",
+        .name_pinyin = "Feng Di Guan",
+        .name_en = "Contemplation (View)",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "SMOOTH / REFLECT",
+        .poem = "Wind sweeping freely over the broad land.",
+        .advice = "Observe deeply, reflect with clear eyes, and lead by exemplary character."
+    },
+    {
+        .number = 21,
+        .code = 0x29,
+        .name_zh = "火雷噬嗑",
+        .name_pinyin = "Huo Lei Shi Ke",
+        .name_en = "Biting Through (Justice)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "FAVORABLE",
+        .poem = "Lightning illuminating the truth with thunderous authority.",
+        .advice = "Cut through obstacles and deceit decisively. Uphold fairness and justice."
+    },
+    {
+        .number = 22,
+        .code = 0x25,
+        .name_zh = "山火贲",
+        .name_pinyin = "Shan Huo Bi",
+        .name_en = "Grace (Adorning)",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "SMOOTH",
+        .poem = "Campfire casting warm glow upon mountain slopes.",
+        .advice = "Cultural beauty and aesthetic grace. Let outer form reflect sincere inner truth."
+    },
+    {
+        .number = 23,
+        .code = 0x20,
+        .name_zh = "山地剥",
+        .name_pinyin = "Shan Di Bo",
+        .name_en = "Splitting Apart (Decay)",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "CAUTION / CONSERVE",
+        .poem = "The mountain cliff eroding slowly into the plain.",
+        .advice = "Unfavorable cycle for expansion. Step back, conserve resources, and wait."
+    },
+    {
+        .number = 24,
+        .code = 0x01,
+        .name_zh = "地雷复",
+        .name_pinyin = "Di Lei Fu",
+        .name_en = "Return (Fresh Dawn)",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Thunder echoing deep underground at winter solstice.",
+        .advice = "The turning point arrives; new vitality returns. A fresh, auspicious chapter begins."
+    },
+    {
+        .number = 25,
+        .code = 0x39,
+        .name_zh = "天雷无妄",
+        .name_pinyin = "Tian Lei Wu Wang",
+        .name_en = "Innocence (Authenticity)",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "GOOD FORTUNE",
+        .poem = "Thunder clapping naturally beneath clear skies.",
+        .advice = "Stay authentic, pure, and sincere. Avoid cunning schemes or unnatural actions."
+    },
+    {
+        .number = 26,
+        .code = 0x27,
+        .name_zh = "山天大畜",
+        .name_pinyin = "Shan Tian Da Chu",
+        .name_en = "Great Accumulation",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "The immense vault of heaven held inside the mountain.",
+        .advice = "Accumulate noble virtues, wisdom, and capital. Great endeavors await."
+    },
+    {
+        .number = 27,
+        .code = 0x21,
+        .name_zh = "山雷颐",
+        .name_pinyin = "Shan Lei Yi",
+        .name_en = "Nourishment (Jaws)",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "FAVORABLE",
+        .poem = "Thunder quieted beneath the mountain peaks.",
+        .advice = "Guard your words and nourish your body and mind with wholesome truth."
+    },
+    {
+        .number = 28,
+        .code = 0x1E,
+        .name_zh = "泽风大过",
+        .name_pinyin = "Ze Feng Da Guo",
+        .name_en = "Preponderance of the Great",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "CRITICAL / COURAGE",
+        .poem = "Heavy waters overwhelming the submerged forest.",
+        .advice = "The central beam bends under immense weight. Stand firm with extraordinary courage."
+    },
+    {
+        .number = 29,
+        .code = 0x12,
+        .name_zh = "坎为水",
+        .name_pinyin = "Kan Wei Shui",
+        .name_en = "The Abysmal (Water)",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "CAUTION / FAITH",
+        .poem = "Currents tumbling repeatedly into deep abysses.",
+        .advice = "Stay faithful to inner principles amid repeated trials. Water always finds its way."
+    },
+    {
+        .number = 30,
+        .code = 0x2D,
+        .name_zh = "离为火",
+        .name_pinyin = "Li Wei Huo",
+        .name_en = "The Clinging (Fire)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Bright flames illuminating the dark world.",
+        .advice = "Cling to righteous clarity and high ideals. Illuminating warmth brings success."
+    },
+    {
+        .number = 31,
+        .code = 0x1C,
+        .name_zh = "泽山咸",
+        .name_pinyin = "Ze Shan Xian",
+        .name_en = "Mutual Attraction (Influence)",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Clear mountain lake reflecting peaceful heights.",
+        .advice = "Heart-to-heart resonance, mutual affection, and harmonious collaboration."
+    },
+    {
+        .number = 32,
+        .code = 0x0E,
+        .name_zh = "雷风恒",
+        .name_pinyin = "Lei Feng Heng",
+        .name_en = "Duration (Constancy)",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "GOOD FORTUNE",
+        .poem = "Thunder and wind continuing in perpetual cycle.",
+        .advice = "Steadfast perseverance and consistency of purpose triumph over fleeting fads."
+    },
+    {
+        .number = 33,
+        .code = 0x3C,
+        .name_zh = "天山遁",
+        .name_pinyin = "Tian Shan Dun",
+        .name_en = "Retreat (Strategic Withdrawal)",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "STRATEGIC",
+        .poem = "The mountain skyline gracefully receding into distance.",
+        .advice = "Withdraw tactfully when conditions warrant. Conserve dignity and strategic options."
+    },
+    {
+        .number = 34,
+        .code = 0x0F,
+        .name_zh = "雷天大壮",
+        .name_pinyin = "Lei Tian Da Zhuang",
+        .name_en = "Great Power (Strength)",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "AUSPICIOUS",
+        .poem = "Thunder bursting across the heights of heaven.",
+        .advice = "Immense vigor and strength. Direct power with wisdom, restraint, and fairness."
+    },
+    {
+        .number = 35,
+        .code = 0x28,
+        .name_zh = "火地晋",
+        .name_pinyin = "Huo Di Jin",
+        .name_en = "Progress (Advancement)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Morning sun rising radiant over the eastern horizon.",
+        .advice = "Rapid advancement, official favors, and bright visibility. Move forward boldly."
+    },
+    {
+        .number = 36,
+        .code = 0x05,
+        .name_zh = "地火明夷",
+        .name_pinyin = "Di Huo Ming Yi",
+        .name_en = "Darkening of the Light",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "CONCEAL / PERSIST",
+        .poem = "The golden sun sinks beneath the dark earth.",
+        .advice = "Adversity and trials. Conceal your brilliance, endure hardship, and keep the flame."
+    },
+    {
+        .number = 37,
+        .code = 0x35,
+        .name_zh = "风火家人",
+        .name_pinyin = "Feng Huo Jia Ren",
+        .name_en = "The Family (Dwelling)",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "AUSPICIOUS",
+        .poem = "Warm hearth fire sending smoke into the evening wind.",
+        .advice = "Cultivate domestic peace, loyalty, mutual care, and disciplined integrity at home."
+    },
+    {
+        .number = 38,
+        .code = 0x2B,
+        .name_zh = "火泽睽",
+        .name_pinyin = "Huo Ze Kui",
+        .name_en = "Opposition (Diversity)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "CAUTION / HARMONY",
+        .poem = "Fire burns upward while water settles downward.",
+        .advice = "Apparent opposites can complement one another. Seek unity while celebrating differences."
+    },
+    {
+        .number = 39,
+        .code = 0x14,
+        .name_zh = "水山蹇",
+        .name_pinyin = "Shui Shan Jian",
+        .name_en = "Obstruction (Limping)",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "HALT / SEEK HELP",
+        .poem = "Dangerous rapids before you, steep crags behind.",
+        .advice = "Do not push recklessly into danger. Halt, evaluate, and seek wise companions."
+    },
+    {
+        .number = 40,
+        .code = 0x0A,
+        .name_zh = "雷水解",
+        .name_pinyin = "Lei Shui Xie",
+        .name_en = "Deliverance (Release)",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Thunderstorm clearing the oppressive summer air.",
+        .advice = "Entanglements dissolve; forgiveness and quick action bring great relief."
+    },
+    {
+        .number = 41,
+        .code = 0x23,
+        .name_zh = "山泽损",
+        .name_pinyin = "Shan Ze Sun",
+        .name_en = "Decrease (Simplification)",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "FAVORABLE",
+        .poem = "Deepening the lake to heighten the majestic peak.",
+        .advice = "Sacrifice trivial desires for enduring value. Voluntary simplicity fosters strength."
+    },
+    {
+        .number = 42,
+        .code = 0x31,
+        .name_zh = "风雷益",
+        .name_pinyin = "Feng Lei Yi",
+        .name_en = "Increase (Abundance)",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "SUPREME FORTUNE",
+        .poem = "Wind and storm fertilizing the abundant land.",
+        .advice = "Momentum of growth and generosity. Advance bold enterprises and share your bounty."
+    },
+    {
+        .number = 43,
+        .code = 0x1F,
+        .name_zh = "泽天夬",
+        .name_pinyin = "Ze Tian Guai",
+        .name_en = "Breakthrough (Resolution)",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Heaven (Qian)",
+        .fortune = "DECISIVE",
+        .poem = "Lake waters overflowing into rain across heaven.",
+        .advice = "Decisive breakthrough required. Expose wrongdoings calmly and resolutely."
+    },
+    {
+        .number = 44,
+        .code = 0x3E,
+        .name_zh = "天风姤",
+        .name_pinyin = "Tian Feng Gou",
+        .name_en = "Coming to Meet (Encounter)",
+        .upper_trigram = "Heaven (Qian)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "VIGILANCE",
+        .poem = "Winds blowing swiftly beneath the wide sky.",
+        .advice = "Sudden or unexpected encounters. Exercise discernment and maintain firm boundaries."
+    },
+    {
+        .number = 45,
+        .code = 0x18,
+        .name_zh = "泽地萃",
+        .name_pinyin = "Ze Di Cui",
+        .name_en = "Gathering Together",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Earth (Kun)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Waters gathering into a vast, life-giving lake.",
+        .advice = "Collective gathering for noble purpose. United efforts achieve grand dreams."
+    },
+    {
+        .number = 46,
+        .code = 0x06,
+        .name_zh = "地风升",
+        .name_pinyin = "Di Feng Sheng",
+        .name_en = "Pushing Upward (Ascent)",
+        .upper_trigram = "Earth (Kun)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Saplings growing steadily from fertile loam.",
+        .advice = "Steady, organic advancement without force. Step by step, higher peaks are reached."
+    },
+    {
+        .number = 47,
+        .code = 0x1A,
+        .name_zh = "泽水困",
+        .name_pinyin = "Ze Shui Kun",
+        .name_en = "Oppression (Exhaustion)",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "TESTING / PATIENCE",
+        .poem = "Water drained away from the parched lake bed.",
+        .advice = "Period of constraint tests true mettle. Endure quietly; words will not convince now."
+    },
+    {
+        .number = 48,
+        .code = 0x16,
+        .name_zh = "水风井",
+        .name_pinyin = "Shui Feng Jing",
+        .name_en = "The Well (Source of Life)",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "STEADY NOURISHMENT",
+        .poem = "Cool crystal water drawn from subterranean depths.",
+        .advice = "Inexhaustible fountain of life and wisdom. Maintain your well and serve your people."
+    },
+    {
+        .number = 49,
+        .code = 0x1D,
+        .name_zh = "泽火革",
+        .name_pinyin = "Ze Huo Ge",
+        .name_en = "Revolution (Radical Change)",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "AUSPICIOUS REFORM",
+        .poem = "Flames transforming elements within the lake.",
+        .advice = "The old order gives way to the new. Timely, well-considered reform brings victory."
+    },
+    {
+        .number = 50,
+        .code = 0x2E,
+        .name_zh = "火风鼎",
+        .name_pinyin = "Huo Feng Ding",
+        .name_en = "The Caldron (Vessel)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "SUPREME FORTUNE",
+        .poem = "Sacred bronze vessel preparing a feast for sages.",
+        .advice = "Spiritual cultivation, creative refinement, and highest social contribution."
+    },
+    {
+        .number = 51,
+        .code = 0x09,
+        .name_zh = "震为雷",
+        .name_pinyin = "Zhen Wei Lei",
+        .name_en = "The Arousing (Thunder)",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Thunder (Zhen)",
+        .fortune = "AWAKENING",
+        .poem = "Shocking bursts of thunder shaking mountains.",
+        .advice = "Startling shocks clear away complacency. Initial terror gives way to steady joy."
+    },
+    {
+        .number = 52,
+        .code = 0x24,
+        .name_zh = "艮为山",
+        .name_pinyin = "Gen Wei Shan",
+        .name_en = "Keeping Still (Mountain)",
+        .upper_trigram = "Mountain (Gen)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "PEACE / MEDITATION",
+        .poem = "Towering mountain ranges standing silent.",
+        .advice = "Rest your mind and still restless desires. Find serenity in the present stillness."
+    },
+    {
+        .number = 53,
+        .code = 0x34,
+        .name_zh = "风山渐",
+        .name_pinyin = "Feng Shan Jian",
+        .name_en = "Gradual Progress (Dignity)",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Wild geese flying gracefully in order across peaks.",
+        .advice = "Patience and orderly progression. Rushing spoils what steady steps build."
+    },
+    {
+        .number = 54,
+        .code = 0x0B,
+        .name_zh = "雷泽归妹",
+        .name_pinyin = "Lei Ze Gui Mei",
+        .name_en = "The Marrying Maiden",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "CAUTION / MODESTY",
+        .poem = "Thunder ruffling the surface of the shimmering lake.",
+        .advice = "Impulsive beginnings lead to complications. Understand duties and maintain modesty."
+    },
+    {
+        .number = 55,
+        .code = 0x0D,
+        .name_zh = "雷火丰",
+        .name_pinyin = "Lei Huo Feng",
+        .name_en = "Abundance (Fullness)",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "PEAK ABUNDANCE",
+        .poem = "Blazing lightning and thunder filling the land.",
+        .advice = "The zenith of triumph and harvest. Enjoy abundance but beware the inevitable waning."
+    },
+    {
+        .number = 56,
+        .code = 0x2C,
+        .name_zh = "火山旅",
+        .name_pinyin = "Huo Shan Lu",
+        .name_en = "The Wanderer (Travel)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "MODERATE / CAUTION",
+        .poem = "Campfire flickering along the dark mountain pass.",
+        .advice = "A traveler in foreign territories. Walk humbly, respect local customs, and travel light."
+    },
+    {
+        .number = 57,
+        .code = 0x36,
+        .name_zh = "巽为风",
+        .name_pinyin = "Xun Wei Feng",
+        .name_en = "The Gentle (Wind)",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Wind (Xun)",
+        .fortune = "SMOOTH",
+        .poem = "Gentle breezes penetrating every nook and cranny.",
+        .advice = "Subtle, consistent influence accomplishes what brute force cannot."
+    },
+    {
+        .number = 58,
+        .code = 0x1B,
+        .name_zh = "兑为泽",
+        .name_pinyin = "Dui Wei Ze",
+        .name_en = "The Joyous (Lake)",
+        .upper_trigram = "Lake (Dui)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "JOY / HARMONY",
+        .poem = "Twin lakes whispering and reflecting each other.",
+        .advice = "Heartfelt joy, inspiring companionship, and warm cooperative discussions."
+    },
+    {
+        .number = 59,
+        .code = 0x32,
+        .name_zh = "风水涣",
+        .name_pinyin = "Feng Shui Huan",
+        .name_en = "Dispersion (Dissolution)",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "DELIVERANCE",
+        .poem = "Spring wind melting ice into flowing streams.",
+        .advice = "Hardened estrangements dissolve. Dispel fears, build temples, and rally unity."
+    },
+    {
+        .number = 60,
+        .code = 0x13,
+        .name_zh = "水泽节",
+        .name_pinyin = "Shui Ze Jie",
+        .name_en = "Limitation (Moderation)",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "GOOD FORTUNE",
+        .poem = "Lake banks containing water in balanced rhythm.",
+        .advice = "Wise boundaries and moderation bring stability. Bitter austerity, however, drains joy."
+    },
+    {
+        .number = 61,
+        .code = 0x33,
+        .name_zh = "风泽中孚",
+        .name_pinyin = "Feng Ze Zhong Fu",
+        .name_en = "Inner Truth (Sincerity)",
+        .upper_trigram = "Wind (Xun)",
+        .lower_trigram = "Lake (Dui)",
+        .fortune = "GREAT FORTUNE",
+        .poem = "Gentle winds caressing the tranquil lake face.",
+        .advice = "Pure sincerity touches all living beings. Lead with open heart and genuine trust."
+    },
+    {
+        .number = 62,
+        .code = 0x0C,
+        .name_zh = "雷山小过",
+        .name_pinyin = "Lei Shan Xiao Guo",
+        .name_en = "Preponderance of the Small",
+        .upper_trigram = "Thunder (Zhen)",
+        .lower_trigram = "Mountain (Gen)",
+        .fortune = "CAUTION / DETAILS",
+        .poem = "Thunder whispering softly by the crags.",
+        .advice = "Favorable for meticulous small matters, unfavorable for great leaps. Fly low like birds."
+    },
+    {
+        .number = 63,
+        .code = 0x15,
+        .name_zh = "水火既济",
+        .name_pinyin = "Shui Huo Ji Ji",
+        .name_en = "After Completion (Order)",
+        .upper_trigram = "Water (Kan)",
+        .lower_trigram = "Fire (Li)",
+        .fortune = "SUCCESS / VIGIL",
+        .poem = "Kettle boiling perfectly over regulated flames.",
+        .advice = "All pieces have fallen into their rightful place. Stay vigilant to sustain harmony."
+    },
+    {
+        .number = 64,
+        .code = 0x2A,
+        .name_zh = "火水未济",
+        .name_pinyin = "Huo Shui Wei Ji",
+        .name_en = "Before Completion (Renewal)",
+        .upper_trigram = "Fire (Li)",
+        .lower_trigram = "Water (Kan)",
+        .fortune = "HOPE / NEW CYCLE",
+        .poem = "Fire burns above while cool water rests below.",
+        .advice = "A new cycle dawns just before final crossing. Proceed carefully to reach the shore."
+    },
+};
+
+#ifdef __cplusplus
+}
+#endif
