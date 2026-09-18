@@ -49,8 +49,6 @@ fork 后，`main` 分支**只允许增加/修改根目录的 `README.md` 和 `do
 - 上游 main 的根目录**故意不放 README**，把这一位置预留给 fork 开发者。上游项目说明位于 `docs/README.md`（GitHub 从 docs/ 识别主 README），不占用根目录。
 - 开发者 fork 项目后，可将**自己的内容**写到根目录的 `README.md`，以介绍 fork 后的项目——例如改动来源、二次开发说明、自定义用法等。这样 fork 的根目录 README 与上游互不冲突，也无需覆盖上游文档。
 
-根 README 的内容跟分支模型一致：`feature/*` 分支的根 README 只介绍本分支自己的应用——做什么、怎么用、相关说明；fork `main` 的根 README 才是全部项目的目录，每个应用一段，在应用发布或归档时刷新。不要把整份目录复制到功能分支，也不要把 `main` 的目录简化成一串链接。
-
 > **GitHub 显示行为**：GitHub 显示优先级为根目录 `README.md` > `docs/README.md`，因此 fork 用户在根目录自建 `README.md` 后即覆盖 `docs/README.md` 的显示——正契合上面"根目录 README 预留给开发者"的设计意图。
 
 ## docs/assets 使用约定
