@@ -11,15 +11,20 @@ back and forth with a second player.
 ## Publish information
 
 - **Title**: Connect Four
-- **Description**: Turn the AI Passport into a pocket Connect Four board. Hold it
-  sideways and play on a 10 x 7 grid: move the column cursor with the up and down
-  keys, drop a disc with OK, and connect four to win. Choose who starts — play
-  first yourself, or let the computer open the game and watch it move. Play against
-  the computer at three difficulty levels, or hand the device back and forth with a
-  second player. Choose whether the next move is previewed at its real landing slot
-  or only on the top row of that column. Column moves, drops, wins and draws each
-  have their own sound, and the device dims itself when idle — press any key to
-  keep playing.
+- **Description**: submitted as:
+
+  > Turn the AI Passport into a pocket Connect Four board.
+  >
+  > Hold it sideways and play on a 10 x 7 grid: move the column cursor with the up and down keys, drop a disc with OK, and connect four to win.
+  >
+  > - Choose who starts: play first yourself, or let the computer open the game and watch it move.
+  > - Play against the computer at three difficulty levels: pick the easy one for a relaxed win, or the hard one for a real match.
+  > - Or hand the device back and forth: two players take turns on the same board.
+  > - Choose how your next move is previewed: show exactly which slot the disc will land in, or only mark the top row of that column.
+  > - Column moves, drops, wins and draws each have their own sound, and the device dims itself when idle - press any key to keep playing.
+  >
+  > Hold OK to return to the settings screen at any time and switch mode, difficulty or preview style.
+
 - **Category**: games
 - **Cover**: `comm_cover.png` (PNG, 1152 × 1536, 3:4) — publish metadata only; the
   cover image is not committed here.
