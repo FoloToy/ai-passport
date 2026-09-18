@@ -244,6 +244,7 @@ README 更新与其他五项一样是**可选**动作，也是归档的默认伴
 
 - 只碰 fork 拥有的根 README（`README.md` / `README.zh_CN.md`）；不改 `docs/README.md` 的上游项目概览。
 - 检查每个相关分支（`main` 与当前 `feature/*` 分支）的根 README，而不只是分支其一。
+- `feature/*` 分支的根 README **只介绍本分支自己的应用**——做什么、怎么用、相关说明；全项目目录只放在 fork `main`，不要在分支上重复它，也不要把目录简化成链接。
 - fork `main` 的根 README 是 **fork 项目的目录**：它**完整包含**各项目自身 README 的内容——应用做什么、怎么用的完整描述（交互、模式、按键、持久化与说明）——而不是一行简介加分支链接。内容取自承载分支的 README。
 - fork 根 README 与承载分支的根 README 都是 fork 拥有内容，直接提交（merge）而非开 PR；只有意图送上游时才开 PR。
 - 遵守仓库语言规则：默认 `.md` 用英文、配对的 `.zh_CN.md` 用简体中文，同一变更里对齐。
