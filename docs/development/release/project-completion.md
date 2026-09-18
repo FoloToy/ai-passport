@@ -352,6 +352,9 @@ application is registered where it is developed.
   modify the upstream project overview at `docs/README.md`.
 - Check the root README on each relevant branch (`main` and the current
   `feature/*` branch), not just one branch.
+- A `feature/*` branch's root README describes **only that branch's application** —
+  what it does, its interactions, and its notes. The catalog belongs on fork `main`
+  alone: do not repeat it on the branch, and do not reduce it to links.
 - The fork `main` root README is the **catalog of the fork's projects**: it
   **fully includes** the content of each project's own README — a complete
   description of what the application does and how to use it (its interactions,
