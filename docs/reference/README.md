@@ -25,7 +25,6 @@ The engineering rules themselves live under
 - [Post-Release Follow-up for the AI Passport Publishing Flow](shinku-chen/post-release-follow-up.md) — confirm the publish destination, include the data partition in a release, and the consent gates for the post-release tracks.
 - [Display Refresh and Deep-sleep on ESP32-C3 (No PSRAM)](shinku-chen/display-refresh-and-deep-sleep.md) — direct panel refresh of a single image rect, RTC-GPIO deep-sleep wakeup, and the LVGL object-type misuse crash signature.
 - [Shutting Down On-Board Peripherals Before Deep-Sleep](shinku-chen/deep-sleep-peripheral-power-off.md) — verified register shutdown, shared-bus ordering, terminal GPIO states, LCD deep-sleep holds, the `esp_codec_dev_close()` opened-state trap, and remaining hardware loads.
-- [Two-Device BLE Link Between AI Passport Boards (No PSRAM)](shinku-chen/two-device-ble-link.md) — symmetric peer discovery with an address tiebreak instead of host/join, measured link heap on a no-PSRAM part and its conflict with a static screenshot buffer, two hardware-only NimBLE GATT traps (missing `access_cb`, `EDONE` after a successful subscribe), NVS for RF calibration, and a stop-and-wait layer for turn-based play.
 
 **Application playbooks:**
 

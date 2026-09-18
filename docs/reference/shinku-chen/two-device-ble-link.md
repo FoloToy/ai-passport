@@ -60,7 +60,7 @@ already running:
 | Boot, after the application UI is up | ~191.9 KB |
 | Just before `nimble_port_init()` | ~131.2 KB |
 | Connected, link steady state | ~125.2–128.9 KB |
-| After `bsp_ble_link_stop()` returns | ~192.0 KB |
+| After the link is stopped and its host task is torn down | ~192.0 KB |
 
 So the link costs roughly **60 KB of heap to bring up** plus ~6 KB while a
 connection is live, and it is fully returned when the link is stopped. That is
@@ -155,8 +155,8 @@ the idle-sleep timer fire in the middle of a linked match.
 - Two boards are required for the real acceptance run; the useful evidence is
   both serial logs: the initiating side logs `role=central`, the other
   `role=peripheral`, and both log the same match numbers with opposite colors.
-- A PC-side BLE peer (Python + `bleak`) removes the need for a second board when
-  you are iterating on the protocol. This repository ships
-  [`tools/c4_peer.py`](../../../tools/c4_peer.py) as such a peer: it connects as a
-  central, speaks the same frames, and answers moves so a full match can be
-  played against one board.
+- A PC-side BLE peer (Python plus `bleak`) removes the need for a second board
+  when you are iterating on the protocol: connect to the advertising board as a
+  central, speak the same frames, and answer its moves, and a full match can be
+  played against one board. The peer tooling used for that is kept with the
+  application that owns the protocol rather than with this note.

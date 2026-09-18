@@ -18,7 +18,6 @@
 - [发布后收尾：AI Passport 发布流程的衔接](shinku-chen/post-release-follow-up.zh_CN.md) — 确认发布目的地、发布时包含数据分区、以及发布后收尾各轨道的同意门槛。
 - [ESP32-C3（无 PSRAM）上的显示刷新与深睡](shinku-chen/display-refresh-and-deep-sleep.zh_CN.md) — 直接刷新单个图片矩形、RTC GPIO 深睡唤醒，以及 LVGL 对象类型误用的崩溃特征。
 - [深睡前关闭板载外设](shinku-chen/deep-sleep-peripheral-power-off.zh_CN.md) — 寄存器校验关闭、共享总线顺序、终端 GPIO 状态、LCD deep-sleep hold、`esp_codec_dev_close()` 打开状态陷阱及剩余硬件负载。
-- [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
 
 **应用档案：**
 
