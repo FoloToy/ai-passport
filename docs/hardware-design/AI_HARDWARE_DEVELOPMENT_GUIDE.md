@@ -29,7 +29,7 @@ The target is the ESP32-C3 FoloToy AI Passport with ESP-IDF 5.5.3. It has 8 MB F
 | Subsystem | Device or mode | Resource | Firmware support |
 | --- | --- | --- | --- |
 | MCU | ESP32-C3 | 8 MB Flash, no PSRAM | Configured |
-| Display | ST7789P3, 240 × 320, RGB565 | SPI2, 40 MHz, mode 0 | Driver and validation page |
+| Display | ST7789P3, 240 × 320, RGB565 | SPI2, 80 MHz, mode 0 | Driver and validation page |
 | Backlight | LCD LED | GPIO21, LEDC 5 kHz/10 bit | PWM brightness control |
 | Buttons | UP/DOWN/OK resistor ladder | GPIO0 / ADC1_CH0 | Events and live-voltage page |
 | Audio | ES8311 playback and microphone | shared I2C + I2S0 full duplex | Playback and recording page |
@@ -53,7 +53,7 @@ This table describes the signals allocated by the current BSP and build configur
 | 5 | I2S BCLK | output | shared by TX/RX |
 | 6 | I2S MCLK | output | required by codec configuration |
 | 7 | I2C SCL | bidirectional open drain | ES8311 and CW2017 share I2C0 |
-| 8 | LCD SCLK | SPI output | SPI2, 40 MHz, mode 0 |
+| 8 | LCD SCLK | SPI output | SPI2, 80 MHz, mode 0 |
 | 9 | LCD MOSI | SPI output | no MISO; display cannot be read |
 | 10 | I2C SDA | bidirectional open drain | internal pull-up enabled; suitable external pull-ups still expected |
 | 18/19 | USB Serial/JTAG | USB | reserve for console |
@@ -113,7 +113,7 @@ be hidden behind an SDK helper that asserts or ignores task-creation results.
 
 ## 5. Display and LVGL
 
-- Panel: ST7789P3, 240 × 320 portrait, RGB565, SPI2 MOSI-only at 40 MHz, mode 0.
+- Panel: ST7789P3, 240 × 320 portrait, RGB565, SPI2 MOSI-only at 80 MHz, mode 0.
 - `BSP_LCD_INVERT_COLOR=1`; change inversion only after measurement with the replacement panel.
 - Reset is software-only, gap is `(0, 0)`, X/Y mirroring is disabled, and LVGL rotation may override lower-level mirror settings.
 - The vendor porch, power, and gamma sequence in `bsp_display.c` is panel-specific. Do not treat it as a universal ST7789 sequence.

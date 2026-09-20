@@ -31,7 +31,7 @@ AI 应先完成以下检查：
 | 子系统 | 器件/方式 | 总线或资源 | 固件支持 |
 | --- | --- | --- | --- |
 | MCU | ESP32-C3 | 8 MB Flash、无 PSRAM | 已配置 |
-| 显示 | ST7789P3，240 × 320，RGB565 | SPI2，40 MHz，mode 0 | 驱动与验证页 |
+| 显示 | ST7789P3，240 × 320，RGB565 | SPI2，80 MHz，mode 0 | 驱动与验证页 |
 | 背光 | LCD LED 背光 | GPIO21，LEDC 5 kHz/10 bit | PWM 亮度控制 |
 | 按键 | UP/DOWN/OK 三键电阻分压 | GPIO0 / ADC1_CH0 | 事件与实时电压页 |
 | 音频 | ES8311，播放 + 麦克风录音 | I2C 控制 + I2S0 全双工 | 播放与录音页 |
@@ -55,7 +55,7 @@ AI 应先完成以下检查：
 | 5 | I2S BCLK | 输出 | 与收发共用 |
 | 6 | I2S MCLK | 输出 | codec 配置要求使用 MCLK |
 | 7 | I2C SCL | 双向开漏 | ES8311 与 CW2017 共用 I2C0 |
-| 8 | LCD SCLK | SPI 输出 | SPI2，40 MHz，mode 0 |
+| 8 | LCD SCLK | SPI 输出 | SPI2，80 MHz，mode 0 |
 | 9 | LCD MOSI | SPI 输出 | 当前没有 MISO，不能读屏 |
 | 10 | I2C SDA | 双向开漏 | 软件启用内部上拉；实际硬件仍应有合适外部上拉 |
 | 18/19 | USB Serial/JTAG | USB | 控制台使用，避免改作普通 GPIO |
@@ -132,7 +132,7 @@ Wi-Fi、NimBLE 和 light/deep sleep 直接使用 ESP-IDF API，不属于板级 B
 ### 5.1 面板事实
 
 - ST7789P3，物理/逻辑分辨率均为 240 × 320，当前为竖屏。
-- SPI2_HOST、MOSI-only、40 MHz、SPI mode 0、8 bit 命令/参数、RGB565。
+- SPI2_HOST、MOSI-only、80 MHz、SPI mode 0、8 bit 命令/参数、RGB565。
 - LCD 需要反色命令，`BSP_LCD_INVERT_COLOR=1`。若换屏出现负片，只能在实测后调整。
 - RST 为 `-1`，`esp_lcd_panel_reset()` 走 SWRESET。
 - 当前 gap 为 `(0, 0)`，镜像 X/Y 都关闭。

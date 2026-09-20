@@ -5,8 +5,11 @@
 #include "bsp_pins.h"
 #include "esp_lvgl_port.h"
 #include "esp_log.h"
+#include <string.h>
 
 static const char *TAG = "bsp_lvgl";
+
+#define BSP_LVGL_DRAW_BUFFER_LINES 40
 
 static lv_display_t *s_disp;
 static bool s_port_initialized;
@@ -26,22 +29,28 @@ static void rounded_flush_event(lv_event_t *event)
     if (draw_buf->header.stride < (uint32_t)width * sizeof(uint16_t)) return;
 
     for (int32_t y = area->y1; y <= area->y2; ++y) {
-        if (y >= BSP_LVGL_SCREEN_RADIUS &&
-            y < BSP_LCD_H - BSP_LVGL_SCREEN_RADIUS) {
-            continue;
-        }
-
         uint16_t *row = (uint16_t *)(draw_buf->data +
                                      (y - area->y1) * draw_buf->header.stride);
-        for (int32_t x = area->x1; x <= area->x2; ++x) {
-            if (bsp_display_pixel_outside_rounded_rect(
-                    x, y, BSP_LCD_W, BSP_LCD_H, BSP_LVGL_SCREEN_RADIUS)) {
-                // The port swaps RGB565 bytes after this event; black is 0 in
-                // either byte order, so masking here is safe.
-                row[x - area->x1] = 0;
-            }
+        int32_t visible_x1;
+        int32_t visible_x2;
+        if (!bsp_display_rounded_row_span(y, BSP_LCD_W, BSP_LCD_H,
+                                          BSP_LVGL_SCREEN_RADIUS, &visible_x1,
+                                          &visible_x2)) {
+            memset(row, 0, (size_t)width * sizeof(uint16_t));
+            continue;
+        }
+        // Only clear pixels outside the visible span. The port swaps RGB565
+        // bytes after this event; black is 0 in either byte order.
+        const int32_t clear_left_end = visible_x1 > area->x2 ? area->x2 : visible_x1 - 1;
+        const int32_t clear_right_start = visible_x2 < area->x1 ? area->x1 : visible_x2 + 1;
+        for (int32_t x = area->x1; x <= clear_left_end; ++x) {
+            row[x - area->x1] = 0;
+        }
+        for (int32_t x = clear_right_start; x <= area->x2; ++x) {
+            row[x - area->x1] = 0;
         }
     }
+
 }
 
 lv_display_t *bsp_lvgl_init(void) {
@@ -70,10 +79,9 @@ lv_display_t *bsp_lvgl_init(void) {
     const lvgl_port_display_cfg_t dc = {
         .panel_handle = bsp_display_panel(),
         .io_handle    = bsp_display_io(),
-        // ⚠ C3 无 PSRAM,DMA 只能用内部 RAM(总共约 150KB)。
-        // 20 行单缓冲 ≈ 9.6KB;若改成 40 行双缓冲(≈37.5KB)会把 I2S 等外设的
-        // DMA 描述符挤到 NO_MEM。刷新略慢但稳。
-        .buffer_size   = (uint32_t)BSP_LCD_W * 20,
+        // ⚠ C3 无 PSRAM,DMA 只能用内部 RAM。40 行单缓冲约 19.2KB，
+        // 可减少窗口命令和队列提交次数；仍保留单缓冲，避免双缓冲挤压音频/Wi-Fi。
+        .buffer_size   = (uint32_t)BSP_LCD_W * BSP_LVGL_DRAW_BUFFER_LINES,
         .double_buffer = false,
         .hres = BSP_LCD_W, .vres = BSP_LCD_H,
         // 旋转/镜像必须在这里配:esp_lvgl_port 注册显示时会重新下发 MADCTL,
