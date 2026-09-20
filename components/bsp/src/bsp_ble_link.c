@@ -73,6 +73,11 @@ static TaskHandle_t s_host_task;
 static bool s_started;
 static bool s_host_done;
 static bool s_stop_in_progress;
+// 停机进行中:所有 GAP 回调短路,不再重启广播/扫描,也不再回调应用。
+// 没有这个标志时,stop() 期间由 ble_hs_stop() 终止连接所产生的 DISCONNECT 会走到
+// on_disconnect() → discovery_start(),在 host 已经关闭之后再去开广播/扫描(实测只会
+// 打出两条 BLE_HS_EDISABLED 假报错,但正确性不该依赖这个回调时序)。
+static bool s_stopping;
 
 static uint8_t s_addr_type;
 static ble_addr_t s_own_addr;
@@ -167,6 +172,7 @@ static int scan_start(void)
 
 static void discovery_start(void)
 {
+    if (s_stopping) return;                     // 停机中不重新广播/扫描
     if (s_conn != BLE_HS_CONN_HANDLE_NONE) return;
     (void)advertise();
     (void)scan_start();
@@ -401,6 +407,7 @@ static esp_err_t build_gatt_service(void)
 
 static void on_connect(const struct ble_gap_event *event)
 {
+    if (s_stopping) return;
     if (event->connect.status != 0) {
         ESP_LOGW(TAG, "连接失败 status=%d", event->connect.status);
         s_connecting = false;
@@ -434,11 +441,13 @@ static void on_disconnect(const struct ble_gap_event *event)
     ESP_LOGI(TAG, "对端断开 reason=%d 空闲堆=%u", event->disconnect.reason,
              (unsigned)esp_get_free_heap_size());
     link_reset();
+    if (s_stopping) return;         // 停机触发的断开:清状态即可,不要重新开始发现
     discovery_start();              // 断开后回到“广播 + 扫描”,便于重连
 }
 
 static void on_subscribe(const struct ble_gap_event *event)
 {
+    if (s_stopping) return;
     if (event->subscribe.attr_handle != s_own_tx_val) return;
     s_peer_subscribed = event->subscribe.cur_notify != 0;
     ESP_LOGI(TAG, "对端订阅通知=%d", (int)s_peer_subscribed);
@@ -447,6 +456,7 @@ static void on_subscribe(const struct ble_gap_event *event)
 
 static void on_notify_rx(const struct ble_gap_event *event)
 {
+    if (s_stopping) return;         // 停止期间不再回调应用(与头文件约定一致)
     if (!s_is_central || event->notify_rx.conn_handle != s_conn) return;
     if (event->notify_rx.attr_handle != s_peer_tx_val) return;
     if (!s_on_rx) return;
@@ -465,6 +475,7 @@ static void on_notify_rx(const struct ble_gap_event *event)
 static void on_adv_or_disc_complete(const struct ble_gap_event *event)
 {
     // 广播/扫描结束后重新开始(例如广播被控制器提前结束)。
+    if (s_stopping) return;
     if (s_conn != BLE_HS_CONN_HANDLE_NONE || s_connecting) return;
     if (event->type == BLE_GAP_EVENT_ADV_COMPLETE) (void)advertise();
     else (void)scan_start();
@@ -473,6 +484,7 @@ static void on_adv_or_disc_complete(const struct ble_gap_event *event)
 static void on_disc(const struct ble_gap_event *event)
 {
     // 已经连上或正在主动连接时,扫描的残留报告直接忽略。
+    if (s_stopping) return;
     if (s_conn != BLE_HS_CONN_HANDLE_NONE || s_connecting) return;
 
     struct ble_hs_adv_fields fields;
@@ -549,6 +561,8 @@ static void on_reset(int reason)
 
 static void on_sync(void)
 {
+    // 停机过程中完成的 sync 不要再开始发现(否则同样会踩 host 已关闭的路径)。
+    if (s_stopping) return;
     if (ble_hs_util_ensure_addr(0) != 0) {
         ESP_LOGE(TAG, "取本地 BLE 地址失败");
         set_state(BSP_BLE_LINK_FAILED);
@@ -617,6 +631,7 @@ esp_err_t bsp_ble_link_start(const bsp_ble_link_cfg_t *cfg,
     s_user = user;
     s_host_done = false;
     s_stop_in_progress = false;
+    s_stopping = false;
     link_reset();
     if (build_gatt_service() != ESP_OK) {
         set_state(BSP_BLE_LINK_FAILED);
@@ -680,14 +695,18 @@ esp_err_t bsp_ble_link_stop(void)
 {
     if (!s_started) return ESP_OK;
 
-    // 停止期间不再向上层报状态:上层可能已经在关机流程里。
+    // 停止期间不再向上层报状态:上层可能已经在关机流程里。s_stopping 必须在停
+    // 广播和停 host 之前置位 —— ble_hs_stop() 会终止当前连接,随之而来的
+    // DISCONNECT 是在 host 已经关闭之后才回调到这里,那时再 discovery_start()
+    // 只会拿到 BLE_HS_EDISABLED。
+    s_stopping = true;
     s_on_state = NULL;
     discovery_stop();
 
     if (s_host_task && !s_stop_in_progress) {
         const int rc = nimble_port_stop();
         if (rc != 0) {
-            ESP_LOGE(TAG, "nimble_port_stop 失败: %d", rc);
+            ESP_LOGE(TAG, "nimble_port_stop 失败: %d;链路仍在停机中,需重试 stop()", rc);
             return ESP_FAIL;
         }
         s_stop_in_progress = true;
@@ -696,7 +715,7 @@ esp_err_t bsp_ble_link_stop(void)
     if (s_host_task && !s_host_done) {
         if (!s_host_stopped ||
             xSemaphoreTake(s_host_stopped, pdMS_TO_TICKS(BSP_BLE_STOP_TIMEOUT_MS)) != pdTRUE) {
-            ESP_LOGE(TAG, "等待 NimBLE host 停止超时");
+            ESP_LOGE(TAG, "等待 NimBLE host 停止超时;链路仍在停机中,需重试 stop()");
             return ESP_ERR_TIMEOUT;
         }
         s_host_done = true;
@@ -718,6 +737,7 @@ esp_err_t bsp_ble_link_stop(void)
         s_host_stopped = NULL;
     }
     s_started = false;
+    s_stopping = false;
     s_stop_in_progress = false;
     s_host_done = false;
     s_have_own_addr = false;

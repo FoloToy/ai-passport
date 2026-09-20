@@ -68,7 +68,12 @@ esp_err_t bsp_ble_link_start(const bsp_ble_link_cfg_t *cfg,
                              void *user);
 
 // 停链路:停广播/扫描、停 NimBLE host 并释放控制器。进入 deep sleep 前必须调用,
-// 否则射频仍被供电。停止期间不再回调应用。可重复调用。
+// 否则射频仍被供电。停止期间不再回调应用(状态回调与接收回调都静默),也不会再重新
+// 开始广播/扫描。可重复调用。
+//
+// 返回 ESP_OK 表示链路已完全停止。返回其它错误码时链路处于“停机中”:host 可能还在
+// 退出,所有回调仍然静默,必须再次调用 stop() 直到成功(停机完成前 start() 会返回
+// ESP_ERR_INVALID_STATE)。
 esp_err_t bsp_ble_link_stop(void);
 
 // 发送一帧。只有 READY 状态才允许;未连接返回 ESP_ERR_INVALID_STATE。
