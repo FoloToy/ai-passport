@@ -176,7 +176,11 @@ esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user) {
             .base = { .get_key_level = button_level, .del = button_driver_delete },
             .index = (unsigned)i,
         };
-        const button_config_t bc = { 0 };
+        // 判定门限由 BSP 显式下发(见 bsp_pins.h):组件 Kconfig 默认的长按 1500ms 偏迟钝。
+        const button_config_t bc = {
+            .short_press_time = BSP_BTN_SHORT_PRESS_MS,
+            .long_press_time  = BSP_BTN_LONG_PRESS_MS,
+        };
         esp_err_t e = iot_button_create(&bc, &s_drivers[i].base, &s_btn[i]);
         if (e != ESP_OK || !s_btn[i]) {
             ESP_LOGE(TAG, "按键 %d 创建失败 (%s) —— 检查 GPIO%d 的 ADC 配置与分压电阻",
@@ -196,7 +200,8 @@ esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user) {
 
     s_sample_valid = false;
     s_ready = true;
-    ESP_LOGI(TAG, "按键就绪:ADC1_CH%d 三键分压", BSP_BTN_ADC_CHANNEL);
+    ESP_LOGI(TAG, "按键就绪:ADC1_CH%d 三键分压,短按 %dms 长按 %dms",
+             BSP_BTN_ADC_CHANNEL, BSP_BTN_SHORT_PRESS_MS, BSP_BTN_LONG_PRESS_MS);
     return ESP_OK;
 }
 
