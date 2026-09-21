@@ -179,6 +179,7 @@ LVGL 非线程安全：
 - 校准创建失败会中止初始化并回滚；读取或换算失败视为未按下，而不是把无效电压作为 0 mV 触发 UP。BSP 不使用依赖的 ADC 索引注册表，避免部分分配失败后遗留占用索引、阻止重试。
 - 回调来自 button 组件使用的共享 `esp_timer` 任务，只能入队或执行同等级的有界操作，不能阻塞、录音、播放或访问 UI。
 - 事件包括 PRESS、CLICK、DOUBLE、LONG。应用菜单主要消费 CLICK；页面中的 OK LONG 被全局拦截用于返回。
+- 按键判定时序由 BSP 显式下发（`BSP_BTN_SHORT_PRESS_MS` = 180 ms、`BSP_BTN_LONG_PRESS_MS` = 500 ms，见 `bsp_pins.h`），不依赖组件 Kconfig 默认的 180 / 1500 ms：三个小按键上按住 1.5 s 才触发长按偏迟钝。组件对 `BUTTON_LONG_PRESS_TIME_MS` 的 Kconfig 下限同样是 500 ms，更短的长按只能在代码里下发。
 
 重标阈值时，在 Button 页逐个长按按键记录稳定电压，采集多块板、不同电量和合理温度范围的数据，再把相邻分布之间留裕量设置为边界。不要只用理论分压值。
 
