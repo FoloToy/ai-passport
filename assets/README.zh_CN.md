@@ -15,6 +15,25 @@
 - 添加字库前评估 Flash 与内部 RAM 影响；ESP32-C3 无 PSRAM。
 - 不提交许可不允许分发的字库。
 
+### 《最后一个房间》中文子集
+
+`fonts/game_cjk_16.c` 是《最后一个房间》简体中文 UI 使用的 LVGL
+字库，规格为 16 px、4 bpp、未压缩。它只包含 `main/game_i18n.c`
+当前实际出现的非 ASCII 字符，完整字符清单位于
+`fonts/game_cjk_characters.txt`；ASCII 字符在运行时回退到 Montserrat 14。
+
+生成源为 LVGL 9.5.0 managed dependency 测试资源中的
+`NotoSansSC-Regular.ttf`。Noto Sans SC 使用 SIL Open Font License 1.1，
+依赖目录中保留了 `OFL.txt` 与来源说明。使用固定版本的官方转换器
+`lv_font_conv` 1.5.3 重新生成：
+
+```bash
+python3 tools/generate_game_font.py
+```
+
+脚本会同时更新字符清单和生成的 C 源码；当翻译文本与生成字库不一致时，
+`tests/test_game_font_coverage.py` 会使验证失败。
+
 ## 图片（images）
 
 可复用的源图与生成的显示资产放在 `images/`。

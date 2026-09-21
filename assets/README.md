@@ -17,6 +17,26 @@ Store reusable font files and generated font sources in `fonts/`.
 - Check Flash and internal-RAM impact before adding a font; the ESP32-C3 has no PSRAM.
 - Do not commit fonts whose license does not permit redistribution.
 
+### The Last Room CJK subset
+
+`fonts/game_cjk_16.c` is the generated 16 px, 4 bpp, uncompressed LVGL font
+used by The Last Room's Simplified Chinese UI. It contains only the non-ASCII
+characters currently present in `main/game_i18n.c`; the exact inventory is in
+`fonts/game_cjk_characters.txt`. ASCII falls back to Montserrat 14 at runtime.
+
+The generation source is `NotoSansSC-Regular.ttf` from the LVGL 9.5.0 managed
+dependency test assets. Noto Sans SC is distributed under the SIL Open Font
+License 1.1; the dependency carries its `OFL.txt` and source README. Regenerate
+the subset with the pinned official converter (`lv_font_conv` 1.5.3):
+
+```bash
+python3 tools/generate_game_font.py
+```
+
+The script refreshes both the character inventory and generated C source.
+`tests/test_game_font_coverage.py` fails when translated text and the generated
+font no longer match.
+
 ## Images
 
 Store reusable source images and generated display assets in `images/`.
