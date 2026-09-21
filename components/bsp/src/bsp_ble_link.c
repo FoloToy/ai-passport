@@ -2,15 +2,18 @@
 //
 // 角色与发现规则(两边对称,不需要用户选主从):
 //   1. 启动后同时做两件事:广播自己的 128 位服务 + 主动扫描同名前缀的对端。
-//   2. 扫到对端后比较 6 字节地址:自己的地址大 → 由本机主动连(central);
-//      否则什么都不做,等对方连进来(peripheral)。规则反对称,因此两边算出的
-//      结果一定相反,谁都不会重复发起。
+//   2. 扫到对端后比较 6 字节地址(按扫描器里显示的字节顺序,最高字节在前):
+//      自己的地址大 → 由本机主动连(central);否则什么都不做,等对方连进来
+//      (peripheral)。规则反对称,因此两边算出的结果一定相反,谁都不会重复发起。
+//      比较本身在 bsp_ble_addr.c,由 tests/test_bsp_ble_addr.c 覆盖。
 //   3. 连接建立后:central 侧发现对端服务 → 写 CCCD 订阅通知 → READY;
 //      peripheral 侧等到对端订阅通知 → READY。两边都 READY 才允许 send。
 //   4. 断开后清状态、重新进入 DISCOVERING,并通知应用。
 //
 // 只有 1 个连接(CONFIG_BT_NIMBLE_MAX_CONNECTIONS=1),只做 1:1。
 #include "bsp_ble_link.h"
+
+#include "bsp_ble_addr.h"
 
 #include "esp_log.h"
 #include "esp_system.h"
@@ -498,8 +501,10 @@ static void on_disc(const struct ble_gap_event *event)
     if (memcmp(fields.name, s_name_prefix, prefix_len) != 0) return;
 
     // 反对称的发起规则:地址大的一方主动连。两边算出的结果必然相反。
+    // 注意别用 memcmp():它从地址的最低字节开始比,和“扫描器里看到的地址大小”
+    // 不是同一个顺序。
     if (!s_have_own_addr) return;
-    if (memcmp(event->disc.addr.val, s_own_addr.val, 6) <= 0) return;
+    if (!bsp_ble_addr_should_initiate(s_own_addr.val, event->disc.addr.val)) return;
 
     // 广播里的名字不一定以 NUL 结尾,先拷成字符串再打日志。
     char peer_name[BSP_BLE_NAME_MAX];
