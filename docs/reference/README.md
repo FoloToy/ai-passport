@@ -56,6 +56,16 @@ The engineering rules themselves live under
 
 - [Offline Pokédex](sunny0826/offline-pokedex/README.md) — a fully offline Pokédex that embeds all 1,025 Pokémon, their sprites, and cries in the firmware.
 
+### starsms007
+
+**Experience entries:**
+
+- [LVGL Memory Pool Budgeting on ESP32-C3 (No PSRAM)](starsms007/lvgl-pool-budget-without-psram.md) — log `lv_mem_monitor()` from boot, read the margin from `maxused` rather than `free`, sample long enough to separate a peak from a leak, and recognize pool exhaustion as a frozen half-drawn frame rather than a crash.
+
+**Application playbooks:**
+
+- [Faraway](starsms007/faraway/README.md) — a travel journal for an orange cat: send it out for 15 seconds to 12 hours, collect 24 postcards and 24 keepsakes, unlock four mini-games, and watch seven weather layers drift by.
+
 ## Adding an experience entry
 
 Each release may produce **one or more** reusable, post-release learnings; each is
