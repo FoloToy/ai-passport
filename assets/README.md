@@ -17,6 +17,26 @@ Store reusable font files and generated font sources in `fonts/`.
 - Check Flash and internal-RAM impact before adding a font; the ESP32-C3 has no PSRAM.
 - Do not commit fonts whose license does not permit redistribution.
 
+### The Last Room CJK subset
+
+`fonts/game_cjk_16.c` is the generated 16 px, 4 bpp, uncompressed LVGL font
+used by The Last Room's Simplified Chinese UI. It contains only the non-ASCII
+characters currently present in `main/game_i18n.c`; the exact inventory is in
+`fonts/game_cjk_characters.txt`. ASCII falls back to Montserrat 14 at runtime.
+
+The generation source is `NotoSansSC-Regular.ttf` from the LVGL 9.5.0 managed
+dependency test assets. Noto Sans SC is distributed under the SIL Open Font
+License 1.1; the dependency carries its `OFL.txt` and source README. Regenerate
+the subset with the pinned official converter (`lv_font_conv` 1.5.3):
+
+```bash
+python3 tools/generate_game_font.py
+```
+
+The script refreshes both the character inventory and generated C source.
+`tests/test_game_font_coverage.py` fails when translated text and the generated
+font no longer match.
+
 ## Images
 
 Store reusable source images and generated display assets in `images/`.
@@ -27,11 +47,19 @@ Store reusable source images and generated display assets in `images/`.
 | [`images/readme-hardware-specs.png`](images/readme-hardware-specs.png) | 2172 × 724, PNG RGBA | Optional technical infographic retained as a reference asset; it is no longer used as the homepage hero. Generated for this repository with the built-in image generation tool on 2026-09-17; the six labels and values were checked against the documented hardware contract. |
 | [`images/logo-wordmark.png`](images/logo-wordmark.png) | 1648 × 336, PNG RGBA | Transparent black wordmark extracted from the repository's original `images/logo.png`; embedded in both project README files for light backgrounds. |
 | [`images/logo-wordmark-dark.png`](images/logo-wordmark-dark.png) | 1648 × 336, PNG RGBA | White version of the extracted wordmark, used by the README `<picture>` element when GitHub is in dark mode. |
+| `images/escape-room-the-last-room-cover-startup-v3-240x320.png` | 240 × 320, PNG | Developer-supplied The Last Room startup-cover candidate selected for the firmware. Its project use is authorized by the project owner. |
+| `images/game_cover_startup.c` | 240 × 320, RGB565 (153,600 bytes) | LVGL 9 static display resource generated from the selected PNG by `tools/generate_game_cover.py`; compiled by `main/CMakeLists.txt` and rendered by `main/game_ui.c` while the startup cover is visible. |
 
 - Use descriptive names and document dimensions, pixel format, conversion steps, and destination.
 - Prefer formats suitable for the 240 × 320 RGB565 display and account for Flash and internal RAM.
 - Preserve editable sources where licensing permits, and record the source and license.
 - Never commit device QR secrets, credentials, or personal data in images.
+
+Regenerate the startup-cover resource on macOS with:
+
+```bash
+python3 tools/generate_game_cover.py
+```
 
 ## Music and sound effects
 

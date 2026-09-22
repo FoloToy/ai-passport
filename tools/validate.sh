@@ -10,6 +10,7 @@ usage() {
 
 run_static_checks() {
     local actionlint_bin
+    local gc_sections_flag
     local test_dir
 
     python3 tools/check_repo.py
@@ -24,6 +25,40 @@ run_static_checks() {
     "${actionlint_bin}" -color .github/workflows/*.yml
 
     test_dir="$(mktemp -d /tmp/ai-passport-host-tests.XXXXXX)"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        gc_sections_flag="-Wl,-dead_strip"
+    else
+        gc_sections_flag="-Wl,--gc-sections"
+    fi
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_game_timer.c main/game_timer.c \
+        -o "${test_dir}/test_game_timer"
+    "${test_dir}/test_game_timer"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_game_puzzles.c main/game_puzzles.c \
+        -o "${test_dir}/test_game_puzzles"
+    "${test_dir}/test_game_puzzles"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_game_input.c main/game_input.c \
+        -o "${test_dir}/test_game_input"
+    "${test_dir}/test_game_input"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_game_i18n.c main/game_i18n.c \
+        -o "${test_dir}/test_game_i18n"
+    "${test_dir}/test_game_i18n"
+    python3 tests/test_game_font_coverage.py
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_game_story.c main/game_story.c \
+        -o "${test_dir}/test_game_story"
+    "${test_dir}/test_game_story"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_game_model.c main/game_model.c main/game_puzzles.c main/game_timer.c \
+        -o "${test_dir}/test_game_model"
+    "${test_dir}/test_game_model"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_game_ui_layout.c \
+        -o "${test_dir}/test_game_ui_layout"
+    "${test_dir}/test_game_ui_layout"
     "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
         tests/test_ui_pixel_math.c main/ui_pixel_math.c \
         -o "${test_dir}/test_ui_pixel_math"
@@ -57,7 +92,7 @@ run_static_checks() {
     for demo in audio low_power ble wifi; do
         "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
             -ffunction-sections -fdata-sections -Itests/demo_stubs -Imain \
-            "tests/test_demo_${demo}_runtime.c" -Wl,--gc-sections \
+            "tests/test_demo_${demo}_runtime.c" "${gc_sections_flag}" \
             -o "${test_dir}/test_demo_${demo}_runtime"
         "${test_dir}/test_demo_${demo}_runtime"
     done
