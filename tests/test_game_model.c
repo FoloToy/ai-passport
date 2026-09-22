@@ -20,11 +20,40 @@ static void start_game(game_model_t *model)
 {
     game_model_init(model);
     assert(model->current_scene == GAME_SCENE_BOOT);
-    game_model_boot_complete(model);
+    game_model_boot_complete(model, 0);
+    assert(model->current_scene == GAME_SCENE_COVER);
+    action(model, GAME_ACTION_CONFIRM);
     assert(model->current_scene == GAME_SCENE_INTRO);
     action(model, GAME_ACTION_CONFIRM);
     assert(model->current_scene == GAME_SCENE_ROOM_1);
     assert(model->remaining_time == GAME_DURATION_SECONDS);
+}
+
+static void test_cover_navigation_and_timeout(void)
+{
+    game_model_t model;
+    game_model_init(&model);
+    game_model_boot_complete(&model, 1000);
+    assert(model.current_scene == GAME_SCENE_COVER);
+    assert(!model.timer.started);
+    assert(game_model_tick(&model, 10999) == GAME_TIMER_EVENT_NONE);
+    assert(model.current_scene == GAME_SCENE_COVER);
+
+    action(&model, GAME_ACTION_UP);
+    action(&model, GAME_ACTION_DOWN);
+    action(&model, GAME_ACTION_BACK);
+    assert(model.current_scene == GAME_SCENE_COVER);
+    assert(!model.timer.started);
+
+    assert(game_model_tick(&model, 11000) == GAME_TIMER_EVENT_NONE);
+    assert(model.current_scene == GAME_SCENE_INTRO);
+    assert(!model.timer.started);
+
+    game_model_init(&model);
+    game_model_boot_complete(&model, 0);
+    action(&model, GAME_ACTION_CONFIRM);
+    assert(model.current_scene == GAME_SCENE_INTRO);
+    assert(!model.timer.started);
 }
 
 static void open_puzzle_1(game_model_t *model)
@@ -183,7 +212,8 @@ static void test_language_settings_and_runtime_restart(void)
 {
     game_model_t model;
     game_model_init(&model);
-    game_model_boot_complete(&model);
+    game_model_boot_complete(&model, 0);
+    action(&model, GAME_ACTION_CONFIRM);
     assert(model.language == GAME_LANGUAGE_ZH_CN);
 
     action(&model, GAME_ACTION_DOWN);
@@ -272,6 +302,7 @@ static void test_all_endings(void)
 
 int main(void)
 {
+    test_cover_navigation_and_timeout();
     test_navigation_and_back();
     test_puzzle_feedback_and_progression();
     test_system_menu_does_not_pause_time();

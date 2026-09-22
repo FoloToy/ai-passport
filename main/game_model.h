@@ -8,9 +8,11 @@
 #include "game_timer.h"
 
 #define GAME_MAX_CODE_DIGITS 4
+#define GAME_COVER_DURATION_MS 10000ULL
 
 typedef enum {
     GAME_SCENE_BOOT = 0,
+    GAME_SCENE_COVER,
     GAME_SCENE_INTRO,
     GAME_SCENE_ROOM_1,
     GAME_SCENE_PUZZLE_1,
@@ -75,6 +77,7 @@ typedef struct {
     game_language_t language;
     game_timer_t timer;
     uint32_t remaining_time;
+    uint64_t cover_started_ms;
     uint8_t hint_level;
     uint8_t wrong_attempts;
     uint8_t intro_selection;
@@ -94,7 +97,7 @@ typedef struct {
 } game_model_t;
 
 void game_model_init(game_model_t *model);
-void game_model_boot_complete(game_model_t *model);
+void game_model_boot_complete(game_model_t *model, uint64_t now_ms);
 bool game_model_ok_returns_from_view(const game_model_t *model);
 void game_model_handle_action(game_model_t *model, game_action_t action, uint64_t now_ms);
 uint8_t game_model_tick(game_model_t *model, uint64_t now_ms);

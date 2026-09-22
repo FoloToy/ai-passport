@@ -13,4 +13,5 @@ idf_component_register(
 
 target_sources(${COMPONENT_LIB} PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../assets/fonts/game_cjk_16.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../assets/images/game_cover_startup.c"
 )

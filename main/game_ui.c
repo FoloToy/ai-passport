@@ -21,12 +21,31 @@ static lv_obj_t *s_screen;
 static lv_obj_t *s_title;
 static lv_obj_t *s_timer;
 static lv_obj_t *s_battery;
+static lv_obj_t *s_panel;
 static lv_obj_t *s_body;
 static lv_obj_t *s_footer;
+static lv_obj_t *s_cover;
 static lv_font_t s_cjk_font;
 static game_language_t s_language = GAME_LANGUAGE_ZH_CN;
 
 LV_FONT_DECLARE(game_cjk_16);
+extern const lv_image_dsc_t game_cover_startup;
+
+static void set_cover_visible(bool visible)
+{
+    lv_obj_t *const standard_objects[] = {
+        s_title, s_timer, s_battery, s_panel, s_footer,
+    };
+    for (size_t index = 0; index < sizeof(standard_objects) / sizeof(standard_objects[0]);
+         ++index) {
+        if (!standard_objects[index]) continue;
+        if (visible) lv_obj_add_flag(standard_objects[index], LV_OBJ_FLAG_HIDDEN);
+        else lv_obj_remove_flag(standard_objects[index], LV_OBJ_FLAG_HIDDEN);
+    }
+    if (!s_cover) return;
+    if (visible) lv_obj_remove_flag(s_cover, LV_OBJ_FLAG_HIDDEN);
+    else lv_obj_add_flag(s_cover, LV_OBJ_FLAG_HIDDEN);
+}
 
 static const lv_font_t *font_for_language(game_language_t language)
 {
@@ -38,6 +57,7 @@ static const lv_font_t *font_for_language(game_language_t language)
 static const char *scene_name(game_scene_t scene, game_language_t language)
 {
     static const game_text_id_t names[] = {
+        GAME_TEXT_APP_TITLE,
         GAME_TEXT_APP_TITLE,
         GAME_TEXT_APP_TITLE,
         GAME_TEXT_ROOM_1,
@@ -255,6 +275,7 @@ static void format_body(char *buffer, size_t size, const game_model_t *model)
     }
     switch (model->current_scene) {
         case GAME_SCENE_BOOT:
+        case GAME_SCENE_COVER:
             snprintf(buffer, size, "%s\n\n%s",
                      game_i18n_get(language, GAME_TEXT_APP_TITLE),
                      game_i18n_get(language, GAME_TEXT_BOOT_STATUS));
@@ -342,18 +363,18 @@ void game_ui_create(void)
     lv_obj_set_style_text_color(s_timer, lv_color_hex(COLOR_TEXT), 0);
     lv_obj_align(s_timer, LV_ALIGN_TOP_MID, 0, 38);
 
-    lv_obj_t *panel = lv_obj_create(s_screen);
-    lv_obj_set_pos(panel, 10, 72);
-    lv_obj_set_size(panel, 220, 196);
-    lv_obj_remove_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_bg_color(panel, lv_color_hex(COLOR_PANEL), 0);
-    lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(panel, lv_color_hex(COLOR_BORDER), 0);
-    lv_obj_set_style_border_width(panel, 1, 0);
-    lv_obj_set_style_radius(panel, 8, 0);
-    lv_obj_set_style_pad_all(panel, 12, 0);
+    s_panel = lv_obj_create(s_screen);
+    lv_obj_set_pos(s_panel, 10, 72);
+    lv_obj_set_size(s_panel, 220, 196);
+    lv_obj_remove_flag(s_panel, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(s_panel, lv_color_hex(COLOR_PANEL), 0);
+    lv_obj_set_style_bg_opa(s_panel, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(s_panel, lv_color_hex(COLOR_BORDER), 0);
+    lv_obj_set_style_border_width(s_panel, 1, 0);
+    lv_obj_set_style_radius(s_panel, 8, 0);
+    lv_obj_set_style_pad_all(s_panel, 12, 0);
 
-    s_body = lv_label_create(panel);
+    s_body = lv_label_create(s_panel);
     lv_obj_set_size(s_body, 194, 170);
     lv_label_set_long_mode(s_body, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_font(s_body, &lv_font_montserrat_14, 0);
@@ -370,12 +391,22 @@ void game_ui_create(void)
     lv_obj_set_style_text_align(s_footer, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_text_line_space(s_footer, 2, 0);
 
+    s_cover = lv_image_create(s_screen);
+    lv_image_set_src(s_cover, &game_cover_startup);
+    lv_obj_set_pos(s_cover, 0, 0);
+    lv_obj_add_flag(s_cover, LV_OBJ_FLAG_HIDDEN);
+
     lv_screen_load(s_screen);
 }
 
 void game_ui_render(const game_model_t *model, int battery_soc)
 {
     if (!model || !s_screen) return;
+    if (model->current_scene == GAME_SCENE_COVER) {
+        set_cover_visible(true);
+        return;
+    }
+    set_cover_visible(false);
     s_language = model->language;
     const lv_font_t *font = font_for_language(s_language);
     char body[512];
@@ -413,6 +444,7 @@ void game_ui_render(const game_model_t *model, int battery_soc)
 void game_ui_show_error(const char *message)
 {
     if (!s_body) return;
+    set_cover_visible(false);
     lv_obj_set_style_text_font(s_body, font_for_language(s_language), 0);
     lv_label_set_text_fmt(s_body, "%s\n\n%s",
                           game_i18n_get(s_language, GAME_TEXT_SYSTEM_ERROR),

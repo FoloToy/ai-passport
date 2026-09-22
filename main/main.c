@@ -149,7 +149,7 @@ void app_main(void)
     }
     game_ui_create();
     game_ui_render(&s_model, s_battery_soc);
-    game_model_boot_complete(&s_model);
+    game_model_boot_complete(&s_model, now_ms());
     game_ui_render(&s_model, s_battery_soc);
     bsp_lvgl_unlock();
 

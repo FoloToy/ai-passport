@@ -42,10 +42,11 @@ void game_model_init(game_model_t *model)
     game_timer_init(&model->timer, GAME_DURATION_SECONDS);
 }
 
-void game_model_boot_complete(game_model_t *model)
+void game_model_boot_complete(game_model_t *model, uint64_t now_ms)
 {
     if (model && model->current_scene == GAME_SCENE_BOOT) {
-        model->current_scene = GAME_SCENE_INTRO;
+        model->current_scene = GAME_SCENE_COVER;
+        model->cover_started_ms = now_ms;
     }
 }
 
@@ -295,6 +296,10 @@ void game_model_handle_action(game_model_t *model, game_action_t action, uint64_
         handle_system_menu(model, action);
         return;
     }
+    if (model->current_scene == GAME_SCENE_COVER) {
+        if (action == GAME_ACTION_CONFIRM) model->current_scene = GAME_SCENE_INTRO;
+        return;
+    }
     if (action == GAME_ACTION_BACK) {
         handle_back(model);
         return;
@@ -348,7 +353,14 @@ void game_model_handle_action(game_model_t *model, game_action_t action, uint64_
 
 uint8_t game_model_tick(game_model_t *model, uint64_t now_ms)
 {
-    if (!model || !model->timer.started) return GAME_TIMER_EVENT_NONE;
+    if (!model) return GAME_TIMER_EVENT_NONE;
+    if (model->current_scene == GAME_SCENE_COVER) {
+        if (now_ms - model->cover_started_ms >= GAME_COVER_DURATION_MS) {
+            model->current_scene = GAME_SCENE_INTRO;
+        }
+        return GAME_TIMER_EVENT_NONE;
+    }
+    if (!model->timer.started) return GAME_TIMER_EVENT_NONE;
     uint8_t events = game_timer_poll(&model->timer, now_ms);
     model->remaining_time = game_timer_remaining(&model->timer, now_ms);
     model->last_timer_events = events;
