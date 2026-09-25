@@ -2,6 +2,7 @@
 // 移植自 trae_card/components/platform/platform_esp32/src/btn_iot_button.c
 #include "bsp_button.h"
 #include "bsp_pins.h"
+#include "driver/gpio.h"
 #include "iot_button.h"
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
@@ -209,4 +210,43 @@ int bsp_button_read_mv(void) {
     if (adc_oneshot_read(s_adc, BSP_BTN_ADC_CHANNEL, &raw) != ESP_OK) return -1;
     if (adc_cali_raw_to_voltage(s_cali, raw, &mv) != ESP_OK) return -1;
     return mv;
+}
+
+int bsp_button_prepare_deep_sleep(void) {
+    // Stop polling first: button drivers must not touch the ADC we are about
+    // to release.
+    s_ready = false;
+    s_sample_valid = false;
+    s_cb = NULL;
+    s_user = NULL;
+
+    for (int i = BSP_BTN_COUNT - 1; i >= 0; i--) {
+        if (!s_btn[i]) continue;
+        (void)iot_button_delete(s_btn[i]);
+        s_btn[i] = NULL;
+    }
+
+    // Release the ADC unit and calibration so GPIO0 can be a digital input.
+    // ADC ownership forces the digital level to 0, which would satisfy a
+    // low-level GPIO wake at sleep entry.
+    if (s_cali) {
+        (void)adc_cali_delete_scheme_curve_fitting(s_cali);
+        s_cali = NULL;
+    }
+    if (s_adc) {
+        (void)adc_oneshot_del_unit(s_adc);
+        s_adc = NULL;
+    }
+
+    // Hand GPIO0 back as a pulled-up digital input and return its level so the
+    // caller can refuse to sleep while a key is held (level 0).
+    gpio_config_t io = {
+        .pin_bit_mask = (1ULL << BSP_BTN_GPIO),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    (void)gpio_config(&io);
+    return gpio_get_level(BSP_BTN_GPIO);
 }

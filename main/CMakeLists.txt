@@ -1,16 +1,20 @@
+# Eggy Party application: build only the eggy_* sources + main.c + the ported
+# RTTTL player. The baseline demo_*.c / ui_pixel*.c files stay on disk but are
+# not compiled (the app boots into its own redesigned UI, not the test shell).
 idf_component_register(
     SRCS "main.c"
-         "demo_navigation.c"
-         "ui_pixel.c"
-         "ui_pixel_math.c"
-         "demo_display.c"
-         "demo_button.c"
-         "demo_audio.c"
-         "demo_battery.c"
-         "demo_radio.c"
-         "demo_wifi.c"
-         "demo_ble.c"
-         "demo_low_power.c"
+         "eggy_rng.c"
+         "eggy_run_model.c"
+         "eggy_tap_model.c"
+         "eggy_spin_model.c"
+         "eggy_sfx.c"
+         "rtttl_player.c"
+         "eggy_ui.c"
+         "eggy_hub.c"
+         "eggy_run.c"
+         "eggy_tap.c"
+         "eggy_spin.c"
+         "eggy_sleep.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
+    REQUIRES bsp esp_timer esp_hw_support lvgl
 )

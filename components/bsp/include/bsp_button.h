@@ -31,3 +31,10 @@ esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user);
 // ★ 换了分压/上拉阻值后,用它测出自己的三档电压,再改 bsp_pins.h 的 BSP_BTN_MV_TABLE。
 // 读取失败返回 -1。
 int bsp_button_read_mv(void);
+
+// deep sleep 专用:停掉按键轮询、释放共享 ADC 单元与校准,把 GPIO0 还原为带
+// 内部上拉的数字输入。返回该脚电平(1=松开,0=有键按下),供调用方在按键仍按住时
+// 拒绝进入深睡。ADC 占着 GPIO0 时数字电平恒为 0,会误触发低电平 GPIO 唤醒,
+// 故必须在 arm GPIO wake 之前先调用本函数把脚从 ADC 收回。调用后按键不可用,
+// 必须立即进入 deep sleep 或重启。
+int bsp_button_prepare_deep_sleep(void);
