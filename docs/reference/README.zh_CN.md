@@ -22,12 +22,15 @@
 - [设备端对弈 AI 的墙钟预算](shinku-chen/on-device-game-ai-wall-clock-budget.zh_CN.md) — 为什么节点数上限在这块板上会跑偏（约每秒 1.5 万节点）、用时间预算迭代加深、让出 CPU 避免饿死空闲任务，以及用失误率表达难度。
 - [静态缓冲按面板算，并验证已发布的产物](shinku-chen/release-artifact-verification.zh_CN.md) — 一处 51KB 缓冲错误导致空闲堆只剩 8KB、读已发布合并镜像的启动日志，以及替换刚发布的版本而不是另发后续版本。
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
+- [打包素材的名字是打包器与固件之间的契约](shinku-chen/asset-pack-name-contract.zh_CN.md) — 查不到的名字是静默黑屏、占位包为何掩盖了不一致、把打包器声明与固件查询字面量对比的宿主测试，以及分区预算。
+- [烧写合并镜像对已存数据做了什么](shinku-chen/merged-image-flashing-and-stored-data.zh_CN.md) — 合并镜像在 NVS 区间是 `0xFF`，却并不能可靠地清空它；以及如何有意地保留或清空数据。
 
 **应用档案：**
 
 - [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) — 把 AI Passport 变成口袋音频播放器的音效钥匙扣。
 - [今天吃啥](shinku-chen/eat-what/README.zh_CN.md) — 按键驱动的食物轮盘，把 AI Passport 变成「今天吃什么」小转盘。
 - [四子棋](shinku-chen/connect-four/README.zh_CN.md) — 横屏 10 列 × 7 行的四子连珠游戏，带三档电脑难度、双人模式、合成音效与空闲自动深睡。
+- [飞鸟会长不肯认输](shinku-chen/asunabi/README.zh_CN.md) — 竖屏视觉小说阅读器，承载完整的 30 章故事（原作是小米手环快应用），带六个存档位、选章与自动阅读。
 
 ### PhoenixZHC
 
