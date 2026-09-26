@@ -22,6 +22,10 @@
 - [设备端对弈 AI 的墙钟预算](shinku-chen/on-device-game-ai-wall-clock-budget.zh_CN.md) — 为什么节点数上限在这块板上会跑偏（约每秒 1.5 万节点）、用时间预算迭代加深、让出 CPU 避免饿死空闲任务，以及用失误率表达难度。
 - [静态缓冲按面板算，并验证已发布的产物](shinku-chen/release-artifact-verification.zh_CN.md) — 一处 51KB 缓冲错误导致空闲堆只剩 8KB、读已发布合并镜像的启动日志，以及替换刚发布的版本而不是另发后续版本。
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
+- [LVGL 字符格式陷阱与缺字门禁](shinku-chen/lvgl-font-format-and-glyph-coverage.zh_CN.md) — LVGL 9.6 上的 `FORMAT0_FULL` 崩溃、任意 CJK 子集改用 TINY 与 SPARSE_TINY、对产出字体做逐像素回读，以及对应用字符串做静态覆盖检查。
+- [无 PSRAM 的整屏合成](shinku-chen/lossless-sprite-compositing-without-psram.zh_CN.md) — 背景 JPEG 直接解码进画布，立绘与叠加用 RGB565 加 4bpp alpha 遮罩并按包围盒裁剪；含实测资源包构成与合成成本。
+- [三键输入语义：只有单击与长按算用户意图](shinku-chen/three-key-input-event-semantics.zh_CN.md) — 长按开关为何被自己的抬起事件关掉、按键时序常量、共享定时器任务里的回调纪律，以及空闲计时中「活动」与「等待」的区分。
+- [无人值守的自动推进：从文字结束开始计时](shinku-chen/hands-off-auto-advance-modes.zh_CN.md) — 打字机结束后固定停 700ms、跨章节过场不中断、遇到决策点停下，以及把该模式算作活动以保证屏幕常亮。
 
 **应用档案：**
 
