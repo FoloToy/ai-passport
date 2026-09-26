@@ -17,23 +17,23 @@ endings, fully offline, read with three keys.
   >
   > Three keys carry the whole story: UP advances, holding UP fast-forwards until you let go, DOWN steps back a page, and OK opens the menu. Jump straight to any chapter to re-read a favourite scene, or switch on auto-play and let the story read itself. The art fills the whole screen and the translucent dialogue panel shows the scene behind it, so you can finish the whole route without reaching for your phone.
   >
-  > This build contains the community-safe base assets only; no adult content is included.
+  > This build contains the community-safe base assets only; no adult content is included. The story is graphic in places, so please read with care. It is a personal study port built from a public Mi Band port and is meant for personal devices; please support the official release if you can.
 
 - **Instructions** (submitted separately; Chinese is required):
 
   > First run: no network and no pairing needed. Power on and follow these steps to read the whole story.
   >
   > 1. The content warning screen comes up first. Scroll it with UP / DOWN; once you reach the end the hint turns into "press OK to continue" and OK enters the game. Before that, OK only pages the text down.
-  > 2. On the title screen pick New game / Continue / Saves / Settings / Endings / About with UP / DOWN and press OK. Start with New game; later choose Continue to resume the scene you stopped at.
+  > 2. On the title screen pick with UP / DOWN and press OK: Continue (only shown when an automatic save exists - it resumes the scene you stopped at), Start from chapter 1, Load save, Settings.
   > 3. While reading: UP advances a segment, holding UP fast-forwards until you release it, DOWN steps back a page, and OK opens the menu. Long lines are split into pages, so DOWN also lets you re-read the previous page.
-  > 4. Auto-play: hold DOWN for about a second on the reading screen (a notice appears), and a segment is read every 0.9 seconds; any key stops it, and choices or endings stop it automatically. The screen will not dim or sleep while auto-play runs.
+  > 4. Auto-play: hold DOWN for about a second on the reading screen (a notice appears). Once the current segment has finished typing, a new segment is read every 0.9 seconds. Any key stops it, and choices or endings stop it automatically. The screen will not dim or sleep while auto-play runs.
   > 5. Choices and endings: when choices appear, pick one with UP / DOWN and confirm with OK; the story branches and has three endings in total.
-  > 6. Skipping chapters: open the menu with OK and choose Skip chapter. If the chapter still has choices you have not seen, it stops at one of them first.
-  > 7. Saves: the Saves screen has five manual slots plus one automatic slot written on every scene change. Holding OK on a slot deletes that save.
-  > 8. Settings: the menu's Settings entry switches text speed (including instant) and font size, and opens a scrollable About page.
-  > 9. Battery and power: the battery percentage sits in the top-right corner. After about 60 seconds idle the screen dims, at 180 seconds it turns off, and at 420 seconds the device sleeps; any key wakes it.
+  > 6. Menu (tap OK while reading): Save writes to a manual slot or the automatic slot, Load reads a save, Skip chapter jumps to the next chapter (it stops first at a choice the chapter has not reached yet), Back to title returns to the title screen, and Close menu resumes reading.
+  > 7. Saves: five manual slots plus one automatic slot written on every scene change. Holding OK on a slot in the save screen deletes that save.
+  > 8. Settings (entered from the title screen): Text speed switches between slow / medium / fast / instant (instant shows the whole page at once), Font size switches 16 px and 20 px, About is a scrollable page, and Back returns to the title screen.
+  > 9. Battery and power: the battery percentage sits in the top-right corner. After a long idle period the screen dims (about 60 s), turns off (about 180 s) and the device sleeps (about 420 s); any key wakes it and resumes from the automatic save.
 
-- **Submission record**: project 669, revision 1410, slug `community-59555253`, status
+- **Submission record**: project 671, revision 1412, slug `community-e81ed1fb`, status
   `pending` (submitted for review).
 - **Category**: games
 - **Cover**: `saya-no-uta-cover.png` (PNG, 1152 × 1536, 3:4) — this archive stays text-only and
