@@ -22,6 +22,10 @@
 - [设备端对弈 AI 的墙钟预算](shinku-chen/on-device-game-ai-wall-clock-budget.zh_CN.md) — 为什么节点数上限在这块板上会跑偏（约每秒 1.5 万节点）、用时间预算迭代加深、让出 CPU 避免饿死空闲任务，以及用失误率表达难度。
 - [静态缓冲按面板算，并验证已发布的产物](shinku-chen/release-artifact-verification.zh_CN.md) — 一处 51KB 缓冲错误导致空闲堆只剩 8KB、读已发布合并镜像的启动日志，以及替换刚发布的版本而不是另发后续版本。
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
+- [从 LVGL 刷屏路径抓真机画面](shinku-chen/lvgl-flush-path-frame-capture.zh_CN.md) — 复用画面区画布当帧缓冲、为什么 `lv_snapshot` 会抹掉画布式界面、整段传输为何要持 LVGL 锁、一次整屏重画对调试任务栈的要求，以及钩在哪里才能拿到 LVGL 原生字节序。
+- [资源包字段漂移：要让它响亮地失败](shinku-chen/asset-pack-field-drift.zh_CN.md) — 打包器写、解析器从不读的立绘归属字段；为什么计数阈值照样通过；以及三个能抓住它的习惯（断言分布、同一条记录两侧各 dump 一次、让生产侧也断言不变量）。
+- ["立绘跟随说话人"这条规则要花多少](shinku-chen/speaker-driven-sprite-cost.zh_CN.md) — 11777 个对白步里 3444 步会画立绘、全剧本 5837 次整屏重合成、为什么 84KB 干净底缓存在无 PSRAM 下放不下，以及值得依次尝试的旋钮。
+- [LVGL 内存池按最坏一屏配，并用门禁证明 CJK 字形覆盖](shinku-chen/lvgl-pool-and-glyph-coverage.zh_CN.md) — 池子按最坏一屏而非均值配（24KB 会把界面弄花、56KB 可用）、LVGL 9 改过的池键名，以及为什么数据生成的 CJK 子集需要一道同时扫源码的门禁。
 
 **应用档案：**
 
