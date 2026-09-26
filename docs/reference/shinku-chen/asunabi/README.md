@@ -20,15 +20,16 @@ with chapter select for readers who want to jump straight to a favourite scene.
 ## Publish information
 
 - **Title**: Asunabi
-- **Description**: not submitted to the community market yet, so no cover image is
-  recorded here. The Git release describes it as:
+- **Description**: submitted to the AI Passport community market (under review),
+  where the listing describes it as:
 
   > A portrait reader for a 30-chapter visual novel ported from a Xiaomi Band quick
   > app: start, continue, chapter select and settings; six save slots; text speed and
   > size; auto-play; one ending.
 
 - **Category**: games
-- **Cover**: none recorded (no community submission)
+- **Cover**: `comm_cover.png` (PNG, 1152 × 1536, 3:4) — publish metadata only; the
+  image is not committed here. It is the upstream key art, fitted to 3:4.
 - **Source**: <https://github.com/Shinku-Chen/ai-passport>, branch `feature/asunabi-galgame`
 - **Story and artwork**: <https://github.com/liuyuze61/Asunabi-miband>
 
