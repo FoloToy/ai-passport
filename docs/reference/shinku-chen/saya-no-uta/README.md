@@ -8,6 +8,20 @@ A landscape visual-novel reader for the AI Passport. It ports the Mi Band 10 fan
 port of *Saya no Uta* to the device: 44 chapters, 3,828 dialogue lines and three
 endings, fully offline, read with three keys.
 
+## Story
+
+Medical student Fuminori Sakisaka survives a traffic accident that kills his parents, but the
+brain surgery that saves him leaves the world around him changed: he sees organs and rotting
+flesh everywhere, people as moving lumps of meat, speech as animal noise, and even ordinary
+food as revolting.
+
+In his despair the only normal thing left is a mysterious girl, Saya, who came to the hospital
+looking for her father. After meeting her again and again, Fuminori falls for her, decides she
+is the reason he can bear living in this diseased world, and invites her to live with him.
+
+That is only the door to the madness still to come. The story is a pure, if very different,
+love story between Fuminori and Saya.
+
 ## Publish information
 
 - **Title**: Saya no Uta (Community)
