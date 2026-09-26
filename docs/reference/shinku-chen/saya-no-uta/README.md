@@ -36,9 +36,10 @@ endings, fully offline, read with three keys.
 - **Submission record**: project 669, revision 1410, slug `community-59555253`, status
   `pending` (submitted for review).
 - **Category**: games
-- **Cover**: `saya-no-uta-cover.png` (PNG, 1152 × 1536, 3:4) — this archive stays text-only; the
-  image itself is committed at [`assets/images/saya-no-uta-cover.png`](../../../../assets/images/saya-no-uta-cover.png)
-  for the release notes and the community listing.
+- **Cover**: `saya-no-uta-cover.png` (PNG, 1152 × 1536, 3:4) — this archive stays text-only and
+  records the cover by file name and format only; it is not committed here. The release notes and
+  the community listing use the copy kept at `assets/images/saya-no-uta-cover.png` in the
+  author's fork.
 - **Source**: <https://github.com/Shinku-Chen/ai-passport>
 
 ## Cover
