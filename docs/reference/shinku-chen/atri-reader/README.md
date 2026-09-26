@@ -125,9 +125,9 @@ triggers the long-press action.
 
 - Repository `Shinku-Chen/ai-passport`, branch `feature/atri-reader`
   (<https://github.com/Shinku-Chen/ai-passport/tree/feature/atri-reader>), release
-  `v1.0.1-atri-reader` (merged image `FoloToy-AI-Passport-full.bin`).
-- Submitted to the AI Passport community as project `my-dear-moments` (project id
-  666; under review when this entry was written).
+  `v1.0.2-atri-reader` (merged image `FoloToy-AI-Passport-full.bin`).
+- Submitted to the AI Passport community as project `my-dear-moments-2` (project id
+  670; under review when this entry was written).
 - Rights: the script, images and translation come from the fan ports
   `fywmjj/better-mb9p-ATRI` and `liuyuze61/ATRI-miband`, and from
   *ATRI -My Dear Moments-* (ANIPLEX.EXE / Frontwing / Makura). This firmware is a

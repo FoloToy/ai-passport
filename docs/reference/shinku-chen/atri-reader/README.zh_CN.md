@@ -86,8 +86,8 @@ AI Passport 上的竖屏视觉小说阅读器：完整《亚托莉 -My Dear Mome
 
 - 仓库 `Shinku-Chen/ai-passport`，分支 `feature/atri-reader`
   （<https://github.com/Shinku-Chen/ai-passport/tree/feature/atri-reader>），
-  release `v1.0.1-atri-reader`（合并镜像 `FoloToy-AI-Passport-full.bin`）。
-- 已提交到 AI Passport 社区，作品 `my-dear-moments`（项目 id 666；撰写本条目时正在审核中）。
+  release `v1.0.2-atri-reader`（合并镜像 `FoloToy-AI-Passport-full.bin`）。
+- 已提交到 AI Passport 社区，作品 `my-dear-moments-2`（项目 id 670；撰写本条目时正在审核中）。
 - 版权：剧本、图像与翻译来自同人移植 `fywmjj/better-mb9p-ATRI` 与 `liuyuze61/ATRI-miband`，
   以及原作《ATRI -My Dear Moments-》（ANIPLEX.EXE / Frontwing / Makura）。本固件为个人非商业移植，
   请支持原作。
