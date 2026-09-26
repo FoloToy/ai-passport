@@ -9,6 +9,14 @@ was originally a Xiaomi Band quick app — 30 chapters, 4,649 dialogue lines and
 94,000 characters, from the first line to a single ending. The firmware replaces the
 demo menu and boots straight into the title screen.
 
+## The story
+
+The student council president is Asuka Shishidou, known as the Ice Princess: in the
+after-school corridor a teacher's call catches someone else's name, her blush gives
+her away, and a notebook the protagonist happens to pick up is what puts him on her
+radar. Thirty chapters carry the two from that first meeting to a single ending,
+with chapter select for readers who want to jump straight to a favourite scene.
+
 ## Publish information
 
 - **Title**: Asunabi
