@@ -27,6 +27,14 @@ love story between Fuminori and Saya.
 - **Title**: Saya no Uta (Community)
 - **Description** (submitted copy):
 
+  > Story:
+  > Medical student Fuminori Sakisaka survives a traffic accident that kills his parents, but the brain surgery that saves him leaves the world around him changed: he sees organs and rotting flesh everywhere, people as moving lumps of meat, speech as animal noise, and even ordinary food as revolting.
+  >
+  > In his despair the only normal thing left is a mysterious girl, Saya, who came to the hospital looking for her father. After meeting her again and again, Fuminori falls for her, decides she is the reason he can bear living in this diseased world, and invites her to live with him.
+  >
+  > That is only the door to the madness still to come. The story is a pure, if very different, love story between Fuminori and Saya.
+  >
+  > What it turns your device into:
   > Turn the AI Passport into a pocket visual-novel reader and revisit Saya no Uta: 44 chapters, 3,828 dialogue lines and three endings, fully offline and ready out of the box.
   >
   > Three keys carry the whole story: UP advances, holding UP fast-forwards until you let go, DOWN steps back a page, and OK opens the menu. Jump straight to any chapter to re-read a favourite scene, or switch on auto-play and let the story read itself. The art fills the whole screen and the translucent dialogue panel shows the scene behind it, so you can finish the whole route without reaching for your phone.
@@ -47,8 +55,9 @@ love story between Fuminori and Saya.
   > 8. Settings (entered from the title screen): Text speed switches between slow / medium / fast / instant (instant shows the whole page at once), Font size switches 16 px and 20 px, About is a scrollable page, and Back returns to the title screen.
   > 9. Battery and power: the battery percentage sits in the top-right corner. After a long idle period the screen dims (about 60 s), turns off (about 180 s) and the device sleeps (about 420 s); any key wakes it and resumes from the automatic save.
 
-- **Submission record**: project 671, revision 1412, slug `community-e81ed1fb`, status
-  `pending` (submitted for review).
+- **Submission record**: project 672, revision 1413, slug `community-10803507`, status
+  `pending` (submitted for review). Two earlier submissions of the same build disappeared from
+  the creator centre shortly after submitting, so this is the third attempt.
 - **Category**: games
 - **Cover**: `saya-no-uta-cover.png` (PNG, 1152 × 1536, 3:4) — this archive stays text-only and
   records the cover by file name and format only; it is not committed here. The release notes and
