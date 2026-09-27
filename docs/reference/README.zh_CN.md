@@ -22,12 +22,15 @@
 - [设备端对弈 AI 的墙钟预算](shinku-chen/on-device-game-ai-wall-clock-budget.zh_CN.md) — 为什么节点数上限在这块板上会跑偏（约每秒 1.5 万节点）、用时间预算迭代加深、让出 CPU 避免饿死空闲任务，以及用失误率表达难度。
 - [静态缓冲按面板算，并验证已发布的产物](shinku-chen/release-artifact-verification.zh_CN.md) — 一处 51KB 缓冲错误导致空闲堆只剩 8KB、读已发布合并镜像的启动日志，以及替换刚发布的版本而不是另发后续版本。
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
+- [共用解块缓冲只能有一个所有者](shinku-chen/shared-block-buffer-caches.zh_CN.md) — 一块共用解块缓冲上"每路各自记缓存"会让第二页起解到另一路的数据；为什么单帧截图看不见它；以及能看见它的连续性验证。
+- [源工程是"线性页表"的作品怎么移植](shinku-chen/linear-page-table-ports.zh_CN.md) — 把 JavaScript 分支配置编译成经穷举校核的数据表、页表与正文按块流打包、章节表按页号排序，以及发布前要跑的"重复块死循环"与"路线可达性"检查。
 
 **应用档案：**
 
 - [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) — 把 AI Passport 变成口袋音频播放器的音效钥匙扣。
 - [今天吃啥](shinku-chen/eat-what/README.zh_CN.md) — 按键驱动的食物轮盘，把 AI Passport 变成「今天吃什么」小转盘。
 - [四子棋](shinku-chen/connect-four/README.zh_CN.md) — 横屏 10 列 × 7 行的四子连珠游戏，带三档电脑难度、双人模式、合成音效与空闲自动深睡。
+- [DRACU-RIOT! 阅读器](shinku-chen/dracu-riot/README.zh_CN.md) — 完全离线的竖屏视觉小说阅读器：五条女主线各自的章节、后日谈与结局，62 条章节跳转列表，以及 1 个自动存档 + 5 个手动存档。
 
 ### PhoenixZHC
 

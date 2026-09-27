@@ -29,12 +29,15 @@ The engineering rules themselves live under
 - [Wall-clock Budgets for On-Device Game AI](shinku-chen/on-device-game-ai-wall-clock-budget.md) — why node-count limits misfire on this board (about 15k nodes per second), iterative deepening against a time budget, yielding to keep the idle task fed, and difficulty as a blunder rate.
 - [Size Static Buffers from the Panel, and Verify the Release Artifact](shinku-chen/release-artifact-verification.md) — a 51 KB buffer mistake that left 8 KB of free heap, reading the startup log of the published merged image, and replacing a just-published release instead of shipping a follow-up.
 - [Two-Device BLE Link Between AI Passport Boards (No PSRAM)](shinku-chen/two-device-ble-link.md) — symmetric peer discovery with an address tiebreak instead of host/join, measured link heap on a no-PSRAM part and its conflict with a static screenshot buffer, two hardware-only NimBLE GATT traps (missing `access_cb`, `EDONE` after a successful subscribe), NVS for RF calibration, and a stop-and-wait layer for turn-based play.
+- [Shared Block Buffers Need One Owner](shinku-chen/shared-block-buffer-caches.md) — why per-stream caches over one shared decompression buffer decode the wrong stream from the second page on, why single-frame screenshots cannot see it, and the continuity tests that do.
+- [Porting Games Whose Source Is a Linear Page Table](shinku-chen/linear-page-table-ports.md) — compiling a JavaScript branch configuration into verified data tables, packing pages and text as block streams, sorting the chapter list by page, and the duplicated-block loop and route-reachability checks to run before shipping.
 
 **Application playbooks:**
 
 - [Voice Keychain](shinku-chen/voice-keychain/README.md) — a sound-effects keychain that turns the AI Passport into a pocket audio player.
 - [What to Eat Today](shinku-chen/eat-what/README.md) — a button-driven food roulette that turns the AI Passport into a "what should I eat?" spinner.
 - [Connect Four](shinku-chen/connect-four/README.md) — a landscape 10 × 7 four-in-a-row game with three computer difficulty levels, a two-player mode, synthesized sound, and an idle deep sleep.
+- [DRACU-RIOT! Reader](shinku-chen/dracu-riot/README.md) — a fully offline portrait visual-novel reader: five heroine routes with their after-stories and endings, a chapter-jump list over 62 entries, and one auto save plus five manual slots.
 
 ### PhoenixZHC
 
