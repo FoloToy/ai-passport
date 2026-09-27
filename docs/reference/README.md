@@ -29,12 +29,16 @@ The engineering rules themselves live under
 - [Wall-clock Budgets for On-Device Game AI](shinku-chen/on-device-game-ai-wall-clock-budget.md) — why node-count limits misfire on this board (about 15k nodes per second), iterative deepening against a time budget, yielding to keep the idle task fed, and difficulty as a blunder rate.
 - [Size Static Buffers from the Panel, and Verify the Release Artifact](shinku-chen/release-artifact-verification.md) — a 51 KB buffer mistake that left 8 KB of free heap, reading the startup log of the published merged image, and replacing a just-published release instead of shipping a follow-up.
 - [Two-Device BLE Link Between AI Passport Boards (No PSRAM)](shinku-chen/two-device-ble-link.md) — symmetric peer discovery with an address tiebreak instead of host/join, measured link heap on a no-PSRAM part and its conflict with a static screenshot buffer, two hardware-only NimBLE GATT traps (missing `access_cb`, `EDONE` after a successful subscribe), NVS for RF calibration, and a stop-and-wait layer for turn-based play.
+- [Answering `FAP_SCREENSHOT_V1` Without a Spare Frame Buffer](shinku-chen/fap-screenshot-without-frame-buffer.md) — the community publisher's serial protocol on a no-PSRAM board: two-pass capture over the art canvas instead of a 150 KB frame buffer, a driver fast path that turns a 56 s frame into 1.7 s, dropped 2048-byte chunks, log bytes interleaving with the payload, and where the USB-Serial-JTAG driver may be installed.
+- [Deriving CJK Line Pitch from Font Metrics](shinku-chen/cjk-line-pitch-from-font-metrics.md) — why a generated 16 px CJK subset reports a 20 px line height, how the copied "em size minus 16" spacing overflowed a five-line dialogue box, and the static assert that keeps page layout and label box in agreement.
+- [Cleaning a Ported Script Dataset Before It Reaches the Reader](shinku-chen/ported-script-text-cleanup.md) — inline layout directives and leaked translator memos inside a hand-edited dataset, the packer-side rules that remove them without touching dialogue, and the regression that keeps ordinary punctuation safe.
 
 **Application playbooks:**
 
 - [Voice Keychain](shinku-chen/voice-keychain/README.md) — a sound-effects keychain that turns the AI Passport into a pocket audio player.
 - [What to Eat Today](shinku-chen/eat-what/README.md) — a button-driven food roulette that turns the AI Passport into a "what should I eat?" spinner.
 - [Connect Four](shinku-chen/connect-four/README.md) — a landscape 10 × 7 four-in-a-row game with three computer difficulty levels, a two-player mode, synthesized sound, and an idle deep sleep.
+- [limelight lemonade jam](shinku-chen/limelight/README.md) — a portrait visual novel reader for the commercial Xiaomi Band title: 230 chapter points, 68,229 dialogue lines and 991 packed images, read offline with three keys and stored entirely in Flash.
 
 ### PhoenixZHC
 

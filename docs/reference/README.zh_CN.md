@@ -22,12 +22,16 @@
 - [设备端对弈 AI 的墙钟预算](shinku-chen/on-device-game-ai-wall-clock-budget.zh_CN.md) — 为什么节点数上限在这块板上会跑偏（约每秒 1.5 万节点）、用时间预算迭代加深、让出 CPU 避免饿死空闲任务，以及用失误率表达难度。
 - [静态缓冲按面板算，并验证已发布的产物](shinku-chen/release-artifact-verification.zh_CN.md) — 一处 51KB 缓冲错误导致空闲堆只剩 8KB、读已发布合并镜像的启动日志，以及替换刚发布的版本而不是另发后续版本。
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
+- [在无多余帧缓冲的板子上实现 `FAP_SCREENSHOT_V1`](shinku-chen/fap-screenshot-without-frame-buffer.zh_CN.md) — 社区 publisher 的串口协议在无 PSRAM 板子上的做法：复用画面区画布分两段抓、以 150KB 帧缓冲为代价换来的驱动快路径把 56 秒变成 1.7 秒、短写丢 2048 字节块、日志字节混入负载，以及 USB-Serial-JTAG 驱动该装在哪。
+- [行距按字体度量算而非生成字号算](shinku-chen/cjk-line-pitch-from-font-metrics.zh_CN.md) — 为什么生成的 16px 中日韩子集报告 20px 行高、抄来的「字号减 16」如何把五行正文溢出文本框，以及把分页版面与标签盒子绑在一起的静态断言。
+- [移植剧本进入阅读器之前先清洗](shinku-chen/ported-script-text-cleanup.zh_CN.md) — 人工编辑过的数据集里混着内联排版指令与译者备注，在打包器里只删非对白内容、不动正文的规则，以及保住正常标点的回归用例。
 
 **应用档案：**
 
 - [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) — 把 AI Passport 变成口袋音频播放器的音效钥匙扣。
 - [今天吃啥](shinku-chen/eat-what/README.zh_CN.md) — 按键驱动的食物轮盘，把 AI Passport 变成「今天吃什么」小转盘。
 - [四子棋](shinku-chen/connect-four/README.zh_CN.md) — 横屏 10 列 × 7 行的四子连珠游戏，带三档电脑难度、双人模式、合成音效与空闲自动深睡。
+- [limelight lemonade jam](shinku-chen/limelight/README.zh_CN.md) — 把小米手环上的商业视觉小说搬到 AI Passport 的竖屏阅读器：230 个章节点、68,229 句对白、991 张打包图像，三键离线阅读，数据全在 Flash 里。
 
 ### PhoenixZHC
 
