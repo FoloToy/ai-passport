@@ -44,7 +44,7 @@ the submission is recorded in the Chinese version of this page, `README.zh_CN.md
   altered. Publish metadata only; the image is not committed in this repository.
 - **Source**: <https://github.com/Shinku-Chen/ai-passport/tree/cindy/curious-babbage>
 - **Release**: tag `v0.1.0-limelight` (`dc7154d`), merged image
-  `FoloToy-AI-Passport-full.bin`, 7,608,464 bytes, built by the tag-triggered CI.
+  `FoloToy-AI-Passport-full.bin`, 7,855,232 bytes, built by the tag-triggered CI.
 - **Community submission**: project 680, revision 1444, slug
   `limelight-lemonade-jam`, status `pending` when submitted.
 
@@ -70,7 +70,7 @@ the submission is recorded in the Chinese version of this page, `README.zh_CN.md
 
 ## Data and toolchain
 
-- **Artwork pack** (`main/limelight_data/limelight_pack.bin`, LLMPK001, 4.21 MiB,
+- **Artwork pack** (`main/limelight_data/limelight_pack.bin`, LLMPK001, 4.45 MiB,
   991 entries): backgrounds and CGs as 240 × 214 JPEG, sprites as alpha-cut RGB565
   with a 1 bpp mask, reference-counted cropping, and a name table keyed by
   "family + basename".

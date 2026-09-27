@@ -35,7 +35,7 @@
   比例裁剪、没有其他改动。仅作为发布元数据记录，图片本身不入库。
 - **来源**：<https://github.com/Shinku-Chen/ai-passport/tree/cindy/curious-babbage>
 - **发布**：tag `v0.1.0-limelight`（`dc7154d`），合并镜像
-  `FoloToy-AI-Passport-full.bin`，7,608,464 字节，由打 tag 触发的 CI 构建。
+  `FoloToy-AI-Passport-full.bin`，7,855,232 字节，由打 tag 触发的 CI 构建。
 - **社区投稿**：project 680 / revision 1444 / slug `limelight-lemonade-jam`，
   提交时状态 `pending`。
 
@@ -54,7 +54,7 @@
 
 ## 数据与工具链
 
-- **素材包**（`main/limelight_data/limelight_pack.bin`，LLMPK001，4.21 MiB，991 条）：背景与 CG
+- **素材包**（`main/limelight_data/limelight_pack.bin`，LLMPK001，4.45 MiB，991 条）：背景与 CG
   存 240 × 214 JPEG，立绘存 alpha 裁剪的 RGB565 + 1bpp 遮罩，按引用裁剪，名字表以「家族 + 基名」
   为键。
 - **剧本包**（`main/limelight_data/limelight_script.bin`，LLSPK001，1.81 MiB，68,229 条 / 273 块）：
