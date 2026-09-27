@@ -1,16 +1,14 @@
+# Mini World application: build only the mini_* sources + rtttl_player + main.c.
+# The baseline demo_*.c / ui_pixel*.c files stay on disk but are not compiled
+# (the app boots into its own redesigned UI, not the test shell).
 idf_component_register(
     SRCS "main.c"
-         "demo_navigation.c"
-         "ui_pixel.c"
-         "ui_pixel_math.c"
-         "demo_display.c"
-         "demo_button.c"
-         "demo_audio.c"
-         "demo_battery.c"
-         "demo_radio.c"
-         "demo_wifi.c"
-         "demo_ble.c"
-         "demo_low_power.c"
+         "mini_rng.c"
+         "mini_world_model.c"
+         "mini_sfx.c"
+         "rtttl_player.c"
+         "mini_ui.c"
+         "mini_world.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
+    REQUIRES bsp esp_timer esp_hw_support lvgl
 )
