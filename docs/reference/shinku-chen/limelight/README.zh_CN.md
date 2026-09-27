@@ -4,7 +4,7 @@
 
 # limelight lemonade jam
 
-把小米手环上的商业作品《limelight lemonade jam》搬到 AI Passport 的**竖屏视觉小说阅读器**。
+把小米手环上的商业作品《聚光灯柠檬果酱》(limelight lemonade jam)搬到 AI Passport 的**竖屏视觉小说阅读器**。
 三个按键就能离线读完整个故事：**230 个章节点、68,229 句对白、约 120 万字、991 张打包图像、
 8 个选项点**。
 
