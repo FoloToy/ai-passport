@@ -100,6 +100,10 @@ connect it to a computer USB port with a data-capable cable. Follow the
 [on-device testing handoff](docs/development/ai-guide.md#offer-on-device-testing)
 and obtain approval before flashing; detection alone is not consent.
 
-Create commits and push only when the user requests them or the active workflow explicitly requires them. Ordinary feature, application, and documentation pull requests must not edit `docs/CHANGELOG.md` or `docs/CHANGELOG.zh_CN.md`; describe user-visible behavior, compatibility, and release-flow impact in the pull-request body and authoritative documentation instead. During release preparation, the release maintainer aggregates merged user-visible changes into both changelog files before creating the tag.
+Create commits within a change the user has asked for, one logical unit at a time,
+without asking before each commit; push only when the user requests it or the
+active workflow explicitly requires it. Follow the [commit and PR
+conventions](docs/contribution/commit-and-pr.md#commits) for unit granularity and
+message content. Ordinary feature, application, and documentation pull requests must not edit `docs/CHANGELOG.md` or `docs/CHANGELOG.zh_CN.md`; describe user-visible behavior, compatibility, and release-flow impact in the pull-request body and authoritative documentation instead. During release preparation, the release maintainer aggregates merged user-visible changes into both changelog files before creating the tag.
 
 Community guidance is in `.github/CONTRIBUTING.md`, `.github/CODE_OF_CONDUCT.md`, `.github/SECURITY.md`, and `.github/SUPPORT.md`.
