@@ -35,6 +35,15 @@ retain the separate authorization requirements for flashing, Git writes, and pub
   turn product-specific partitions into mandatory template contracts.
 - Preserve existing user changes. Start with `git status --short --branch`; never overwrite or clean unrelated files.
 - Flashing new firmware does not require backing up the firmware already on the device; do not make a Flash readback a prerequisite. This does not guarantee preservation of user data or authorize a full-chip erase. Follow the [flashing and data policy](docs/development/engineering/firmware-layout.md#flashing-and-stored-data).
+- Ask first: resolve ambiguity with the user before writing code, not after. Ask
+  when a requirement, page flow, control mapping, or data behavior could be read
+  more than one way; when the change adds wiring, affects electrical safety, or
+  revises the board; when it fixes an irreversible data format; and before
+  deleting or overwriting existing work. Batch related questions into one prompt
+  and offer a recommended option rather than an open question. Use
+  `AskUserQuestion` in Claude Code and the closest structured-question equivalent
+  in other clients. Otherwise, choose the conservative default and list every
+  assumption in the delivery.
 - Hardware facts follow this priority: product specifications and measured results → `components/bsp/include/bsp_pins.h` → BSP headers and implementation → hardware guide → README/demo code. If a task requires a hardware detail not defined by these sources, ask the user instead of guessing.
 - Reusable board logic belongs in `components/bsp`; pages, state machines, animations, and application tasks belong in `main`.
 - Derivative applications must redesign and implement their own UI. Reusing the current demo test menu, screens, or visual shell is prohibited; renaming, recoloring, or adding a feature to that shell does not count as a redesign. BSP APIs and non-UI logic remain reusable. See the [mandatory UI redesign rule](docs/development/ai-guide.md#mandatory-ui-redesign-for-derivative-applications).
