@@ -44,7 +44,7 @@ the submission is recorded in the Chinese version of this page, `README.zh_CN.md
   altered. Publish metadata only; the image is not committed in this repository.
 - **Source**: <https://github.com/Shinku-Chen/ai-passport/tree/cindy/curious-babbage>
 - **Release**: tag `v0.1.0-limelight` (`dc7154d`), merged image
-  `FoloToy-AI-Passport-full.bin`, 7,940,496 bytes, built by the tag-triggered CI.
+  `FoloToy-AI-Passport-full.bin`, 7,897,824 bytes, built by the tag-triggered CI.
 - **Community submission**: project 680, revision 1444, slug
   `limelight-lemonade-jam`, status `pending` when submitted.
 
@@ -57,10 +57,12 @@ the submission is recorded in the Chinese version of this page, `README.zh_CN.md
   (half-width counts as one unit, full-width as two) and paginates at five lines of
   26 units; the page indicator appears only for the 13 dialogue lines that need a
   second page.
-- **Sprites sit at the bottom right of the screen, behind the dialogue band**: the
-  art canvas covers rows 0–213, and the rows below that are drawn by a second LVGL
-  image object that points into the decode buffer, then covered by the translucent
-  band.
+- **Sprites are centred horizontally and bottom-anchored, behind the dialogue band**:
+  the art canvas covers rows 0–213, so the rows below that are drawn by a second LVGL
+  image object that points into the decode buffer and are then covered by the
+  translucent band; the sideways offset is `(canvas width - sprite width) / 2`, and a
+  width-to-height crop at 1:2.4 keeps the figure down to about the knees so the body
+  still reads through the band.
 - **Chapters are shown as `X-Y`**: the upstream script carries 230 `[CHAPTERx-y]`
   markers; the in-game label and the chapter list both render them as `0-1`, `7-2`
   and so on, and a marker is never shown as a speaker name.
@@ -70,10 +72,17 @@ the submission is recorded in the Chinese version of this page, `README.zh_CN.md
 
 ## Data and toolchain
 
-- **Artwork pack** (`main/limelight_data/limelight_pack.bin`, LLMPK001, 4.53 MiB,
+- **Artwork pack** (`main/limelight_data/limelight_pack.bin`, LLMPK001, 4.49 MiB,
   991 entries): backgrounds and CGs as 240 × 214 JPEG, sprites as alpha-cut RGB565
   with a 1 bpp mask, reference-counted cropping, and a name table keyed by
-  "family + basename".
+  "family + basename". Sprites carry one pose per character: the extra takes in a
+  group are aliases pointing at the kept blob, and the freed space pays for JPEG
+  quality 60 instead of 35.
+- **The upstream material is committed** under `assets/gal-source/` (137 script files,
+  backgrounds, sprites, event CGs and the title images, with no quick-app code), so a
+  plain checkout rebuilds both packs byte for byte; `gallery_cgs.txt` records the 633
+  event CGs the upstream gallery page references so the packer can tell them from
+  story CGs.
 - **Script pack** (`main/limelight_data/limelight_script.bin`, LLSPK001, 1.81 MiB,
   68,229 entries in 273 blocks): UTF-8 text compressed per 250-entry block with raw
   deflate, which the ESP32-C3 ROM inflater expands at no firmware cost.
