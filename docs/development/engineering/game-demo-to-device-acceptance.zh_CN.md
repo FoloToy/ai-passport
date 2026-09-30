@@ -45,6 +45,38 @@
 
 **通过条件：** 场景表中的完整流程和边界案例都有 PASS 证据，C/Wasm 一致性结果是当前版本，且记录玩家认为 Demo 手感可以进入真机的结论。未解决的问题应明确列出，不能悄悄带入真机关卡。
 
+## 2a. 在固件验收前检查资源与调度压力
+
+共享 C/Wasm Demo 运行的是玩法，不是设备调度器或总线。浏览器 CPU 限速和帧率上限，无法暴露高优先级显示任务忙等、导致低优先级音频错过补充缓冲时机的问题。玩法、资源压力与真机验收应分别记录结果。
+
+持续播放音频或渲染/内存负载明显的游戏，在第 2 关之后增加可重复的压力检查。可使用 [`tools/game_resource_stress.py`](../../../tools/game_resource_stress.py) 作为小型确定性负载模型。它仅依赖 Python 标准库，不需要 SDK、USB 或本机计时基准。仓库检查执行模型的正反例测试，**不会**自动校准或验收某个游戏。
+
+1. **导出基准负载。** 用实际 C/Wasm 构建回放已验收的种子、操作和 tick。由游戏适配器导出有序状态变化：`schema: 1`、`duration_us`，以及包含 `at_us`、`audio`、`render` 的 `events`；从时间零开始。使用实际音频开关，不要使用行走标记：停步时可能仍有环境声。覆盖标题、行走、停步、适用时的拐角、结果、返回和重新进入。保留轨迹及 Wasm/源码哈希。负载模型不实现玩法，也不把执行延迟反馈到这条基准轨迹中。
+2. **校准负载配置。** 在代表性真机场景测量渲染 CPU 耗时、显示等待及其是否阻塞、任务优先级、音频合成耗时、采样/分块速率、可用 PCM 缓冲，以及空闲内存/最大连续块。记录固件哈希、场景、预热与采样时长、日期、测量方法及每项假设。桌面 Wasm 耗时不是设备 CPU 测量；完整刷新耗时不是纯 SPI 耗时；描述符容量不能证明实际可播放 PCM 余量。还有假设时标 `partial`，不能标 `measured`。另用一段真机采样对照模型预测；未解释的差异应记录，并保持校准未完成。
+3. **执行正反例。** 候选配置应满足项目明确的限值。复现怀疑的调度退化（例如把释放 CPU 的显示等待替换为持续占用 CPU），注入超过缓冲余量的不可抢占延迟，并超出内存预算。这些反例应因预期原因失败；始终通过的测试不能支撑进入下一关。将它们加入游戏本地验证命令，不放进普通玩家流程。
+4. **证据缺失时不放行。** 对必需的资源验收关使用 `--require-calibrated`。合成或部分测量数据可以用于模型回归和保守实验，但不能得到已校准关卡的 PASS。修改共享 C、适配器、缓冲尺寸、任务优先级或显示行为后，更新轨迹/配置并重复受影响检查。
+
+[示例配置](../../../tests/fixtures/game_resource_stress/profile.json)和[轨迹](../../../tests/fixtures/game_resource_stress/trace.json)是合成回归数据，不是硬件默认参数。时间均为整数微秒；任务优先级应不同，数字越大越先运行。`cpu` 定义 `render_us`、`frame_period_us`、`display_wait_us`、`display_wait`（`blocking` 或 `busy`）、两个任务优先级及 `audio_render_us`。`audio` 定义 `sample_rate_hz`、`chunk_samples`、`buffer_samples`。可选的有序 `stalls` 包含 `at_us`/`duration_us`，表示两个任务都无法运行的 CPU 占用；DMA 完成仍按墙钟时间推进。`memory` 将额外的 `allocations` 与同一基线的 `available_bytes`、`largest_block_bytes`、`reserve_bytes` 对照。不要重复计算测量基线时已分配的内存。`limits` 设置最大断供时长、启动延迟、帧超时和丢帧数。复制并修改示例，明确设置这些值；它们不是统一的板卡目标。
+
+```bash
+# 仅验收模型回归：示例故意使用合成校准数据。
+python3 tools/game_resource_stress.py \
+  --profile tests/fixtures/game_resource_stress/profile.json \
+  --trace tests/fixtures/game_resource_stress/trace.json \
+  --output /tmp/game-stress.json
+python3 tests/test_game_resource_stress.py
+# 使用游戏实测配置和实际 C/Wasm 基准轨迹：
+python3 tools/game_resource_stress.py \
+  --profile /path/to/game-profile.json --trace /path/to/wasm-trace.json \
+  --require-calibrated --output /tmp/game-calibrated-stress.json
+```
+
+退出码：`0` 表示模型检查通过，`1` 表示超出限值或所要求的校准不完整，`2` 表示输入无效。JSON 报告保留模型版本、输入哈希、校准状态、失败项、启动/写入间隔、缓冲断供时长、帧期限和内存余量。写入间隔指两次模型写入之间的时间，不等于固件中合成到写入的供给间隙指标。模型启动时间只测首次写入，不含 codec 配置和实际发声。缓冲初始为满，作为乐观边界；合成按整块写入。记录这一假设，并在真机上验证有效余量。
+
+这是有边界的单核、可抢占、固定优先级模型，传输按墙钟时间完成。它不运行 FreeRTOS/LVGL，不模拟 I2S 驱动、中断顺序或缓存/Flash 影响，不覆盖同优先级时间片，不预测堆碎片，不验证分配失败后的恢复，也不验收玩法延迟后的渲染/声音质量。应用分配故障注入与任务清理应另测。实际总线时序、缓冲、扬声器音质和持续负载仍需要第 4 关。即使模型限值通过，每份报告也标记 `hardware_acceptance: NOT RUN`。
+
+**通过条件：** 当前轨迹/配置满足要求，反例检出所注入的故障，校准假设与模型/设备差异已解决或明确阻止放行，并保留准确输入和结果。关卡不适用时（例如无音频且渲染负载很低），标记 `NOT APPLICABLE` 并写明原因，不要虚构音频测量。
+
 ## 3. 安全构建并安装真机候选版
 
 按 [AI 开发指南](../ai-guide.zh_CN.md)，通过 `main/` 生命周期与 BSP 接口，将已验收的 C 核心集成进应用自己的 UI。在要求的 ESP-IDF 环境下运行[仓库完整验证](build-and-test.zh_CN.md)。依据该指南验证候选版实际的镜像偏移、应用大小和分区布局，不把某个游戏的分区选择变成模板通用要求。记录提交号、源码是否有未提交变更、Wasm manifest、固件哈希及共享素材哈希。按构建指南保留匹配的构建与调试产物。
@@ -69,6 +101,7 @@
 | --- | --- |
 | 版本身份 | 提交号、Wasm manifest/源码哈希、固件与素材哈希、板卡版本、安装方式 |
 | Demo | 场景表、受控场景结果、无提示游玩记录、画面/动画证据、原生 C/Wasm 一致性 |
+| 资源压力 | 轨迹/配置哈希、校准与假设、限值、正反例、模型/设备差异；`PASS` / `FAIL` / `NOT RUN`（或有依据的 `NOT APPLICABLE`） |
 | 构建 | 静态/主机测试、固件及所配置布局的检查结果 |
 | 真机 | 安装版本证明、实体完整游玩及边界案例、性能/内存采样、脱敏日志或截图 |
 | 结论 | Build、Host tests、Demo、Device tests 分别标 `PASS`、`FAIL` 或 `NOT RUN`；负责人、日期、`Unverified` 项目 |
@@ -85,4 +118,4 @@
 ./tools/validate.sh
 ```
 
-交给真机测试者前，提供 Demo 地址/启动命令、场景表和 Demo 验收结论、已验证固件的准确标识、安装/数据保留方案、真机测量计划。适用的板卡检查参见[硬件指南](../../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md)。网页 Demo、固件构建与真机验收分别记录结果。
+交给真机测试者前，提供 Demo 地址/启动命令、场景表和 Demo 验收结论、资源压力报告及校准缺口、已验证固件的准确标识、安装/数据保留方案、真机测量计划。适用的板卡检查参见[硬件指南](../../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md)。网页 Demo、固件构建与真机验收分别记录结果。
