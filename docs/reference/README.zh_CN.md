@@ -22,6 +22,9 @@
 - [设备端对弈 AI 的墙钟预算](shinku-chen/on-device-game-ai-wall-clock-budget.zh_CN.md) — 为什么节点数上限在这块板上会跑偏（约每秒 1.5 万节点）、用时间预算迭代加深、让出 CPU 避免饿死空闲任务，以及用失误率表达难度。
 - [静态缓冲按面板算，并验证已发布的产物](shinku-chen/release-artifact-verification.zh_CN.md) — 一处 51KB 缓冲错误导致空闲堆只剩 8KB、读已发布合并镜像的启动日志，以及替换刚发布的版本而不是另发后续版本。
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
+- [在无多余帧缓冲的板子上实现 `FAP_SCREENSHOT_V1`](shinku-chen/fap-screenshot-without-frame-buffer.zh_CN.md) — 社区 publisher 的串口协议在无 PSRAM 板子上的做法：复用画面区画布分两段抓、省下额外的 150KB 帧缓冲；驱动快路径把整帧从 56 秒压到 1.7 秒；短写丢 2048 字节块、日志字节混入负载，以及 USB-Serial-JTAG 驱动该装在哪。
+- [行距按字体度量算而非生成字号算](shinku-chen/cjk-line-pitch-from-font-metrics.zh_CN.md) — 为什么生成的 16px 中日韩子集报告 20px 行高、抄来的「字号减 16」如何把五行正文溢出文本框，以及把分页版面与标签盒子绑在一起的静态断言。
+- [移植剧本进入阅读器之前先清洗](shinku-chen/ported-script-text-cleanup.zh_CN.md) — 人工编辑过的数据集里混着内联排版指令与译者备注，在打包器里只删非对白内容、不动正文的规则，以及保住正常标点的回归用例。
 
 - [在无 PSRAM 的板子上打视觉小说剧本包](shinku-chen/vn-script-pack-budget-and-failure-modes.zh_CN.md) — 5.06 MB 剧本压到 1.45 MB、块大小为什么由「最大连续空闲块 7.7 KB」而不是空闲堆决定，以及三个互不相关的缺陷为什么都表现为「一进阅读就全剧终」，还有让它们现形的启动自检。
 
@@ -36,6 +39,7 @@
 - [星空列车与白的旅行](shinku-chen/starry-sky-railroad/README.zh_CN.md) — 把 39 章的同人移植剧本离线装进机身的竖屏视觉小说阅读器，立绘跟随说话人、每次换场景自动存档。
 - [千恋＊万花](shinku-chen/senren-banka/README.zh_CN.md) — 竖屏视觉小说阅读器，把整部剧情连通背景、立绘与事件插图装进设备，支持自动阅读、快进、跳过章节与多档存档。
 - [魔女的夜宴](shinku-chen/sanoba-witch/README.zh_CN.md) — 101 章、五条线五个结局、全部装进 Flash 的竖屏视觉小说阅读器。
+- [limelight lemonade jam](shinku-chen/limelight/README.zh_CN.md) — 把小米手环上的商业视觉小说搬到 AI Passport 的竖屏阅读器：230 个章节点、68,229 句对白、991 张打包图像，三键离线阅读，数据全在 Flash 里。
 
 ### PhoenixZHC
 
