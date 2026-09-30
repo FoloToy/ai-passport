@@ -48,7 +48,9 @@ BaseType_t xSemaphoreTake(SemaphoreHandle_t sem, TickType_t ticks);
 void vSemaphoreDelete(SemaphoreHandle_t sem);
 
 typedef enum { BSP_BTN_UP, BSP_BTN_DOWN, BSP_BTN_OK } bsp_btn_t;
-typedef enum { BSP_BTN_PRESS, BSP_BTN_CLICK, BSP_BTN_DOUBLE, BSP_BTN_LONG } bsp_btn_ev_t;
+typedef enum { BSP_BTN_PRESS, BSP_BTN_CLICK, BSP_BTN_DOUBLE, BSP_BTN_LONG, BSP_BTN_RELEASE } bsp_btn_ev_t;
+int bsp_button_read_mv(void);
+esp_err_t bsp_button_prepare_deep_sleep(int *level);
 esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t channels);
 void bsp_audio_set_volume(uint8_t percent);
 esp_err_t bsp_audio_read(void *pcm, size_t bytes);
@@ -65,6 +67,10 @@ void bsp_lvgl_unlock(void);
 
 #define RTC_DATA_ATTR
 #define ESP_SLEEP_WAKEUP_TIMER 4
+#define ESP_SLEEP_WAKEUP_GPIO  7
+typedef enum { ESP_GPIO_WAKEUP_GPIO_LOW = 0, ESP_GPIO_WAKEUP_GPIO_HIGH } esp_deepsleep_gpio_wake_up_mode_t;
+esp_err_t esp_deep_sleep_enable_gpio_wakeup(uint64_t gpio_pin_mask,
+                                           esp_deepsleep_gpio_wake_up_mode_t mode);
 esp_err_t esp_sleep_enable_timer_wakeup(uint64_t us);
 esp_err_t esp_sleep_disable_wakeup_source(int source);
 esp_err_t esp_light_sleep_start(void);
