@@ -67,8 +67,10 @@ clone 下来直接就能编译，不需要跑素材流水线。
   附件为合并后的 8 MB 整片镜像 `FoloToy-AI-Passport-full.bin`。
 - 已发布到社区，项目 `community-751e8cae`；封面记录为
   `cover_ai_1152x1536.png`（PNG，1152×1536，3:4）——仅记发布元数据，图片留在社区发布处。
-- 构建要求：ESP-IDF v5.5.3、目标 `esp32c3`、**8 MB Flash**——分区表把 app 划在 `0x7F0000`，
-  4 MB 的板子会无限重启。`components/bsp/` 与上游一致，未作修改。
+- 构建要求：ESP-IDF v5.5.3、目标 `esp32c3`、**8 MB Flash**。factory 应用分区的**大小**为
+  `0x7F0000` 字节（7.94 MiB），**起始偏移 `0x10000`**、**结束地址 `0x800000`**。4 MB 的板子
+  装不下这个体积的镜像，会无限重启。偏移、大小、结束地址分开写是有意的——`0x7F0000` 是**大小**，
+  不是烧录地址。`components/bsp/` 与上游一致，未作修改。
 - 配套经验条目
   [`lvgl-pool-budget-without-psram.zh_CN.md`](../lvgl-pool-budget-without-psram.zh_CN.md)
   记录了本应用构建时所依据的 LVGL 内存预算。

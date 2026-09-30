@@ -98,9 +98,12 @@ applies to the keepsake album.
 - Published to the community as project `community-751e8cae`; cover recorded as
   `cover_ai_1152x1536.png` (PNG, 1152×1536, 3:4) — publish metadata only, the
   image lives with the community publication.
-- Build requirements: ESP-IDF v5.5.3, target `esp32c3`, **8 MB flash** — the
-  partition table places the app at `0x7F0000`, so a 4 MB board will reboot
-  forever. `components/bsp/` is unmodified from upstream.
+- Build requirements: ESP-IDF v5.5.3, target `esp32c3`, **8 MB flash**. The
+  factory application partition is `0x7F0000` bytes (7.94 MiB) **in size**; its
+  offset is `0x10000` and its end address is `0x800000`. A 4 MB board cannot
+  hold an image of that size and will reboot forever. Offset, size, and end
+  address are listed separately on purpose — `0x7F0000` is the size, not the
+  address to flash at. `components/bsp/` is unmodified from upstream.
 - The paired experience entry
   [`lvgl-pool-budget-without-psram.md`](../lvgl-pool-budget-without-psram.md)
   records the LVGL memory budget this application was built against.

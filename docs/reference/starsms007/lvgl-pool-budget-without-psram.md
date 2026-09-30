@@ -16,7 +16,7 @@ screens are large enough to matter.
 The LVGL heap is a separate static pool sized by
 `CONFIG_LV_MEM_SIZE_KILOBYTES` (80 on this application), and it is carved out of
 DRAM that Wi-Fi and task stacks also want. On ESP32-C3 there is no PSRAM to
-borrow from, so the only way to know the margin is to measure it. Print a
+borrow from, so the only way to know how much room is left is to measure it. Print a
 monitor line at every state transition worth caring about — boot, and both
 directions of the largest overlay:
 
@@ -41,11 +41,14 @@ W (6299)  fa_wx: overlay-OFF LVGL free=8424 biggest=8060 frag=5% maxused=68492 |
 W (168727) fa_wx: overlay-OFF LVGL free=8052 biggest=7576 frag=6% maxused=68492 | sys=131484
 ```
 
-## Read the columns correctly — `maxused` is the margin, not `free`
+## Read the columns correctly — `maxused` is a high-water mark, not a margin
 
-- **`maxused`** is the peak since boot and the only column that answers "how
-  far from the wall am I". A pool that looks roomy (`free` in the thousands)
-  can still be the pool that dies on the next page.
+- **`maxused`** is the **high-water mark since boot**: the deepest the pool has
+  ever been, not the room still left in it. It is worth reading as a trend, and
+  it does establish that the pool has already been that full — it does not say
+  how close the next allocation is to the wall. For that, read the live columns.
+  A pool that looks roomy (`free` in the thousands) can still be the pool that
+  dies on the next page.
 - **`free_biggest_size`**, not `free_size`, decides whether the next large
   allocation succeeds: several small fragments can sum to a comfortable `free`
   while no single block is large enough. Watch `biggest` for the pool's ability
@@ -63,15 +66,24 @@ W (168727) fa_wx: overlay-OFF LVGL free=8052 biggest=7576 frag=6% maxused=68492 
 
 ## Sample long enough to separate a peak from a leak
 
-A single reading cannot tell a peak from a slow leak. Take the monitor line on
-both edges of the heaviest screen repeatedly and compare `maxused` across the
-run: on this application it reached its high-water mark of **68492 B within the
-first 6.3 seconds** and stayed exactly flat for the remaining **162 seconds**
-across 30 samples, while `free` drifted between 7900 and 8424 and
-`free_biggest_size` between 7576 and 8092. A flat `maxused` over a long run is
-the evidence of no leak; a drifting one is the alarm. Build the heavy page,
-leave it, and come back — the weather layer alone was worth adding 29 resident
-objects during development, and the later keepsake album another 25.
+A single reading cannot tell a peak from a slow leak, and **a flat high-water
+mark alone does not rule one out**: `maxused` only moves when a new deepest
+point is reached, so a leak smaller than the headroom between the working set
+and the current peak can hide behind a flat line for a long time. Collect the
+columns that actually move — **current free heap** (`free_size`), **largest free
+block** (`free_biggest_size`), and the IDF system heap (`sys`) — on **both edges
+of the heaviest screen, repeated across many enter/exit cycles**, and track the
+**minimum-ever** value seen over the run rather than the last sample. On this
+application, 30 samples over 162 seconds after boot showed `free` drifting
+between 7900 and 8424 B and `free_biggest_size` between 7576 and 8092 B while
+`maxused` held at 68492 B — consistent with a bounded working set, but **on its
+own that only bounds any growth to less than the observed variation across that
+window; it does not exclude a slow leak below that floor.** To call the pool
+leak-free, the repeated-cycle minimum-ever free heap has to stop falling and
+`free_biggest_size` has to stop shrinking — a flat `maxused` is necessary
+context, not the proof. Build the heavy page, leave it, and come back — the
+weather layer alone was worth adding 29 resident objects during development, and
+the later keepsake album another 25.
 
 ## When the pool runs out the screen freezes, it does not crash
 
@@ -97,11 +109,12 @@ Two ways out, with different costs:
 
 - Log `lv_mem_monitor()` from boot; a pool you never measure is a pool you
   cannot budget.
-- Judge margin by `maxused`, allocation success by `free_biggest_size`, and
-  pool size by the sdkconfig value — never by arithmetic across monitor
-  columns.
-- Sample the heaviest screen repeatedly before calling it safe; only a flat
-  `maxused` over a long run rules out a leak.
+- Judge margin by the live columns — `free_size` and `free_biggest_size` — and
+  read `maxused` as a high-water trend, not as remaining room. Pool size comes
+  from the sdkconfig value, never from arithmetic across monitor columns.
+- Sample the heaviest screen repeatedly before calling it safe: track current
+  free heap, minimum-ever free heap, and largest free block across enter/exit
+  cycles. A flat `maxused` on its own is not evidence of no leak.
 - A frozen half-drawn frame with a silent log is pool exhaustion until proven
   otherwise, not a display problem.
 - Every new page's object count is a pool decision, not just a UI decision.
