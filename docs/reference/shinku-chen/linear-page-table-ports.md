@@ -58,8 +58,29 @@ itself is small.
 
 ## Reproducibility
 
-Commit the source project's *assets and script data* (not its quick-app code) into
-the fork, keep the packers' default source path pointed at that copy, and record
-the exact packer arguments next to it. Then a fresh clone rebuilds byte-identical
-packs without network access - which is also what makes "drop this file / change
-this quality" experiments cheap to re-run.
+Committing the source project's *assets and script data* (not its quick-app code)
+into the fork, keeping the packers' default source path pointed at that copy and
+recording the exact packer arguments next to it, is what lets a fresh clone
+rebuild byte-identical packs without network access - and what keeps "drop this
+file / change this quality" experiments cheap to re-run.
+
+Reproducibility does not override licensing. Before any source input is committed,
+check it against the redistribution gate:
+
+- **Verify the license and get permission first.** The rights are separate: the
+  artwork belongs to the original studio, the translated text to its translation
+  group, and the port to its author. Attribution or a "personal learning" note
+  does not grant redistribution rights. Confirm the terms - or obtain explicit
+  permission - for every asset, script and translation before it enters the
+  repository.
+- **Keep unlicensed or proprietary inputs out of the repository.** If an input
+  cannot be redistributed, do not commit it, not even for reproducibility.
+  Document a user-supplied import/conversion workflow instead: the reader supplies
+  their own copy of the input, and the packer converts it locally.
+- **Record provenance and scope for whatever is committed.** For each committed
+  input, state where it came from, the license or permission that covers it, and
+  the redistribution scope it permits, next to the packer arguments.
+
+Byte-for-byte reproducibility is valuable, but it must not be achieved by
+recommending that copyrighted third-party content be checked into a repository
+without authorization.
