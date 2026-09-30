@@ -13,6 +13,7 @@ This directory contains AI Passport engineering rules and reusable workflows, gr
 
 ## Engineering
 
+- [game-demo-to-device-acceptance.md](engineering/game-demo-to-device-acceptance.md): shared C/WebAssembly and H5 playtesting, then physical-device acceptance.
 - [environment-setup.md](engineering/environment-setup.md): clean-machine bootstrap for AI agents, including international and mainland China download routes.
 - [build-and-test.md](engineering/build-and-test.md): ESP-IDF build and validation.
 - [firmware-layout.md](engineering/firmware-layout.md): default and user-defined partition layouts and merged-artifact validation.

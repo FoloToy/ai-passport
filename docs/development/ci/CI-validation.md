@@ -22,7 +22,7 @@ Two workflows validate pull requests: `.github/workflows/static-checks.yml` and
 ## Path filtering
 
 `firmware-checks.yml` ignores paths that cannot affect the firmware build:
-`docs/**`, `plays/**`, `skills/**`, and `*.md`. A documentation-only pull request
+`docs/**`, `skills/**`, and `*.md`. A documentation-only pull request
 therefore runs the static checks but skips the firmware build. `assets/**` is
 intentionally **not** ignored: `assets/` holds reusable fonts, images, music, and
 sound effects that may be embedded into the firmware, so any asset change must

@@ -19,7 +19,7 @@
 
 ## 路径过滤
 
-`firmware-checks.yml` 忽略不会影响固件构建的路径：`docs/**`、`plays/**`、`skills/**` 与 `*.md`。
+`firmware-checks.yml` 忽略不会影响固件构建的路径：`docs/**`、`skills/**` 与 `*.md`。
 因此纯文档的 pull request 只跑 static checks、跳过固件构建。`assets/**` **故意不**忽略：`assets/`
 存放可复用的字体、图片、音乐与音效，未来可能被嵌入固件，因此任何资源变更都必须触发固件构建。
 

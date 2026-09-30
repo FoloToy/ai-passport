@@ -33,11 +33,19 @@ The engineering rules themselves live under
 - [Deriving CJK Line Pitch from Font Metrics](shinku-chen/cjk-line-pitch-from-font-metrics.md) — why a generated 16 px CJK subset reports a 20 px line height, how the copied "em size minus 16" spacing overflowed a five-line dialogue box, and the static assert that keeps page layout and label box in agreement.
 - [Cleaning a Ported Script Dataset Before It Reaches the Reader](shinku-chen/ported-script-text-cleanup.md) — inline layout directives and leaked translator memos inside a hand-edited dataset, the packer-side rules that remove them without touching dialogue, and the regression that keeps ordinary punctuation safe.
 
+- [Packing a Visual-Novel Script for a No-PSRAM Board](shinku-chen/vn-script-pack-budget-and-failure-modes.md) — a 5.06 MB script packed into 1.45 MB, why the chunk size is set by the largest free block (7.7 KB, not by the free heap), and three unrelated defects that all presented as "the story ends immediately" plus the boot self-check that named them.
+
 **Application playbooks:**
 
 - [Voice Keychain](shinku-chen/voice-keychain/README.md) — a sound-effects keychain that turns the AI Passport into a pocket audio player.
 - [What to Eat Today](shinku-chen/eat-what/README.md) — a button-driven food roulette that turns the AI Passport into a "what should I eat?" spinner.
 - [Connect Four](shinku-chen/connect-four/README.md) — a landscape 10 × 7 four-in-a-row game with three computer difficulty levels, a two-player mode, synthesized sound, and an idle deep sleep.
+- [Asunabi](shinku-chen/asunabi/README.md) — a portrait visual-novel reader that carries a complete 30-chapter story, originally a Xiaomi Band quick app, with six save slots, chapter select, and auto-play.
+- [Saya no Uta](shinku-chen/saya-no-uta/README.md) — a landscape visual-novel reader with 44 chapters, 3,828 dialogue lines and three endings, read fully offline with three keys.
+- [ATRI Reader](shinku-chen/atri-reader/README.md) — a portrait visual-novel reader that plays the complete *ATRI -My Dear Moments-* story offline: 34 chapters, 1,069 scenes, 12,188 dialogue lines, speaker-driven full-body sprites and three endings.
+- [Starry Sky Railroad and Shiro's Journey](shinku-chen/starry-sky-railroad/README.md) — a portrait visual-novel reader carrying a 39-chapter fan port offline, with per-speaker sprites and an automatic save on every scene.
+- [Senren * Banka](shinku-chen/senren-banka/README.md) — a portrait visual novel reader that carries the whole game — story, backgrounds, sprites and event illustrations — on the device, with auto-read, fast-forward, chapter skipping and save slots.
+- [Sanoba Witch](shinku-chen/sanoba-witch/README.md) — a portrait visual novel reader with 101 chapters, five routes and five endings, packed entirely into Flash.
 - [limelight lemonade jam](shinku-chen/limelight/README.md) — a portrait visual novel reader for the commercial Xiaomi Band title: 230 chapter points, 68,229 dialogue lines and 991 packed images, read offline with three keys and stored entirely in Flash.
 
 ### PhoenixZHC
