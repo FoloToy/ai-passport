@@ -51,6 +51,9 @@ typedef enum { BSP_BTN_UP, BSP_BTN_DOWN, BSP_BTN_OK } bsp_btn_t;
 typedef enum { BSP_BTN_PRESS, BSP_BTN_CLICK, BSP_BTN_DOUBLE, BSP_BTN_LONG, BSP_BTN_RELEASE } bsp_btn_ev_t;
 int bsp_button_read_mv(void);
 esp_err_t bsp_button_prepare_deep_sleep(int *level);
+// Voltage the key pad reports in host tests; set it to a pressed window to drive
+// the "refuse to sleep" path.
+extern int test_btn_mv;
 esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t channels);
 void bsp_audio_set_volume(uint8_t percent);
 esp_err_t bsp_audio_read(void *pcm, size_t bytes);
