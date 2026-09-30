@@ -25,11 +25,19 @@
 - [共用解块缓冲只能有一个所有者](shinku-chen/shared-block-buffer-caches.zh_CN.md) — 一块共用解块缓冲上"每路各自记缓存"会让第二页起解到另一路的数据；为什么单帧截图看不见它；以及能看见它的连续性验证。
 - [源工程是"线性页表"的作品怎么移植](shinku-chen/linear-page-table-ports.zh_CN.md) — 把 JavaScript 分支配置编译成经穷举校核的数据表、页表与正文按块流打包、章节表按页号排序，以及发布前要跑的"重复块死循环"与"路线可达性"检查。
 
+- [在无 PSRAM 的板子上打视觉小说剧本包](shinku-chen/vn-script-pack-budget-and-failure-modes.zh_CN.md) — 5.06 MB 剧本压到 1.45 MB、块大小为什么由「最大连续空闲块 7.7 KB」而不是空闲堆决定，以及三个互不相关的缺陷为什么都表现为「一进阅读就全剧终」，还有让它们现形的启动自检。
+
 **应用档案：**
 
 - [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) — 把 AI Passport 变成口袋音频播放器的音效钥匙扣。
 - [今天吃啥](shinku-chen/eat-what/README.zh_CN.md) — 按键驱动的食物轮盘，把 AI Passport 变成「今天吃什么」小转盘。
 - [四子棋](shinku-chen/connect-four/README.zh_CN.md) — 横屏 10 列 × 7 行的四子连珠游戏，带三档电脑难度、双人模式、合成音效与空闲自动深睡。
+- [飞鸟会长不肯认输](shinku-chen/asunabi/README.zh_CN.md) — 竖屏视觉小说阅读器，承载完整的 30 章故事（原作是小米手环快应用），带六个存档位、选章与自动阅读。
+- [沙耶之歌](shinku-chen/saya-no-uta/README.zh_CN.md) — 横屏视觉小说阅读器：44 章、3,828 段对白、3 个结局，全程离线，三个按键读完。
+- [亚托莉阅读器](shinku-chen/atri-reader/README.zh_CN.md) — 把完整《亚托莉 -My Dear Moments-》剧情装进 AI Passport 的竖屏视觉小说阅读器：34 章、1,069 幕、12,188 句对白、立绘跟说话人、三个结局，全程离线。
+- [星空列车与白的旅行](shinku-chen/starry-sky-railroad/README.zh_CN.md) — 把 39 章的同人移植剧本离线装进机身的竖屏视觉小说阅读器，立绘跟随说话人、每次换场景自动存档。
+- [千恋＊万花](shinku-chen/senren-banka/README.zh_CN.md) — 竖屏视觉小说阅读器，把整部剧情连通背景、立绘与事件插图装进设备，支持自动阅读、快进、跳过章节与多档存档。
+- [魔女的夜宴](shinku-chen/sanoba-witch/README.zh_CN.md) — 101 章、五条线五个结局、全部装进 Flash 的竖屏视觉小说阅读器。
 - [DRACU-RIOT! 阅读器](shinku-chen/dracu-riot/README.zh_CN.md) — 完全离线的竖屏视觉小说阅读器：五条女主线各自的章节、后日谈与结局，62 条章节跳转列表，以及 1 个自动存档 + 5 个手动存档。
 
 ### PhoenixZHC

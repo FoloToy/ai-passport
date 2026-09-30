@@ -32,11 +32,19 @@ The engineering rules themselves live under
 - [Shared Block Buffers Need One Owner](shinku-chen/shared-block-buffer-caches.md) — why per-stream caches over one shared decompression buffer decode the wrong stream from the second page on, why single-frame screenshots cannot see it, and the continuity tests that do.
 - [Porting Games Whose Source Is a Linear Page Table](shinku-chen/linear-page-table-ports.md) — compiling a JavaScript branch configuration into verified data tables, packing pages and text as block streams, sorting the chapter list by page, and the duplicated-block loop and route-reachability checks to run before shipping.
 
+- [Packing a Visual-Novel Script for a No-PSRAM Board](shinku-chen/vn-script-pack-budget-and-failure-modes.md) — a 5.06 MB script packed into 1.45 MB, why the chunk size is set by the largest free block (7.7 KB, not by the free heap), and three unrelated defects that all presented as "the story ends immediately" plus the boot self-check that named them.
+
 **Application playbooks:**
 
 - [Voice Keychain](shinku-chen/voice-keychain/README.md) — a sound-effects keychain that turns the AI Passport into a pocket audio player.
 - [What to Eat Today](shinku-chen/eat-what/README.md) — a button-driven food roulette that turns the AI Passport into a "what should I eat?" spinner.
 - [Connect Four](shinku-chen/connect-four/README.md) — a landscape 10 × 7 four-in-a-row game with three computer difficulty levels, a two-player mode, synthesized sound, and an idle deep sleep.
+- [Asunabi](shinku-chen/asunabi/README.md) — a portrait visual-novel reader that carries a complete 30-chapter story, originally a Xiaomi Band quick app, with six save slots, chapter select, and auto-play.
+- [Saya no Uta](shinku-chen/saya-no-uta/README.md) — a landscape visual-novel reader with 44 chapters, 3,828 dialogue lines and three endings, read fully offline with three keys.
+- [ATRI Reader](shinku-chen/atri-reader/README.md) — a portrait visual-novel reader that plays the complete *ATRI -My Dear Moments-* story offline: 34 chapters, 1,069 scenes, 12,188 dialogue lines, speaker-driven full-body sprites and three endings.
+- [Starry Sky Railroad and Shiro's Journey](shinku-chen/starry-sky-railroad/README.md) — a portrait visual-novel reader carrying a 39-chapter fan port offline, with per-speaker sprites and an automatic save on every scene.
+- [Senren * Banka](shinku-chen/senren-banka/README.md) — a portrait visual novel reader that carries the whole game — story, backgrounds, sprites and event illustrations — on the device, with auto-read, fast-forward, chapter skipping and save slots.
+- [Sanoba Witch](shinku-chen/sanoba-witch/README.md) — a portrait visual novel reader with 101 chapters, five routes and five endings, packed entirely into Flash.
 - [DRACU-RIOT! Reader](shinku-chen/dracu-riot/README.md) — a fully offline portrait visual-novel reader: five heroine routes with their after-stories and endings, a chapter-jump list over 62 entries, and one auto save plus five manual slots.
 
 ### PhoenixZHC
