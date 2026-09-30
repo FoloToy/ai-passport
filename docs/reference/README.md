@@ -29,6 +29,8 @@ The engineering rules themselves live under
 - [Wall-clock Budgets for On-Device Game AI](shinku-chen/on-device-game-ai-wall-clock-budget.md) — why node-count limits misfire on this board (about 15k nodes per second), iterative deepening against a time budget, yielding to keep the idle task fed, and difficulty as a blunder rate.
 - [Size Static Buffers from the Panel, and Verify the Release Artifact](shinku-chen/release-artifact-verification.md) — a 51 KB buffer mistake that left 8 KB of free heap, reading the startup log of the published merged image, and replacing a just-published release instead of shipping a follow-up.
 - [Two-Device BLE Link Between AI Passport Boards (No PSRAM)](shinku-chen/two-device-ble-link.md) — symmetric peer discovery with an address tiebreak instead of host/join, measured link heap on a no-PSRAM part and its conflict with a static screenshot buffer, two hardware-only NimBLE GATT traps (missing `access_cb`, `EDONE` after a successful subscribe), NVS for RF calibration, and a stop-and-wait layer for turn-based play.
+- [Shared Block Buffers Need One Owner](shinku-chen/shared-block-buffer-caches.md) — why per-stream caches over one shared decompression buffer decode the wrong stream from the second page on, why single-frame screenshots cannot see it, and the continuity tests that do.
+- [Porting Games Whose Source Is a Linear Page Table](shinku-chen/linear-page-table-ports.md) — compiling a JavaScript branch configuration into verified data tables, packing pages and text as block streams, sorting the chapter list by page, and the duplicated-block loop and route-reachability checks to run before shipping.
 
 - [Packing a Visual-Novel Script for a No-PSRAM Board](shinku-chen/vn-script-pack-budget-and-failure-modes.md) — a 5.06 MB script packed into 1.45 MB, why the chunk size is set by the largest free block (7.7 KB, not by the free heap), and three unrelated defects that all presented as "the story ends immediately" plus the boot self-check that named them.
 
@@ -43,6 +45,7 @@ The engineering rules themselves live under
 - [Starry Sky Railroad and Shiro's Journey](shinku-chen/starry-sky-railroad/README.md) — a portrait visual-novel reader carrying a 39-chapter fan port offline, with per-speaker sprites and an automatic save on every scene.
 - [Senren * Banka](shinku-chen/senren-banka/README.md) — a portrait visual novel reader that carries the whole game — story, backgrounds, sprites and event illustrations — on the device, with auto-read, fast-forward, chapter skipping and save slots.
 - [Sanoba Witch](shinku-chen/sanoba-witch/README.md) — a portrait visual novel reader with 101 chapters, five routes and five endings, packed entirely into Flash.
+- [DRACU-RIOT! Reader](shinku-chen/dracu-riot/README.md) — a fully offline portrait visual-novel reader: five heroine routes with their after-stories and endings, a chapter-jump list over 62 entries, and one auto save plus five manual slots.
 
 ### PhoenixZHC
 
