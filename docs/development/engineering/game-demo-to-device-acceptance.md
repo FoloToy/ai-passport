@@ -45,6 +45,103 @@ Review in the selected device orientation at native resolution and at a typical 
 
 **Exit criterion:** the scenario table has PASS evidence for the complete flow and edge cases, a current C/Wasm parity result, and a recorded player decision that the demo's feel is ready for hardware. Keep open issues explicit instead of silently carrying them into the device gate.
 
+## 2a. Check resource and scheduling stress before firmware acceptance
+
+The shared C/Wasm demo runs the game, not the device scheduler or buses. Browser
+CPU throttling and an FPS cap cannot expose a higher-priority display task
+busy-waiting while a lower-priority audio task misses its refill window. Keep
+playability, resource stress, and physical-device acceptance as separate results.
+
+For games with continuous audio or significant rendering/memory load, add a
+repeatable stress check after Gate 2. Use
+[`tools/game_resource_stress.py`](../../../tools/game_resource_stress.py) as a
+small deterministic load model. It uses Python's standard library and no SDK,
+USB access, or wall-clock benchmark. The repository gate runs its positive and
+negative control tests; it does **not** automatically calibrate or accept a game.
+
+1. **Export the reference workload.** Replay the accepted seed, actions and ticks
+   through the actual C/Wasm build. The game's adapter exports ordered state
+   changes into a trace: `schema: 1`, `duration_us`, and `events` with `at_us`,
+   `audio`, and `render`. Begin at time zero. Use the actual audio gate, not the
+   walking flag: a stopped player may still have ambience. Include title,
+   walking, stopping, corners where applicable, outcome, return and re-entry.
+   Keep the trace and Wasm/source hashes with the result. The load model does not
+   implement gameplay or feed delayed execution back into that reference trace.
+2. **Calibrate the load profile.** Measure representative device render CPU time,
+   display wait and its blocking behavior, task priorities, audio synthesis time,
+   sample/chunk rate, usable PCM buffer and free/largest-block memory. Record the
+   firmware hash, scene, warm-up and sampling duration, date, measurement method
+   and every assumption. Desktop Wasm time is not a device CPU measurement;
+   end-to-end refresh time is not pure SPI time; descriptor capacity is not proof
+   of playable PCM headroom. Where inputs remain assumptions, use `partial`,
+   not `measured`. Compare model predictions with a separate device sample;
+   document unexplained differences and keep calibration incomplete.
+3. **Run positive and negative controls.** The candidate configuration must meet
+   the project's explicit limits. Reproduce the suspected scheduling regression
+   (for example, replace a blocking display wait with busy CPU occupation),
+   inject non-preemptible delay longer than buffer headroom, and exceed the
+   memory envelope. Those controls must fail for the intended reason; a suite
+   that always passes cannot justify advancing. Put them in the game's local
+   validation command, not in normal player flow.
+4. **Fail closed on missing evidence.** Run with `--require-calibrated` for a
+   required resource acceptance gate. Synthetic/partial inputs are useful for
+   model regression and conservative experiments but do not earn a calibrated
+   gate PASS. Changes to shared C, adapters, buffer sizes, task priorities or
+   display behavior require refreshed traces/profiles and affected checks.
+
+The [example profile](../../../tests/fixtures/game_resource_stress/profile.json)
+and [trace](../../../tests/fixtures/game_resource_stress/trace.json) are synthetic
+regression data, not hardware defaults. All timings are integer microseconds;
+priorities are distinct with higher numbers scheduled first. `cpu` defines
+`render_us`, `frame_period_us`, `display_wait_us`, `display_wait` (`blocking` or
+`busy`), both task priorities and `audio_render_us`. `audio` defines
+`sample_rate_hz`, `chunk_samples`, and `buffer_samples`. Optional ordered `stalls`
+contain `at_us`/`duration_us` CPU occupation that prevents either task running;
+DMA completion still advances in wall time. `memory` checks additional
+`allocations` against `available_bytes`, `largest_block_bytes`, and
+`reserve_bytes`, at the same baseline. Do not double-count memory already
+allocated when that baseline was measured. `limits` sets maximum underrun,
+startup delay, frame lateness and dropped frames. Copy and edit the example to
+set these values explicitly; they are not universal board targets.
+
+```bash
+# Model regression only: the example intentionally has synthetic calibration.
+python3 tools/game_resource_stress.py \
+  --profile tests/fixtures/game_resource_stress/profile.json \
+  --trace tests/fixtures/game_resource_stress/trace.json \
+  --output /tmp/game-stress.json
+python3 tests/test_game_resource_stress.py
+# For the game's measured profile and actual C/Wasm reference trace:
+python3 tools/game_resource_stress.py \
+  --profile /path/to/game-profile.json --trace /path/to/wasm-trace.json \
+  --require-calibrated --output /tmp/game-calibrated-stress.json
+```
+
+Exit codes are `0` for a passing model run, `1` for violated limits/incomplete
+required calibration, and `2` for invalid inputs. The JSON report retains model
+version, input hashes, calibration, failures, startup/refill interval, buffer
+underrun duration, frame deadlines and memory margin. Refill interval means time
+between modeled writes; it is not the firmware's synthesis-to-write feed-gap
+metric. Model startup measures the first write, not codec setup or acoustic
+onset. The ring starts full as an optimistic bound and synthesis writes whole
+chunks; record this assumption and validate effective headroom on the device.
+
+This is a bounded single-core, preemptive, fixed-priority model with wall-clock
+transfer completion. It does not run FreeRTOS/LVGL, emulate the I2S driver,
+interrupt ordering or cache/Flash effects, model equal-priority time slicing,
+predict heap fragmentation, verify allocation-failure recovery, or render/audio
+quality under delayed gameplay. Run application allocator fault-injection and
+teardown tests separately. Real bus timing, buffering, speaker quality and
+sustained load still require Gate 4. Every report says
+`hardware_acceptance: NOT RUN`, even when its model limits pass.
+
+**Exit criterion:** the current trace/profile pass the required limits, negative
+controls detect their injected faults, calibration assumptions and model/device
+differences are resolved or explicitly block the gate, and the exact inputs and
+results are retained. When this gate is irrelevant (for example, no audio and
+negligible rendering load), record `NOT APPLICABLE` with the rationale instead
+of inventing audio measurements.
+
 ## 3. Build and install a device candidate safely
 
 Integrate the accepted C core into the application's own UI through the `main/` lifecycle and BSP interfaces, following the [AI development guide](../ai-guide.md). Run the [complete repository gate](build-and-test.md) in the required ESP-IDF environment. Validate the candidate's actual image offsets, application size, and partition layout using that guide; do not promote one game's partition choices into a template-wide rule. Record the commit, uncommitted-source status, Wasm manifest, firmware hash, and shared asset hashes. Retain matching build/debug artifacts as specified by the build guide.
@@ -69,6 +166,7 @@ For each candidate, keep a concise acceptance record with:
 | --- | --- |
 | Identity | Commit, Wasm manifest/source hash, firmware and asset hashes, board revision, install method |
 | Demo | Scenario table, controlled fixture results, blind-play notes, visual/motion evidence, native-C/Wasm parity |
+| Resource stress | Trace/profile hashes, calibration and assumptions, limits, positive/negative controls, model/device differences; `PASS` / `FAIL` / `NOT RUN` (or justified `NOT APPLICABLE`) |
 | Build | Static/host tests, firmware and configured-layout gate results |
 | Device | Installed-build proof, physical playthrough and edge cases, performance/memory sample, sanitized logs or capture |
 | Decision | `PASS`, `FAIL`, or `NOT RUN` separately for Build, Host tests, Demo, and Device tests; owner, date, `Unverified` items |
@@ -85,4 +183,4 @@ Each game must supply its own Wasm build, stale-artifact check, parity test, and
 ./tools/validate.sh
 ```
 
-Before handing the candidate to a device tester, provide the demo URL/start command, scenario table and demo decision, exact validated firmware identity, installation/data plan, and device measurement plan. Use the [hardware guide](../../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for applicable board checks. Web preview acceptance, firmware build acceptance, and device acceptance remain separate results.
+Before handing the candidate to a device tester, provide the demo URL/start command, scenario table and demo decision, resource-stress report and calibration gaps, exact validated firmware identity, installation/data plan, and device measurement plan. Use the [hardware guide](../../hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for applicable board checks. Web preview acceptance, firmware build acceptance, and device acceptance remain separate results.

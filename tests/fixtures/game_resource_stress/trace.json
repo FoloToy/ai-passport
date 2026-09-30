@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "duration_us": 12000000,
+  "source": "Synthetic lifecycle; does not model gameplay rules.",
+  "events": [
+    {
+      "at_us": 0,
+      "audio": false,
+      "render": false,
+      "name": "title"
+    },
+    {
+      "at_us": 2000000,
+      "audio": true,
+      "render": true,
+      "name": "walking"
+    },
+    {
+      "at_us": 7000000,
+      "audio": true,
+      "render": true,
+      "name": "stopped with ambience"
+    },
+    {
+      "at_us": 10000000,
+      "audio": false,
+      "render": false,
+      "name": "return to title"
+    }
+  ]
+}
