@@ -45,6 +45,20 @@ esp_err_t bsp_audio_sleep(void) { return ESP_OK; }
 esp_err_t bsp_audio_wake(void) { return ESP_OK; }
 esp_err_t bsp_audio_prepare_deep_sleep(void) { return ESP_OK; }
 esp_err_t bsp_battery_sleep(void) { return ESP_OK; }
+
+// Key pad: tests set test_btn_mv to the voltage a held key would produce
+// (see the windows in bsp_pins.h), or leave it released.
+int test_btn_mv = 3300;
+int bsp_button_read_mv(void) { return test_btn_mv; }
+esp_err_t bsp_button_prepare_deep_sleep(int *level) {
+    if (level) *level = 1;
+    return ESP_OK;
+}
+esp_err_t esp_deep_sleep_enable_gpio_wakeup(uint64_t gpio_pin_mask,
+                                           esp_deepsleep_gpio_wake_up_mode_t mode) {
+    (void)gpio_pin_mask; (void)mode;
+    return ESP_OK;
+}
 esp_err_t bsp_i2c_prepare_deep_sleep(void) { return ESP_OK; }
 esp_err_t bsp_display_prepare_deep_sleep(void) { return ESP_OK; }
 esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t channels) {

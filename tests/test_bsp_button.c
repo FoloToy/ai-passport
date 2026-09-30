@@ -46,6 +46,28 @@ esp_err_t adc_cali_raw_to_voltage(adc_cali_handle_t h, int raw, int *mv) {
     *mv = raw; return ESP_OK;
 }
 int64_t esp_timer_get_time(void) { return clock_us; }
+
+// GPIO + delay stubs for the deep-sleep hand-off (see bsp_button_prepare_deep_sleep).
+static int gpio_direction_calls, gpio_pull_calls, gpio_level_calls, delay_calls, fail_gpio;
+static gpio_num_t gpio_last_pin;
+static gpio_mode_t gpio_last_mode;
+static gpio_pull_mode_t gpio_last_pull;
+static int gpio_level = 1;
+
+esp_err_t gpio_set_direction(gpio_num_t pin, gpio_mode_t mode) {
+    ++gpio_direction_calls; gpio_last_pin = pin; gpio_last_mode = mode;
+    return fail_gpio ? ESP_FAIL : ESP_OK;
+}
+esp_err_t gpio_set_pull_mode(gpio_num_t pin, gpio_pull_mode_t pull) {
+    ++gpio_pull_calls; gpio_last_pin = pin; gpio_last_pull = pull;
+    return fail_gpio ? ESP_FAIL : ESP_OK;
+}
+int gpio_get_level(gpio_num_t pin) {
+    (void)pin; ++gpio_level_calls; return gpio_level;
+}
+void vTaskDelay(TickType_t ticks) {
+    (void)ticks; ++delay_calls;
+}
 esp_err_t iot_button_create(const button_config_t *cfg, const button_driver_t *driver, button_handle_t *h) {
     // 判定门限必须由 BSP 显式下发(bsp_pins.h),不能退回组件默认的 180 / 1500ms。
     assert(cfg->short_press_time == BSP_BTN_SHORT_PRESS_MS);
@@ -84,6 +106,41 @@ static void assert_clean(void) {
     assert(!adc_live && !cal_live && !live_buttons && !s_ready && !s_adc && !s_cali);
     for (int i = 0; i < BSP_BTN_COUNT; ++i) assert(!s_btn[i]);
 }
+
+// The board hands the shared ADC key pad back to a plain digital input before
+// deep sleep: the drivers and the ADC must be released, the pin must get its
+// pull-up back, and the sampled level must be reported so the caller can skip
+// sleeping while a key is still held down.
+static void check_deep_sleep_prepare(void) {
+    reset_faults();
+    gpio_direction_calls = gpio_pull_calls = gpio_level_calls = delay_calls = 0;
+    fail_gpio = 0; gpio_level = 1;
+    assert(bsp_button_init(event_cb, &events) == ESP_OK);
+
+    int level = -1;
+    assert(bsp_button_prepare_deep_sleep(&level) == ESP_OK);
+    assert(level == 1);
+    assert(gpio_direction_calls == 1 && gpio_pull_calls == 1 && gpio_level_calls == 1);
+    assert(delay_calls == 1);                       // let the pull-up settle first
+    assert(gpio_last_pin == BSP_BTN_GPIO);
+    assert(gpio_last_mode == GPIO_MODE_INPUT);
+    assert(gpio_last_pull == GPIO_PULLUP_ONLY);
+    assert_clean();                                 // nothing may touch the pad afterwards
+
+    // A key still held low is reported as 0 so the caller can refuse to sleep.
+    gpio_level = 0; level = -1;
+    assert(bsp_button_prepare_deep_sleep(&level) == ESP_OK);
+    assert(level == 0);
+
+    // A pin failure is propagated instead of being reported as an idle pad.
+    fail_gpio = 1; level = -1;
+    assert(bsp_button_prepare_deep_sleep(&level) == ESP_FAIL);
+    assert(level == 0);
+    fail_gpio = 0;
+
+    assert(bsp_button_prepare_deep_sleep(NULL) == ESP_OK);   // level is optional
+    assert(bsp_button_init(event_cb, &events) == ESP_OK);    // the BSP stays reusable
+}
 static void retry_success(void) {
     assert_clean(); reset_faults();
     assert(bsp_button_init(event_cb, &events) == ESP_OK);
@@ -105,7 +162,7 @@ int main(void) {
         reset_faults(); fail_create = i;
         assert(bsp_button_init(event_cb, &events) != ESP_OK); retry_success();
     }
-    for (int i = 1; i <= BSP_BTN_COUNT * 4; ++i) {
+    for (int i = 1; i <= BSP_BTN_COUNT * 5; ++i) {
         reset_faults(); fail_callback = i;
         assert(bsp_button_init(event_cb, &events) != ESP_OK); retry_success();
     }
@@ -133,5 +190,6 @@ int main(void) {
     assert(adc_live && cal_live && live_buttons == BSP_BTN_COUNT);
     assert(bsp_button_init(event_cb, &events) == ESP_ERR_INVALID_STATE);
     fail_delete = 0; button_cleanup(); retry_success();
+    check_deep_sleep_prepare();
     puts("BSP button fault-injection tests: PASS");
 }
