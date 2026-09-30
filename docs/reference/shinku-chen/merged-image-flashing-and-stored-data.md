@@ -5,7 +5,8 @@
 # What Flashing a Merged Image Does to Stored Data
 
 Collected while verifying the **Asunabi** release on hardware, where one image and
-one board gave two different answers to "does this flash wipe the device?".
+one board gave two different answers to "does this flash wipe the device?" — and
+the answer depends on which flashing operation is used.
 
 ## The merged image is 0xFF wherever it has nothing to write
 
@@ -15,9 +16,13 @@ default layout the NVS partition sits at `0x9000` (24 KiB) and `phy_init` at
 `0xFF`, because `merge-bin` pads the gaps between the bootloader, the partition
 table, the application and the data partition.
 
-It is easy to read that padding as "this flash erases NVS". It does not.
+Those `0xFF` bytes are padding, not a preservation promise. A merged image is
+written at `0x0` and covers every byte of the range it contains; the writer erases
+and writes each sector the file reaches, NVS and `phy_init` included. The
+repository's flashing policy states the same thing: because the merged file pads
+the gaps between images, flashing it can reset the NVS and PHY data regions.
 
-## The padding is not a reliable erase
+## A segmented flash and a full-image write are different operations
 
 The same image was flashed twice, minutes apart, on the same board:
 
@@ -26,23 +31,33 @@ The same image was flashed twice, minutes apart, on the same board:
 - After the second flash the same firmware logged that there was **no saved state**
   and used its defaults.
 
-Nothing was corrupted, and no write failed in either case. The point is not which
-of the two is "correct": it is that writing a merged image must not be described as
-"wipes user data", and must not be used as a way to clear it. The repository's
-flashing policy already says preservation is not guaranteed; this is what that
-looks like in practice.
+Nothing was corrupted and no write failed in either case, but the two runs
+disagree. That disagreement is the finding: a full-image write must not be
+described as preserving stored data, and a successful boot after one is not
+evidence that it did.
+
+- **Segmented flashing** — `idf.py flash`, or writing selected component images at
+  their configured offsets — can leave data-region sectors that are not written
+  untouched, provided the partition layout matches and no written target covers
+  them. This is the operation to use during normal development when existing NVS
+  state should be preserved.
+- **A full merged-image write** covers the whole range of the file, including NVS
+  and `phy_init`, and can reset both regions. Use it for blank-device provisioning
+  or an intentional complete refresh, and do not promise that NVS or any other
+  stored user data survives it.
 
 ## What to do instead
 
-- **To keep stored data**, do not write the merged image blindly: confirm the
-  partition layout matches and write the component images at their configured
-  offsets, leaving NVS alone.
+- **To keep stored data**, export or save it first using a method supported by the
+  application, then use segmented flashing with a compatible partition layout and
+  flash targets that do not overwrite the data regions. Do not write the merged
+  image blindly.
 - **To clear stored data**, do it explicitly and say so — the application's own
   erase/format step for its namespace, or an explicit `erase_region` of the whole
   partition. Do not rely on a full-image write as an erase.
-- **When reporting a device test, state what was preserved** rather than assuming
-  either answer: the boot log usually tells you, for example a line saying a saved
-  state was restored or that defaults were used.
+- **When reporting a device test, state which operation was used and what was
+  preserved** rather than assuming an answer: the boot log usually tells you, for
+  example a line saying a saved state was restored or that defaults were used.
 - **Verify the published artifact** rather than a local build when the point is to
   accept a release; that habit is already recorded in
   [Size Static Buffers from the Panel, and Verify the Release Artifact](release-artifact-verification.md).
