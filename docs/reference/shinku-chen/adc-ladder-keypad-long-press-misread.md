@@ -13,8 +13,9 @@ in the electrical layer rather than in one application.
 > **Verification status.** Measured on one AI Passport board (ESP32-C3 revision
 > v1.1, 8 MB flash, no PSRAM) with a key-event black box recording the ADC
 > millivolts each event was detected at. The trap, the lock and the fixed
-> behaviour were exercised; the window values of other boards, wear over time and
-> behaviour at low battery are **not** covered.
+> behaviour were exercised; the lock and the black box are fork-side additions
+> (see below) and are **not** present in upstream `main`. The window values of
+> other boards, wear over time and behaviour at low battery are **not** covered.
 
 ## What the three keys actually are
 
@@ -56,8 +57,12 @@ would hit any application where a long press has a side effect.
 
 ## The lock
 
-The BSP driver now keeps a key identity instead of answering window by window
-(`components/bsp/src/bsp_button.c`):
+The fork adds a key-identity lock on top of the upstream window-by-window
+polling. It is **not** part of upstream `main`: the implementation lives in the
+fork commit
+[`e0c260d`](https://github.com/Shinku-Chen/ai-passport/blob/e0c260d1782c52f6edf513ce7fd0b3cae3564cf6/components/bsp/src/bsp_button.c)
+(`feature/senren-banka`, also carried by `feature/dracu-riot`), in
+`components/bsp/src/bsp_button.c`:
 
 - **Confirm before accepting a press (40 ms).** A window must be stable for
   40 ms before the driver reports anything. This also skips the intermediate
@@ -79,9 +84,10 @@ unstable window into a stable key.
 The fix was only worth trusting once the failure had been seen in numbers, so the
 application keeps a small ring of the last 32 key events: elapsed milliseconds,
 key, event, and **the ADC millivolts of the very sample the driver used to decide**
-(`bsp_button_last_mv()`, which reads the same shared 1 ms sample the three drivers
-poll). The ring is read back over the serial channel, so the machine can be used
-normally and examined afterwards instead of being watched live.
+(`bsp_button_last_mv()`, a fork-side accessor added by the same commit, which
+reads the same shared 1 ms sample the three drivers poll). The ring is read back
+over the serial channel, so the machine can be used normally and examined
+afterwards instead of being watched live.
 
 What it showed, in order:
 
