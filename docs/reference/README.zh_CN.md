@@ -24,6 +24,8 @@
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
 
 - [在无 PSRAM 的板子上打视觉小说剧本包](shinku-chen/vn-script-pack-budget-and-failure-modes.zh_CN.md) — 5.06 MB 剧本压到 1.45 MB、块大小为什么由「最大连续空闲块 7.7 KB」而不是空闲堆决定，以及三个互不相关的缺陷为什么都表现为「一进阅读就全剧终」，还有让它们现形的启动自检。
+- [让手机做网络、设备只做 BLE 语音上行](shinku-chen/ble-voice-uplink-and-pairing.zh_CN.md) — 让设备保持纯 BLE 外设，从而把凭据与 Wi-Fi 配网都挡在板外：NUS 帧 + magic 重同步、LE Secure Connections 与 6 位配对码、无 PSRAM 上约 3 KB/s 的 Opus 上行、音频限流，以及由按下事件驱动的屏幕反馈加兜底超时。
+- [给「一键一个 ADC」键盘加键位锁](shinku-chen/adc-ladder-keyboard-key-lock.zh_CN.md) — 为什么按住一个键会报成相邻键、靠按键日志才能看见它，以及 BSP 层的键位锁与显式按压门限怎么修掉它。
 
 **应用档案：**
 
@@ -36,6 +38,7 @@
 - [星空列车与白的旅行](shinku-chen/starry-sky-railroad/README.zh_CN.md) — 把 39 章的同人移植剧本离线装进机身的竖屏视觉小说阅读器，立绘跟随说话人、每次换场景自动存档。
 - [千恋＊万花](shinku-chen/senren-banka/README.zh_CN.md) — 竖屏视觉小说阅读器，把整部剧情连通背景、立绘与事件插图装进设备，支持自动阅读、快进、跳过章节与多档存档。
 - [魔女的夜宴](shinku-chen/sanoba-witch/README.zh_CN.md) — 101 章、五条线五个结局、全部装进 Flash 的竖屏视觉小说阅读器。
+- [随身 AI 对讲机](shinku-chen/intercom/README.zh_CN.md) — 挂在手机上的 AI 对讲机：按住 OK 说话，配套安卓应用把话交给自己的 AI 助理，回答回到设备屏与手机；设备本身不联网，只有三个键。
 
 ### PhoenixZHC
 
