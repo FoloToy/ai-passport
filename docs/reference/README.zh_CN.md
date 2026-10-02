@@ -25,6 +25,7 @@
 
 - [在无 PSRAM 的板子上打视觉小说剧本包](shinku-chen/vn-script-pack-budget-and-failure-modes.zh_CN.md) — 5.06 MB 剧本压到 1.45 MB、块大小为什么由「最大连续空闲块 7.7 KB」而不是空闲堆决定，以及三个互不相关的缺陷为什么都表现为「一进阅读就全剧终」，还有让它们现形的启动自检。
 - [让手机做网络、设备只做 BLE 语音上行](shinku-chen/ble-voice-uplink-and-pairing.zh_CN.md) — 让设备保持纯 BLE 外设，从而把凭据与 Wi-Fi 配网都挡在板外：NUS 帧 + magic 重同步、LE Secure Connections 与 6 位配对码、无 PSRAM 上约 3 KB/s 的 Opus 上行、音频限流，以及由按下事件驱动的屏幕反馈加兜底超时。
+- [换了新工具链，固件就起不来了](shinku-chen/iram-dram-alias-and-toolchain-pitfall.zh_CN.md) —— ESP32-C3 上 IRAM 代码与 DRAM 数据共用同一片 SRAM：16 字节的源码改动加一个新版编译器就能吃掉 4 KB 堆（`\.dram0\.dummy` 是 IRAM 镜像的影子），以及刷机前该对比的三个数字。
 - [给「一键一个 ADC」键盘加键位锁](shinku-chen/adc-ladder-keyboard-key-lock.zh_CN.md) — 为什么按住一个键会报成相邻键、靠按键日志才能看见它，以及 BSP 层的键位锁与显式按压门限怎么修掉它。
 
 **应用档案：**

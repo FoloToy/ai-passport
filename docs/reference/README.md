@@ -32,6 +32,7 @@ The engineering rules themselves live under
 
 - [Packing a Visual-Novel Script for a No-PSRAM Board](shinku-chen/vn-script-pack-budget-and-failure-modes.md) — a 5.06 MB script packed into 1.45 MB, why the chunk size is set by the largest free block (7.7 KB, not by the free heap), and three unrelated defects that all presented as "the story ends immediately" plus the boot self-check that named them.
 - [A BLE Voice Uplink Where the Phone Does the Networking](shinku-chen/ble-voice-uplink-and-pairing.md) — keeping the board a pure BLE peripheral so no credential or Wi-Fi setup ever reaches it: NUS framing with magic re-sync, LE Secure Connections pairing with a 6-digit passkey, Opus at about 3 KB/s on a no-PSRAM part, metered audio flow, and a key-down-driven screen reaction with a bounded fallback.
+- [When a Newer Toolchain Makes the Firmware Unbootable](shinku-chen/iram-dram-alias-and-toolchain-pitfall.md) — why IRAM code and DRAM data are the same SRAM on the ESP32-C3, how a 16-byte source change plus a newer compiler cost 4 KB of heap (`\.dram0\.dummy` is a mirror of the IRAM image), and the three numbers to compare before flashing.
 - [A Key Lock for the ADC-Ladder Keyboard](shinku-chen/adc-ladder-keyboard-key-lock.md) — why a held key on a single-ADC ladder can report its neighbour, the key log that makes it visible, and the BSP-level key lock plus explicit press thresholds that fix it.
 
 **Application playbooks:**
