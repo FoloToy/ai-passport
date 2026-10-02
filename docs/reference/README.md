@@ -31,6 +31,9 @@ The engineering rules themselves live under
 - [Two-Device BLE Link Between AI Passport Boards (No PSRAM)](shinku-chen/two-device-ble-link.md) — symmetric peer discovery with an address tiebreak instead of host/join, measured link heap on a no-PSRAM part and its conflict with a static screenshot buffer, two hardware-only NimBLE GATT traps (missing `access_cb`, `EDONE` after a successful subscribe), NVS for RF calibration, and a stop-and-wait layer for turn-based play.
 
 - [Packing a Visual-Novel Script for a No-PSRAM Board](shinku-chen/vn-script-pack-budget-and-failure-modes.md) — a 5.06 MB script packed into 1.45 MB, why the chunk size is set by the largest free block (7.7 KB, not by the free heap), and three unrelated defects that all presented as "the story ends immediately" plus the boot self-check that named them.
+- [A BLE Voice Uplink Where the Phone Does the Networking](shinku-chen/ble-voice-uplink-and-pairing.md) — keeping the board a pure BLE peripheral so no credential or Wi-Fi setup ever reaches it: NUS framing with magic re-sync, LE Secure Connections pairing with a 6-digit passkey, Opus at about 3 KB/s on a no-PSRAM part, metered audio flow, and a key-down-driven screen reaction with a bounded fallback.
+- [When a Newer Toolchain Makes the Firmware Unbootable](shinku-chen/iram-dram-alias-and-toolchain-pitfall.md) — why IRAM code and DRAM data are the same SRAM on the ESP32-C3, how a 16-byte source change plus a newer compiler cost 4 KB of heap (`\.dram0\.dummy` is a mirror of the IRAM image), and the three numbers to compare before flashing.
+- [A Key Lock for the ADC-Ladder Keyboard](shinku-chen/adc-ladder-keyboard-key-lock.md) — why a held key on a single-ADC ladder can report its neighbour, the key log that makes it visible, and the BSP-level key lock plus explicit press thresholds that fix it.
 
 **Application playbooks:**
 
@@ -43,6 +46,7 @@ The engineering rules themselves live under
 - [Starry Sky Railroad and Shiro's Journey](shinku-chen/starry-sky-railroad/README.md) — a portrait visual-novel reader carrying a 39-chapter fan port offline, with per-speaker sprites and an automatic save on every scene.
 - [Senren * Banka](shinku-chen/senren-banka/README.md) — a portrait visual novel reader that carries the whole game — story, backgrounds, sprites and event illustrations — on the device, with auto-read, fast-forward, chapter skipping and save slots.
 - [Sanoba Witch](shinku-chen/sanoba-witch/README.md) — a portrait visual novel reader with 101 chapters, five routes and five endings, packed entirely into Flash.
+- [Pocket Intercom](shinku-chen/intercom/README.md) — a phone-tethered AI intercom: hold OK to talk through a companion Android app, with the answer back on the device screen and in the phone, three buttons, and no network setup on the device itself.
 
 ### PhoenixZHC
 
