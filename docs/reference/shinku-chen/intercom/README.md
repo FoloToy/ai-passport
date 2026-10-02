@@ -22,21 +22,22 @@ the middleman, and audio crosses the Bluetooth link as Opus at roughly 3 KB/s.
   > How it plays:
   > - Hold OK to talk. The screen turns red while it is getting ready and green when you can speak; let go to send, and the reply lands on the device screen.
   > - Press again to keep going, back and forth like a walkie-talkie. The same conversation shows up in the phone app so you can look back later.
-  > - Three buttons, nothing to learn: hold OK to talk, a short OK press only lights the screen, a long UP press opens settings, and UP / DOWN scroll the history.
+  > - Three buttons, nothing to learn: hold OK to talk, a short OK press only lights the screen, a long UP press opens the device settings (brightness / volume / mic gain / device info / re-pair), and UP / DOWN scroll the history.
+  > - Long answers are fine: the device screen scrolls eight lines at a time, a new message starts at its newest line, and anything longer is cut with a "……" marker - UP / DOWN let you read back.
+  > - Replies are read out loud by default (turn "device speech" off in Settings - Chat settings if you would rather only read): the phone synthesizes the voice and pushes it to the device, so the device still needs no network.
   > - Great whenever grabbing a phone is awkward: ask about the pot while cooking, check the weather before heading out, or answer a kid's random question. Grandparents and children pick it up instantly.
-  >
-  > About sound: this version does not speak yet - answers are shown as text on the device screen and in the phone app, and the device does not read them aloud. Spoken replies may come in a later version.
   >
   > Getting started takes three steps: flash this project's firmware, install the companion app and pair it with the device, then point the app at your AI assistant. With OpenClaw, the very first connection also needs the device approved once on the admin side - the app and the device screen tell you exactly what to do.
   >
-  > Long answers are fine: they scroll automatically, and UP / DOWN let you look back.
+  > Version: this release matches firmware **v1.13-intercom** and app **1.13**.
+  > **Please keep the phone app updated to 1.13 or newer** - firmware and app ship as a matched pair and only the major version has to match; an older app against newer firmware may fail to connect, show wrong state or miss features.
 
-- **Category**: productivity
+- **Category**: social
 - **Tags**: `family`
-- **Cover**: `cover-icon-3x4.png` (PNG, 1152 × 1536, 3:4) — the app icon; publish metadata only, the image is not committed here.
-- **Firmware**: `FoloToy-AI-Passport-full.bin`, 2,335,216 bytes,
-  sha256 `3e145858611cc30ee8c482e82301a91a4025a13a859bd795c0569d1c0079c402`
-  (release [`v1.8.0-intercom`](https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.8.0-intercom))
+- **Cover**: `cover-final-tight.png` (PNG, 1152 × 1536, 3:4) — the app icon; publish metadata only, the image is not committed here.
+- **Firmware**: `FoloToy-AI-Passport-full.bin`, 2,340,000 bytes,
+  sha256 `a9cc59ad4cf35c5e7e8c72f57ed446123070c7e5fac4122731801e0595731daa`
+  (release [`v1.13-intercom`](https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.13-intercom))
 - **Community play**: <https://ai-passport.folotoy.cn/plays/799/>
 - **Source (firmware)**: <https://github.com/Shinku-Chen/ai-passport/tree/feature/openclaw-intercom>
 - **Source (phone app, separate repository)**: <https://github.com/Shinku-Chen/ai-passport-openclaw-android>
@@ -51,7 +52,8 @@ the middleman, and audio crosses the Bluetooth link as Opus at roughly 3 KB/s.
   answer both appear on the device screen; the same conversation is shown in the
   phone app, which is also where the history is kept.
 - **Three buttons**: hold OK to talk, a short OK press only lights the screen, a
-  long UP press opens the settings screen (brightness, device information), and
+  long UP press opens the settings screen (brightness, volume, microphone gain, device
+  information, re-pair), and
   UP / DOWN scroll the conversation history.
 - **Gateway abstraction on the phone**: OpenClaw over WebSocket RPC with an
   ed25519 device identity, an OpenAI-compatible HTTP endpoint (Hermes and custom
@@ -63,7 +65,7 @@ the middleman, and audio crosses the Bluetooth link as Opus at roughly 3 KB/s.
 - **Gateway approval loop**: OpenClaw requires each device to be approved once;
   the app shows `Waiting for gateway approval … (deviceId …)` and retries every
   5 seconds for up to 180 seconds once the approval is granted.
-- **Text only**: this version does not do text-to-speech. Answers are shown as
+- **Device speech (TTS)**: replies can be synthesized by the phone and played back on the device (**on by default**). The device still needs no network; older firmware without the capability falls back to reading aloud on the phone.
   text; the app does not read them aloud and the settings screen has no related
   switch.
 - **Idle behaviour**: the backlight turns off after a minute of inactivity and any
@@ -103,6 +105,19 @@ the middleman, and audio crosses the Bluetooth link as Opus at roughly 3 KB/s.
 - **Fonts and assets**: a subset 16 px Chinese font generated by a script in the
   firmware branch (`tools/intercom_font.py`); the app icon is generated from a
   committed master image by `tools/make_android_icons.py` in the app repository.
+
+## Version history
+
+- **v1.8.0-intercom** — first release: BLE voice uplink, phone-side gateway, text on the device screen.
+- **v1.10-intercom** — firmware and app report their versions and warn on a mismatch (both sides, non-blocking);
+  the device settings menu hint line no longer uses a glyph the 16 px font lacks.
+- **v1.11–1.12-intercom** — device speech (TTS) synthesized by the phone downlink; the app's settings page became a
+  two-level menu; the device card shows the connected firmware version; app settings always shows the app version with
+  an update check; long replies scroll eight lines at a time and are cut with a "……" marker.
+- **v1.13-intercom** — a short OK press only wakes the screen (a release within 350 ms sends `turn_cancel`, so the
+  phone no longer answers "no speech"), recognition starts the moment the key goes down (`turn_start` is no longer
+  delayed), and a new message stops at its own first line while scrolling to the end leaves the last message
+  bottom-aligned.
 
 ## What was verified
 
