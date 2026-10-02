@@ -96,4 +96,4 @@ riscv32-esp-elf-nm build/<app>.elf | grep -E " (_heap_start|_bss_end)$"
 ## 相关经验
 
 - [让手机负责联网的 BLE 语音上行](ble-voice-uplink-and-pairing.zh_CN.md)
-- [Pocket Intercom 归档](../../shinku-chen/intercom/README.zh_CN.md)
+- [Pocket Intercom 归档](intercom/README.zh_CN.md)

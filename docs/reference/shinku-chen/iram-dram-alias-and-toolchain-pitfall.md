@@ -110,4 +110,4 @@ has no slack to absorb it.
 ## Related experience
 
 - [A BLE Voice Uplink Where the Phone Does the Networking](ble-voice-uplink-and-pairing.md)
-- [Pocket Intercom](../../shinku-chen/intercom/README.md)
+- [Pocket Intercom](intercom/README.md)
