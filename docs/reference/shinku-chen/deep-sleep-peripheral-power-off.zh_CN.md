@@ -71,7 +71,12 @@ deep-sleep 唤醒后，`bsp_display_init()` 会在 SPI 和 LEDC 接管前解除�
 
 ## 唤醒与恢复边界
 
-上游 Low Power demo 只使用 RTC 定时器唤醒，因为本仓库尚未定义共享 ADC 按键
-节点的可靠 deep-sleep 唤醒契约。deep sleep 会重启应用；正常 BSP 初始化将解除 LCD
-hold，并重新初始化显示、音频、I2S 和 I2C。light sleep 不得调用任何终端引脚释放
-或 LCD hold 接口，而应使用 `bsp_audio_wake()` 恢复音频。
+共享 ADC 按键节点**可以做**深睡唤醒，但睡前必须把引脚从 ADC 手里交回来：先停按键设备、
+释放共享 ADC unit，再把该脚交回普通数字输入并开启上拉（`bsp_button_prepare_deep_sleep()`，
+见 [Landscape Rotation and a Deep-sleep Key Wake](landscape-rotation-and-deep-sleep-key-wake.zh_CN.md)）。
+**ADC 接管时该脚的【数字】电平读回是 0** —— 不交回引脚，低电平唤醒条件在入睡瞬间就成立，
+设备会立刻醒回来（真机上表现为每隔一个空闲周期就 status=8 重连，等于周期性重启）。
+上游 Low Power demo 只用 RTC 定时器唤醒，是因为它没有做这一步。
+
+deep sleep 会重启应用；正常 BSP 初始化将解除 LCD hold，并重新初始化显示、音频、I2S 和 I2C。
+light sleep 不得调用任何终端引脚释放或 LCD hold 接口，而应使用 `bsp_audio_wake()` 恢复音频。
