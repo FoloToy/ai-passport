@@ -40,6 +40,29 @@ has to run *before* the first frame of a new sentence needs to play, not when th
 arrives. Verified over repeated cycles: every round played out with frames decoded equal
 to frames received, nothing dropped and nothing left over.
 
+## Turning the backlight off is not the same as turning the panel off
+
+A brightness of 0 only hides the picture: the controller keeps scanning its frame memory into
+the glass, and that scan - not the memory itself - is what costs current while the device is
+otherwise idle. `esp_lcd_panel_disp_on_off(panel, false)` (DISPOFF) stops the refresh and
+leaves the frame memory intact, so the idle path can blank the panel and the wake path can
+restore the screen immediately instead of repainting it.
+
+Two details are worth copying:
+
+- **Keep the reversible path separate from the terminal one.** Runtime blanking uses only
+  DISPOFF/DISPON. SLEEP IN stays in the deep-sleep preparation helper, which is a one-way
+  door (it also stops the backlight PWM, and the device is about to reboot anyway). DISPOFF
+  costs nothing to undo; SLEEP IN needs a ~120 ms SLPOUT sequence, and whether the controller
+  carries the frame memory through it is not something the datasheet states clearly enough to
+  rely on in a product path.
+- **Order the wake correctly: panel first, backlight second.** Turning the backlight back on
+  while the panel is still off shows one frame of not-quite-ready content.
+
+Holding the image is the cheap half of the trade, so an instant wake is essentially free.
+As always on this board, measure the real draw with an instrument before quoting numbers;
+the battery gauge reports state of charge and voltage only.
+
 ## Deep sleep is a separate, later step
 
 Deep sleep only makes sense once the earlier steps hold, and it needs the key-pad hand-off
