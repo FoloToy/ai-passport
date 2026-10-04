@@ -59,7 +59,9 @@ Two details are worth copying:
 - **Order the wake correctly: panel first, backlight second.** Turning the backlight back on
   while the panel is still off shows one frame of not-quite-ready content.
 
-Holding the image is the cheap half of the trade, so an instant wake is essentially free.
+Holding the image is the cheap half of the trade, so an instant wake is essentially free. Both
+directions were then verified on hardware: the screen blanks when the idle timeout expires,
+and a key press brings the same content back instantly.
 As always on this board, measure the real draw with an instrument before quoting numbers;
 the battery gauge reports state of charge and voltage only.
 
