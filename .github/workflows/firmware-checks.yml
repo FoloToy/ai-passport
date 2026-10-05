@@ -4,7 +4,6 @@ on:
   pull_request:
     paths-ignore:
       - "docs/**"
-      - "plays/**"
       - "skills/**"
       - "*.md"
   push:
@@ -12,7 +11,6 @@ on:
       - main
     paths-ignore:
       - "docs/**"
-      - "plays/**"
       - "skills/**"
       - "*.md"
   workflow_dispatch:

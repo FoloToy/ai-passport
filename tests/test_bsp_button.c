@@ -47,7 +47,9 @@ esp_err_t adc_cali_raw_to_voltage(adc_cali_handle_t h, int raw, int *mv) {
 }
 int64_t esp_timer_get_time(void) { return clock_us; }
 esp_err_t iot_button_create(const button_config_t *cfg, const button_driver_t *driver, button_handle_t *h) {
-    (void)cfg;
+    // 判定门限必须由 BSP 显式下发(bsp_pins.h),不能退回组件默认的 180 / 1500ms。
+    assert(cfg->short_press_time == BSP_BTN_SHORT_PRESS_MS);
+    assert(cfg->long_press_time == BSP_BTN_LONG_PRESS_MS);
     if (++create_calls == fail_create) return ESP_ERR_NO_MEM;
     for (int i = 0; i < BSP_BTN_COUNT; ++i) {
         if (buttons[i].live) continue;
