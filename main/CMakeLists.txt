@@ -1,5 +1,13 @@
 idf_component_register(
     SRCS "main.c"
+         "eevee_app.c"
+         "eevee_badge_ui.c"
+         "eevee_client.c"
+         "eevee_config.c"
+         "eevee_font.c"
+         "eevee_cjk_font.c"
+         "eevee_parser.c"
+         "eevee_prov.c"
          "demo_navigation.c"
          "ui_pixel.c"
          "ui_pixel_math.c"
@@ -12,5 +20,5 @@ idf_component_register(
          "demo_ble.c"
          "demo_low_power.c"
     INCLUDE_DIRS "."
-    REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
+    REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash esp_http_client esp_http_server json
 )
