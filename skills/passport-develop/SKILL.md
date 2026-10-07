@@ -20,12 +20,14 @@ documents. Start with `git status --short --branch`.
    actions, persistent data, networking/audio, and failure states as relevant.
    Ask only questions that materially affect the implementation; state reasonable
    defaults. Do not add Wi-Fi, cloud services, new wiring, or paid dependencies
-   to an offline request. Missing hardware facts are not assumptions to invent.
-2. Continue an existing application on its intended branch. For a new application,
-   start from the agreed baseline on `feature/*`, preserving dirty work. Do not
-   switch, stash, reset, or overwrite someone else's changes to obtain a clean
-   starting point. If work overlaps or branch choice is ambiguous, resolve it
-   with the user. Do not commit, push, or publish without authorization.
+2. [Strictly protect main branch, isolate development in feature branch]: Per
+   `docs/fork-guide.md`, the `main` branch must remain a clean synchronization baseline
+   with `upstream/main`; never develop or commit product-specific firmware directly on
+   `main`. Verify the active branch (`git status -sb`) before editing; if on `main`,
+   branch to `feature/*` first. Continue an existing application on its intended branch,
+   preserving dirty work. Do not switch, stash, reset, or overwrite someone else's
+   changes to obtain a clean starting point. If work overlaps or branch choice is
+   ambiguous, resolve it with the user. Do not commit, push, or publish without authorization.
 3. Consult relevant demo branches and `docs/reference/README.md`. Extract the
    needed patterns, not whole branches or their stale BSP/configuration. Apply
    the AI guide's mandatory UI redesign rule: derivative applications must have
