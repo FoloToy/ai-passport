@@ -154,7 +154,7 @@ esp_err_t bsp_battery_init(void) {
     }
 
     if (!profile_matches) {
-        ESP_LOGI(TAG, "写入优特利 520mAh 自定义 profile");
+        ESP_LOGI(TAG, "写入优特利 500mAh 自定义 profile");
         if (cw_update_profile() != 0) {
             ESP_LOGE(TAG, "自定义 profile 写入失败");
             e = ESP_FAIL;
@@ -170,7 +170,7 @@ esp_err_t bsp_battery_init(void) {
             e = ESP_FAIL;
             goto fail;
         }
-        ESP_LOGI(TAG, "优特利 520mAh profile 已匹配");
+        ESP_LOGI(TAG, "优特利 500mAh profile 已匹配");
     }
 
     if (cw_wait_soc_ready() != 0) {
