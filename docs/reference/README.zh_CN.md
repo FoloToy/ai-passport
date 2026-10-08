@@ -39,6 +39,8 @@
 - [在无多余帧缓冲的板子上实现 `FAP_SCREENSHOT_V1`](shinku-chen/fap-screenshot-without-frame-buffer.zh_CN.md) — 社区 publisher 的串口协议在无 PSRAM 板子上的做法：复用画面区画布分两段抓、省下额外的 150KB 帧缓冲；驱动快路径把整帧从 56 秒压到 1.7 秒；短写丢 2048 字节块、日志字节混入负载，以及 USB-Serial-JTAG 驱动该装在哪。
 - [行距按字体度量算而非生成字号算](shinku-chen/cjk-line-pitch-from-font-metrics.zh_CN.md) — 为什么生成的 16px 中日韩子集报告 20px 行高、抄来的「字号减 16」如何把五行正文溢出文本框，以及把分页版面与标签盒子绑在一起的静态断言。
 - [移植剧本进入阅读器之前先清洗](shinku-chen/ported-script-text-cleanup.zh_CN.md) — 人工编辑过的数据集里混着内联排版指令与译者备注，在打包器里只删非对白内容、不动正文的规则，以及保住正常标点的回归用例。
+- [共用解块缓冲只能有一个所有者](shinku-chen/shared-block-buffer-caches.zh_CN.md) — 一块共用解块缓冲上"每路各自记缓存"会让第二页起解到另一路的数据；为什么单帧截图看不见它；以及能看见它的连续性验证。
+- [源工程是"线性页表"的作品怎么移植](shinku-chen/linear-page-table-ports.zh_CN.md) — 把 JavaScript 分支配置编译成经穷举校核的数据表、页表与正文按块流打包、章节表按页号排序，以及发布前要跑的"重复块死循环"与"路线可达性"检查。
 
 - [在无 PSRAM 的板子上打视觉小说剧本包](shinku-chen/vn-script-pack-budget-and-failure-modes.zh_CN.md) — 5.06 MB 剧本压到 1.45 MB、块大小为什么由「最大连续空闲块 7.7 KB」而不是空闲堆决定，以及三个互不相关的缺陷为什么都表现为「一进阅读就全剧终」，还有让它们现形的启动自检。
 - [ADC 阶梯键盘会把长按读成另一个键](shinku-chen/adc-ladder-keypad-long-press-misread.zh_CN.md) — 三个键共用一个 ADC 引脚靠电压窗口区分；按住的键触点短暂失联时电压会扫过别的键的窗口、把它报成一次单击；修掉它的键位锁，以及把每个事件当时的 ADC 毫伏值记下来的按键黑匣子。
