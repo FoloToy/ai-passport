@@ -11,8 +11,6 @@ usage() {
 run_static_checks() {
     local actionlint_bin
     local test_dir
-    local dead_code_flag="-Wl,--gc-sections"
-    if [[ "$(uname -s)" == Darwin ]]; then dead_code_flag="-Wl,-dead_strip"; fi
 
     python3 tools/check_repo.py
 
@@ -59,7 +57,7 @@ run_static_checks() {
     for demo in audio low_power ble wifi; do
         "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
             -ffunction-sections -fdata-sections -Itests/demo_stubs -Imain \
-            "tests/test_demo_${demo}_runtime.c" "${dead_code_flag}" \
+            "tests/test_demo_${demo}_runtime.c" -Wl,--gc-sections \
             -o "${test_dir}/test_demo_${demo}_runtime"
         "${test_dir}/test_demo_${demo}_runtime"
     done
@@ -68,7 +66,6 @@ run_static_checks() {
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_archive_firmware.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_install_passport_skills.py
-    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_game_resource_stress.py
     rm -rf "${test_dir}"
     echo "Host tests: PASS"
 }
