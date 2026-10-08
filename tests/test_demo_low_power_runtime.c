@@ -27,5 +27,19 @@ int main(void) {
     assert(demo_low_power_stop() == ESP_OK);
     assert(test_task_deletes == 2);
     puts("low-power worker timeout/retry/re-entry tests: PASS");
+
+    // Deep-sleep hand-off failure must restart rather than leave the page alive
+    // with the key pad already torn down (input can never come back). Force the
+    // prepare call to fail and verify esp_restart() is reached.
+    test_prepare_deep_sleep_result = ESP_FAIL;
+    assert(demo_low_power_start() == ESP_OK);
+    TaskHandle_t fault_task = s_task;
+    demo_low_power_key(BSP_BTN_DOWN, BSP_BTN_CLICK);  // select DEEP SLEEP
+    unsigned restarts = test_restarts;
+    demo_low_power_key(BSP_BTN_OK, BSP_BTN_CLICK);    // run DEEP
+    test_run_worker(fault_task);
+    assert(test_restarts == restarts + 1);
+    puts("low-power hand-off failure restart test: PASS");
+
     return 0;
 }

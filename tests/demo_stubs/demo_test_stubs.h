@@ -54,6 +54,10 @@ esp_err_t bsp_button_prepare_deep_sleep(int *level);
 // Voltage the key pad reports in host tests; set it to a pressed window to drive
 // the "refuse to sleep" path.
 extern int test_btn_mv;
+// Deep-sleep hand-off result a test can force via bsp_button_prepare_deep_sleep().
+extern esp_err_t test_prepare_deep_sleep_result;
+// Number of times esp_restart() was reached in the demo runtime host test.
+extern unsigned test_restarts;
 esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t channels);
 void bsp_audio_set_volume(uint8_t percent);
 esp_err_t bsp_audio_read(void *pcm, size_t bytes);
