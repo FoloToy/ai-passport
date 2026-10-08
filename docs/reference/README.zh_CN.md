@@ -18,7 +18,9 @@
 - [发布后收尾：AI Passport 发布流程的衔接](shinku-chen/post-release-follow-up.zh_CN.md) — 确认发布目的地、发布时包含数据分区、以及发布后收尾各轨道的同意门槛。
 - [ESP32-C3（无 PSRAM）上的显示刷新与深睡](shinku-chen/display-refresh-and-deep-sleep.zh_CN.md) — 直接刷新单个图片矩形、RTC GPIO 深睡唤醒，以及 LVGL 对象类型误用的崩溃特征。
 - [深睡前关闭板载外设](shinku-chen/deep-sleep-peripheral-power-off.zh_CN.md) — 寄存器校验关闭、共享总线顺序、终端 GPIO 状态、LCD deep-sleep hold、`esp_codec_dev_close()` 打开状态陷阱及剩余硬件负载。
+- [常连 BLE 链路下的空闲省电](shinku-chen/ble-active-idle-power.zh_CN.md) — 链路在用时只降频不开系统浅睡、只把真正的流量算作活动、空闲时挂起 codec 并在活动时唤醒，以及用设备自己报的帧计数对账。
 - [横屏旋转与深睡按键唤醒](shinku-chen/landscape-rotation-and-deep-sleep-key-wake.zh_CN.md) — 通过 LVGL 把竖屏面板转成 320 × 240 横屏、圆角遮罩为何必须跟随逻辑分辨率，以及被 ADC 占用的引脚如何让低电平深睡唤醒在入睡瞬间就成立。
+- [空闲省电分档与唤醒守卫](shinku-chen/idle-power-stages-and-wake-guards.zh_CN.md) — 深睡启动期间一直按着的键为何被判成长按、以及跟随便手的守卫如何解决；自动 light sleep 为何会拉长基于 `skip_unhandled_events` 定时器的倒计时；以及协议持续重试时停射频的真实代价。
 - [设备端对弈 AI 的墙钟预算](shinku-chen/on-device-game-ai-wall-clock-budget.zh_CN.md) — 为什么节点数上限在这块板上会跑偏（约每秒 1.5 万节点）、用时间预算迭代加深、让出 CPU 避免饿死空闲任务，以及用失误率表达难度。
 - [静态缓冲按面板算，并验证已发布的产物](shinku-chen/release-artifact-verification.zh_CN.md) — 一处 51KB 缓冲错误导致空闲堆只剩 8KB、读已发布合并镜像的启动日志，以及替换刚发布的版本而不是另发后续版本。
 - [无 PSRAM 的 AI Passport 双机 BLE 联机](shinku-chen/two-device-ble-link.zh_CN.md) — 用地址大小做对等发现、把角色选择从界面里去掉；无 PSRAM 上联机的实测堆开销及其与静态截图缓冲的冲突；两个只在真机暴露的 NimBLE GATT 陷阱（缺 `access_cb`、订阅成功后的 `EDONE`）；NVS 与射频校准；回合制对战的停等可靠层。
@@ -43,6 +45,8 @@
 - [源工程是"线性页表"的作品怎么移植](shinku-chen/linear-page-table-ports.zh_CN.md) — 把 JavaScript 分支配置编译成经穷举校核的数据表、页表与正文按块流打包、章节表按页号排序，以及发布前要跑的"重复块死循环"与"路线可达性"检查。
 
 - [在无 PSRAM 的板子上打视觉小说剧本包](shinku-chen/vn-script-pack-budget-and-failure-modes.zh_CN.md) — 5.06 MB 剧本压到 1.45 MB、块大小为什么由「最大连续空闲块 7.7 KB」而不是空闲堆决定，以及三个互不相关的缺陷为什么都表现为「一进阅读就全剧终」，还有让它们现形的启动自检。
+- [让手机做网络、设备只做 BLE 语音上行](shinku-chen/ble-voice-uplink-and-pairing.zh_CN.md) — 让设备保持纯 BLE 外设，从而把凭据与 Wi-Fi 配网都挡在板外：NUS 帧 + magic 重同步、LE Secure Connections 与 6 位配对码、无 PSRAM 上约 3 KB/s 的 Opus 上行、音频限流，以及由按下事件驱动的屏幕反馈加兜底超时。
+- [换了新工具链，固件就起不来了](shinku-chen/iram-dram-alias-and-toolchain-pitfall.zh_CN.md) —— ESP32-C3 上 IRAM 代码与 DRAM 数据共用同一片 SRAM：16 字节的源码改动加一个新版编译器就能吃掉 4 KB 堆（`\.dram0\.dummy` 是 IRAM 镜像的影子），以及刷机前该对比的三个数字。
 - [ADC 阶梯键盘会把长按读成另一个键](shinku-chen/adc-ladder-keypad-long-press-misread.zh_CN.md) — 三个键共用一个 ADC 引脚靠电压窗口区分；按住的键触点短暂失联时电压会扫过别的键的窗口、把它报成一次单击；修掉它的键位锁，以及把每个事件当时的 ADC 毫伏值记下来的按键黑匣子。
 - [无 PSRAM 把视觉小说装进 8 MB](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.zh_CN.md) — 在最大连续空闲块只有 7.7 KB 的前提下塞进 5.26 MB 图片包与 1.43 MB 剧本包：ROM inflate 为何不可用、3 KB 块上限及其压缩率代价、按设备原生几何打包，以及两次由固定上限导致的静默失败。
 
@@ -57,6 +61,7 @@
 - [星空列车与白的旅行](shinku-chen/starry-sky-railroad/README.zh_CN.md) — 把 39 章的同人移植剧本离线装进机身的竖屏视觉小说阅读器，立绘跟随说话人、每次换场景自动存档。
 - [千恋＊万花](shinku-chen/senren-banka/README.zh_CN.md) — 竖屏视觉小说阅读器，把整部剧情连通背景、立绘与事件插图装进设备，支持自动阅读、快进、跳过章节与多档存档。
 - [魔女的夜宴](shinku-chen/sanoba-witch/README.zh_CN.md) — 101 章、五条线五个结局、全部装进 Flash 的竖屏视觉小说阅读器。
+- [随身 AI 对讲机](shinku-chen/intercom/README.zh_CN.md) — 挂在手机上的 AI 对讲机：按住 OK 说话，配套安卓应用把话交给自己的 AI 助理，回答回到设备屏与手机；设备本身不联网，只有三个键。
 
 ### PhoenixZHC
 
