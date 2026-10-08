@@ -1,0 +1,14 @@
+{
+  "schema": 2,
+  "duration_us": 200000,
+  "events": [
+    {
+      "at_us": 0,
+      "active": [
+        "sample",
+        "storage",
+        "status"
+      ]
+    }
+  ]
+}

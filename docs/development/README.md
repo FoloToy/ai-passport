@@ -13,6 +13,8 @@ This directory contains AI Passport engineering rules and reusable workflows, gr
 
 ## Engineering
 
+- [resource-stress.md](engineering/resource-stress.md): optional application-neutral load experiments, regression tests, and calibration boundaries.
+
 - [application-demo-to-device-acceptance.md](engineering/application-demo-to-device-acceptance.md): shared C/WebAssembly and H5 interaction review, calibrated resource checks, and physical-device acceptance for applications.
 - [environment-setup.md](engineering/environment-setup.md): clean-machine bootstrap for AI agents, including international and mainland China download routes.
 - [build-and-test.md](engineering/build-and-test.md): ESP-IDF build and validation.

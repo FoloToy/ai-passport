@@ -1,0 +1,63 @@
+{
+  "schema": 2,
+  "name": "Synthetic sensor recorder, storage and status display",
+  "calibration": {
+    "status": "synthetic",
+    "source": "Independent non-game multi-task regression fixture.",
+    "assumptions": [
+      "All costs and memory budgets are illustrative."
+    ]
+  },
+  "tasks": [
+    {
+      "id": "sample",
+      "mode": "periodic",
+      "priority": 6,
+      "cpu_us": 200,
+      "period_us": 2000,
+      "transfer_us": 0,
+      "wait": "blocking",
+      "limits": {
+        "max_lateness_us": 0,
+        "max_dropped_jobs": 0
+      }
+    },
+    {
+      "id": "storage",
+      "mode": "periodic",
+      "priority": 4,
+      "cpu_us": 400,
+      "period_us": 20000,
+      "transfer_us": 6000,
+      "wait": "blocking",
+      "limits": {
+        "max_lateness_us": 0,
+        "max_dropped_jobs": 0
+      }
+    },
+    {
+      "id": "status",
+      "mode": "periodic",
+      "priority": 2,
+      "cpu_us": 800,
+      "period_us": 40000,
+      "transfer_us": 10000,
+      "wait": "blocking",
+      "limits": {
+        "max_lateness_us": 0,
+        "max_dropped_jobs": 0
+      }
+    }
+  ],
+  "memory": {
+    "available_bytes": 64000,
+    "largest_block_bytes": 32000,
+    "reserve_bytes": 8000,
+    "allocations": [
+      {
+        "name": "record-buffer",
+        "bytes": 4000
+      }
+    ]
+  }
+}
