@@ -10,7 +10,9 @@ policy itself is ordinary; three of the things it ran into are worth writing dow
 
 ## A key held through the boot is graded a long press
 
-The only deep-sleep wake source on this board is the shared ADC key node (GPIO0).
+The onboard function-button wake input is the shared ADC key node (GPIO0), which
+is not the board's only deep-sleep wake source: the baseline also wakes from the
+RTC timer.
 The key pressed to wake the device stays held while the firmware comes up, so the
 button component - which starts a few hundred milliseconds in - registers a press
 that is already down and grades it a long press once it has been down long enough.
@@ -34,8 +36,10 @@ net for a stuck key. Two things to keep in mind:
   a leftover timer cause can both be reported, so comparing against a single cause
   is not enough.
 
-This applies to any product on this board that wakes from deep sleep by key - which
-is all of them, since GPIO0 is the only wake source.
+This applies to any product on this board that wakes from deep sleep by key. Whether
+a product arms key wake at all is a design choice, not a universal requirement: the
+baseline wakes from the RTC timer, and only applications that need user-initiated
+wake-up should add the key as an extra wake source.
 
 ## Automatic light sleep stretches the timer you schedule the sleep with
 
@@ -67,7 +71,7 @@ gone on purpose.
 
 When the radio-off window is bounded by a deep-sleep fallback, keeping the link is
 usually the better trade. Measured on this board, half an hour with the radio up
-costs roughly 10 mAh of the 520 mAh cell (an estimate from the parts list, about
+costs roughly 10 mAh of the 500 mAh cell (an estimate from the parts list, about
 2 %), and buys an instant wake with no reconnect, server push still arriving, and no
 retry storm to quiet. The arithmetic changes with the window: over eight hours the
 radio is worth about a third of the cell, and a long window has to stop the station
