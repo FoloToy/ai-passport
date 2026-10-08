@@ -84,9 +84,17 @@ loads individually.
 
 ## Wake and recovery boundary
 
-The upstream Low Power demo uses RTC timer wake only because the shared ADC
-button node has no confirmed deep-sleep wake contract in this repository. Deep
-sleep restarts the application; normal BSP initialization releases LCD holds and
+The shared ADC button node **can** wake the device from deep sleep, but the pin has to be
+handed back from the ADC unit first: stop the button devices, release the shared ADC unit,
+then return the pin to a plain digital input with the pull-up enabled
+(`bsp_button_prepare_deep_sleep()`, see
+[Landscape Rotation and a Deep-sleep Key Wake](landscape-rotation-and-deep-sleep-key-wake.md)).
+**While the ADC owns the pin its digital level reads 0** - without that hand-off the low-level
+wake condition is already true at sleep entry and the device wakes immediately (on hardware
+this shows up as a status=8 reconnect once per idle cycle, that is, a periodic reboot).
+The upstream Low Power demo uses RTC timer wake only because it does not perform this step.
+
+Deep sleep restarts the application; normal BSP initialization releases LCD holds and
 reinitializes display, audio, I2S, and I2C. Light sleep must not call any of the
 terminal pin-release or LCD-hold interfaces and instead resumes audio with
 `bsp_audio_wake()`.
