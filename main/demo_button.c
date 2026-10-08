@@ -16,7 +16,7 @@ static char s_lines[LOG_LINES][32];
 static int  s_line_cnt;
 
 static const char *BTN_NAME[] = { "UP", "DOWN", "OK" };
-static const char *EV_NAME[]  = { "PRESS", "CLICK", "DOUBLE", "LONG" };
+static const char *EV_NAME[]  = { "PRESS", "CLICK", "DOUBLE", "LONG", "RELEASE" };
 
 // 每 100ms 刷新一次电压。lv_timer 跑在 LVGL 任务里,已持有锁,可直接操作对象。
 static void tick(lv_timer_t *t) {

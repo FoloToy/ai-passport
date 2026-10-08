@@ -12,6 +12,7 @@
 #include "bsp_pins.h"      // 错误日志里要打印 BSP_LCD_* 引脚号
 #include "demo.h"
 #include "demo_navigation.h"
+#include "key_guard.h"
 #include "ui_pixel.h"
 #include "lvgl.h"
 #include "esp_log.h"
@@ -188,20 +189,20 @@ static void input_dispatch_deinit(void) {
 // is already down, and grades it a long press once it has been down for its
 // threshold (500 ms here), so an unintended action fires almost immediately. Drop
 // key actions until that press comes up; the deadline is only a safety net so a
-// stuck key cannot leave the pad dead.
+// stuck key cannot leave the pad dead. The state machine lives in key_guard.h so it
+// can be unit-tested without the rest of the demo.
 #define KEY_GUARD_MAX_US (10LL * 1000 * 1000)
-static volatile bool s_key_guard;
-static int64_t s_key_guard_deadline_us;
+static key_guard_t s_key_guard;
 
 // button callbacks run on the shared esp_timer task; enqueue only and return immediately.
 static void on_key(bsp_btn_t btn, bsp_btn_ev_t ev, void *user) {
     (void)user;
     if (!s_input_ready || !s_input_queue) return;
-    if (s_key_guard) {
-        // The release and the deadline both arrive on this task, so no locking is
-        // needed to end the guard.
-        if (ev == BSP_BTN_RELEASE || esp_timer_get_time() >= s_key_guard_deadline_us) {
-            s_key_guard = false;
+    const bool was_armed = s_key_guard.armed;
+    if (key_guard_consume(&s_key_guard, ev == BSP_BTN_RELEASE, esp_timer_get_time())) {
+        // The release and the deadline both arrive on this task; log the disarm
+        // transition once it happens.
+        if (was_armed && !s_key_guard.armed) {
             ESP_LOGI(TAG, "唤醒键已松手,按键恢复响应");
         }
         return;
@@ -218,8 +219,7 @@ void app_main(void) {
     }
     // 按键唤醒时,那颗键在整个启动期间还按着。先挡住它的动作(见 on_key)。
     if (wake_causes & (1u << ESP_SLEEP_WAKEUP_GPIO)) {
-        s_key_guard = true;
-        s_key_guard_deadline_us = esp_timer_get_time() + KEY_GUARD_MAX_US;
+        key_guard_arm(&s_key_guard, esp_timer_get_time(), KEY_GUARD_MAX_US);
         ESP_LOGI(TAG, "按键唤醒:先屏蔽按键动作,直到那颗键松手");
     }
 
@@ -250,6 +250,14 @@ void app_main(void) {
     } else if (button_err != ESP_OK) {
         ESP_LOGE(TAG, "按键初始化失败: %s", esp_err_to_name(button_err));
         input_dispatch_deinit();
+    } else if (s_key_guard.armed) {
+        // 若唤醒键在按键驱动启动前就已松手,组件不会产生 release 事件,守卫会一直
+        // 拦到兜底。初始化完成后按真实电压同步一次:已松手立即撤防。
+        const bool released = bsp_button_read_mv() >= BSP_BTN_MV_RELEASED_MIN;
+        key_guard_sync_released(&s_key_guard, released);
+        if (!s_key_guard.armed) {
+            ESP_LOGI(TAG, "唤醒键在按键驱动启动前已松手,提前撤防");
+        }
     }
     s_ok[2] = (bsp_audio_init() == ESP_OK);
     s_ok[3] = (bsp_battery_init() == ESP_OK);

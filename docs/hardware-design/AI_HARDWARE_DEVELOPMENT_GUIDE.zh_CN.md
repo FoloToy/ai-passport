@@ -38,7 +38,7 @@ AI 应先完成以下检查：
 | 电池 | CW2017 电量计 | 共享 I2C0，地址 0x63 | 可缺省 SOC/电压驱动 |
 | Wi-Fi | ESP32-C3 2.4 GHz STA | 应用页按需初始化 | 扫描页 |
 | Bluetooth LE | ESP32-C3 NimBLE peripheral | 应用页按需初始化 | 不可连接广播页 |
-| 低功耗 | ESP32-C3 light/deep sleep | RTC timer 唤醒 | 2 秒 light sleep 和 5 秒 deep sleep 模式 |
+| 低功耗 | ESP32-C3 light/deep sleep | RTC timer 与 GPIO0 按键唤醒 | 2 秒 light sleep 和 5 秒 deep sleep 模式 |
 | 日志 | USB Serial/JTAG | 原生 USB GPIO18/19 | 已配置 |
 
 ## 3. 引脚表与资源所有权
@@ -121,7 +121,7 @@ app_main
 
 显示、按键、音频和 LVGL 成功初始化后可重复调用。显示、按键与音频在 BSP 中途失败时会释放本次取得的资源；LVGL display/回调注册失败时只移除 display，保留已初始化的 port 供重试。port 自身初始化失败需要重启，因为依赖的异步清理没有公开的完成握手。其他底层回滚失败也会明确报错并拒绝覆盖仍存活的句柄。BSP 初始化由单一所有者串行执行；当前没有统一 deinit API，不要假设可以在运行时任意销毁和重建总线/驱动。
 
-按键回调运行在共享 `esp_timer` 任务中，只负责将输入加入队列并立即返回。demo 生命周期任务负责页面导航，并在不持有 LVGL 锁时启动或停止慢服务。退出页面时先以有界等待停止 producer，再持锁删除定时器和 UI 对象。音频与 light-sleep 工作任务使用协作取消和明确的退出握手，不再强制删除仍可能访问外设或 UI 的任务。低功耗工作任务会在两种睡眠前强制暂停 ES8311 并回读校验，在 light sleep 返回后恢复。deep sleep 时则先暂停并校验 CW2017，再强制暂停 ES8311，停止和释放 I2S，释放共享 I2C 引脚，阻止后续 LVGL 刷屏，休眠 LCD 并保持安全引脚电平，最后进入 deep sleep。单个外设失败会记录日志，但不会让系统卡在唤醒状态；终端引脚释放后若意外返回则重启。deep sleep 唤醒同样会重启应用并走正常 BSP 初始化流程。
+按键回调运行在共享 `esp_timer` 任务中，只负责将输入加入队列并立即返回。demo 生命周期任务负责页面导航，并在不持有 LVGL 锁时启动或停止慢服务。退出页面时先以有界等待停止 producer，再持锁删除定时器和 UI 对象。音频与 light-sleep 工作任务使用协作取消和明确的退出握手，不再强制删除仍可能访问外设或 UI 的任务。低功耗工作任务会在两种睡眠前强制暂停 ES8311 并回读校验，在 light sleep 返回后恢复。deep sleep 时先把三键共用的 ADC 按键脚交回普通数字输入并恢复上拉，将 GPIO0 作为低电平按键唤醒源与 RTC 定时器一起武装，再暂停并校验 CW2017、强制暂停 ES8311、停止和释放 I2S、释放共享 I2C 引脚、阻止后续 LVGL 刷屏、休眠 LCD 并保持安全引脚电平，最后进入 deep sleep。按键脚交回失败会中止 deep sleep 进入，避免留下仍在轮询的驱动或 ADC unit；其余外设失败会记录日志，但不会让系统卡在唤醒状态。终端引脚释放后若意外返回则重启。deep sleep 唤醒同样会重启应用并走正常 BSP 初始化流程。
 
 Wi-Fi、NimBLE 和 light/deep sleep 直接使用 ESP-IDF API，不属于板级 BSP。`demo_radio.c` 只管理 NVS、`esp_netif` 和默认 event loop 这些应用级共享前置。Wi-Fi 和 BLE 页在页面创建后初始化高内存占用的无线栈，在删除页面前停止并释放；不自动抹除已有 NVS 数据来掩盖分区错误。deep sleep 会按 ESP32-C3 语义重启应用，示例用 RTC slow memory 记录唤醒次数。
 
@@ -481,7 +481,7 @@ idf.py flash monitor
 | 电量显示 `--` | 0x63 是否应答、SOC 是否读到 >100/0xFF、profile/启动等待 |
 | Wi-Fi/BLE 第二次进入失败 | 退出页时是否已停止并 deinit radio stack，NVS/event loop 是否只初始化一次 |
 | light sleep 后黑屏 | timer wake source、`esp_light_sleep_start()` 错误日志、唤醒后是否恢复背光 |
-| deep sleep 后未重启 | timer wake source、启动日志的 wake cause、页面 RTC 计数；当前 demo 使用 RTC timer 唤醒 |
+| deep sleep 后未重启 | timer/GPIO wake source、启动日志的 wake cause、页面 RTC 计数；当前 demo 用 RTC timer 或 GPIO0 按键唤醒 |
 | 加大 UI 后 I2S NO_MEM | LCD 双缓冲/LVGL pool 与 I2S DMA 争夺内部 RAM |
 | 中文显示为方框 | Montserrat 14/20 不含 CJK glyph；编译并选用中文字体子集，为混排配置 fallback，并在真机核对全部字符 |
 

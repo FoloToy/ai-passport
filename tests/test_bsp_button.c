@@ -139,6 +139,20 @@ static void check_deep_sleep_prepare(void) {
     fail_gpio = 0;
 
     assert(bsp_button_prepare_deep_sleep(NULL) == ESP_OK);   // level is optional
+
+    // A teardown failure must be reported and must NOT reconfigure the pin: leaving
+    // a live driver or ADC unit behind while the caller heads toward deep sleep would
+    // be silent corruption, so the hand-off refuses to proceed.
+    assert(bsp_button_init(event_cb, &events) == ESP_OK);    // re-arm live drivers
+    gpio_direction_calls = gpio_pull_calls = gpio_level_calls = 0;
+    fail_delete = 1; level = -1;
+    assert(bsp_button_prepare_deep_sleep(&level) != ESP_OK);
+    assert(level == 0);
+    assert(gpio_direction_calls == 0 && gpio_pull_calls == 0 && gpio_level_calls == 0);
+    fail_delete = 0;
+    assert(button_cleanup() == ESP_OK);                     // now clean up for real
+    assert_clean();
+
     assert(bsp_button_init(event_cb, &events) == ESP_OK);    // the BSP stays reusable
 }
 static void retry_success(void) {
@@ -147,7 +161,7 @@ static void retry_success(void) {
     assert(create_calls == BSP_BTN_COUNT && live_buttons == BSP_BTN_COUNT);
     assert(bsp_button_init(event_cb, &events) == ESP_OK);
     assert(create_calls == BSP_BTN_COUNT);
-    button_cleanup(); assert_clean();
+    (void)button_cleanup(); assert_clean();
 }
 static void check_voltage(int mv, int expected) {
     raw_mv = mv; clock_us += 2000;
@@ -186,10 +200,10 @@ int main(void) {
     fail_read = 0; fail_convert = 1; clock_us += 2000;
     for (int i = 0; i < BSP_BTN_COUNT; ++i) assert(!button_level(&s_drivers[i].base));
     assert(bsp_button_read_mv() == -1);
-    fail_delete = 1; button_cleanup();
+    fail_delete = 1; assert(button_cleanup() != ESP_OK);
     assert(adc_live && cal_live && live_buttons == BSP_BTN_COUNT);
     assert(bsp_button_init(event_cb, &events) == ESP_ERR_INVALID_STATE);
-    fail_delete = 0; button_cleanup(); retry_success();
+    fail_delete = 0; assert(button_cleanup() == ESP_OK); retry_success();
     check_deep_sleep_prepare();
     puts("BSP button fault-injection tests: PASS");
 }

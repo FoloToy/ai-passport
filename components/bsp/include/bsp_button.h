@@ -17,7 +17,8 @@ typedef enum {
     BSP_BTN_CLICK,       // 单击(按下并抬起)
     BSP_BTN_DOUBLE,      // 双击
     BSP_BTN_LONG,        // 长按
-    BSP_BTN_RELEASE,     // 抬起瞬间。加在末尾以保持上列取值不变。
+    BSP_BTN_RELEASE,     // 抬起瞬间。加在末尾以保持上列取值不变,但既有回调现在会
+                         // 多收到这一事件:用 switch 分发按键事件的代码需容忍(或忽略)它。
                          // 深睡按键唤醒后,靠它判断"那颗键是否已松手"。
 } bsp_btn_ev_t;
 
