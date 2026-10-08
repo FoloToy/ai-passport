@@ -30,8 +30,29 @@ The engineering rules themselves live under
 - [Wall-clock Budgets for On-Device Game AI](shinku-chen/on-device-game-ai-wall-clock-budget.md) — why node-count limits misfire on this board (about 15k nodes per second), iterative deepening against a time budget, yielding to keep the idle task fed, and difficulty as a blunder rate.
 - [Size Static Buffers from the Panel, and Verify the Release Artifact](shinku-chen/release-artifact-verification.md) — a 51 KB buffer mistake that left 8 KB of free heap, reading the startup log of the published merged image, and replacing a just-published release instead of shipping a follow-up.
 - [Two-Device BLE Link Between AI Passport Boards (No PSRAM)](shinku-chen/two-device-ble-link.md) — symmetric peer discovery with an address tiebreak instead of host/join, measured link heap on a no-PSRAM part and its conflict with a static screenshot buffer, two hardware-only NimBLE GATT traps (missing `access_cb`, `EDONE` after a successful subscribe), NVS for RF calibration, and a stop-and-wait layer for turn-based play.
+- [A Packed Asset Name Is a Contract Between the Packer and the Firmware](shinku-chen/asset-pack-name-contract.md) — a lookup the pack does not answer is a silent blank screen, why the placeholder pack hid the mismatch, the host test that compares packer names with the firmware's lookup literals, and the partition budget.
+- [What Flashing a Merged Image Does to Stored Data](shinku-chen/merged-image-flashing-and-stored-data.md) — the merged image carries `0xFF` over NVS without reliably clearing it, and how to keep or clear stored data on purpose.
+- [CJK Bitmap Font Subsets for LVGL 9](shinku-chen/lvgl-cjk-font-subsets.md) — building a purpose-built Chinese subset for a fixed screen: LVGL's cmap lookup semantics, PLAIN 4bpp packing, why `lv_font_conv` wrote corrupt bitmaps under current Node.js, whitespace glyphs such as U+3000, and self-verifying the generated C file pixel by pixel.
+- [Packing a Visual Novel Into One Flash-Mapped Blob](shinku-chen/packed-visual-novel-data.md) — one little-endian pack read straight out of flash, stripping engine directives from the script at pack time, pre-cropped backgrounds and 1bpp-masked sprites, and traceable provenance.
+- [Verifying a Ported Visual Novel's Story Graph](shinku-chen/visual-novel-story-graph-verification.md) — proving every chapter and scene is reachable, enumerating choice combinations to prove each ending, and the interaction rules that sit on top (fast-forward stops at choices; skip-chapter stops at an unreached choice).
+- [Three-Key Reader Interaction on the AI Passport](shinku-chen/three-key-reader-interaction.md) — the button driver merges quick taps into a double click, hold-to-repeat needs a long-press threshold plus the release event, and lists must clamp at the ends instead of wrapping.
+- [LVGL Font Format Traps and Glyph-Coverage Gates](shinku-chen/lvgl-font-format-and-glyph-coverage.md) — the `FORMAT0_FULL` crash on LVGL 9.6, the TINY plus SPARSE_TINY workaround for an arbitrary CJK subset, per-pixel readback of the emitted font, and a static coverage gate over the application's own strings.
+- [Compositing Full-Screen Scenes Without PSRAM](shinku-chen/lossless-sprite-compositing-without-psram.md) — JPEG backgrounds decoded straight into the canvas while sprites and overlays use RGB565 plus a 4 bpp alpha mask cropped to the bounding box, with the measured pack split and composite cost.
+- [Three-Key Input Semantics: Only Clicks and Long Presses Are User Intent](shinku-chen/three-key-input-event-semantics.md) — why a mode toggled by a long press died on its own release event, the press-timing constants, callback discipline in the shared timer task, and the activity-versus-waiting distinction for the idle timers.
+- [Hands-Off Auto-Advance: Pace from the End of the Text](shinku-chen/hands-off-auto-advance-modes.md) — a fixed 700 ms dwell after the typewriter, surviving chapter transitions, stopping at decisions, and counting the mode as activity so an unattended run keeps the screen lit.
+- [Capturing the Real Screen from the LVGL Flush Path](shinku-chen/lvgl-flush-path-frame-capture.md) — reusing the art canvas as the frame store, why `lv_snapshot` wipes a canvas-backed UI, holding the LVGL lock for the whole transfer, the debug-task stack a full re-render needs, and where to hook so the bytes are still LVGL-native.
+- [Asset Packs: Make a Field Drift Fail Loudly](shinku-chen/asset-pack-field-drift.md) — a sprite-owner field the packer wrote and the reader never read, why count thresholds passed anyway, and the three habits that catch it (assert distributions, cross-dump one record from both sides, let the producer assert the invariant).
+- [What "the Sprite Follows the Speaker" Costs](shinku-chen/speaker-driven-sprite-cost.md) — 3,444 of 11,777 dialogue steps draw a sprite, 5,837 full recomposites over the story, why the 84 KB clean-base cache does not fit without PSRAM, and the knobs worth trying in order.
+- [Sizing the LVGL Pool and Proving CJK Glyph Coverage](shinku-chen/lvgl-pool-and-glyph-coverage.md) — size the pool for the worst page instead of the average (24 KB corrupts the UI, 56 KB works), the renamed LVGL 9 pool key, and why a data-generated CJK subset needs a gate that scans the sources too.
+- [Answering `FAP_SCREENSHOT_V1` Without a Spare Frame Buffer](shinku-chen/fap-screenshot-without-frame-buffer.md) — the community publisher's serial protocol on a no-PSRAM board: two-pass capture over the art canvas instead of a 150 KB frame buffer, a driver fast path that turns a 56 s frame into 1.7 s, dropped 2048-byte chunks, log bytes interleaving with the payload, and where the USB-Serial-JTAG driver may be installed.
+- [Deriving CJK Line Pitch from Font Metrics](shinku-chen/cjk-line-pitch-from-font-metrics.md) — why a generated 16 px CJK subset reports a 20 px line height, how the copied "em size minus 16" spacing overflowed a five-line dialogue box, and the static assert that keeps page layout and label box in agreement.
+- [Cleaning a Ported Script Dataset Before It Reaches the Reader](shinku-chen/ported-script-text-cleanup.md) — inline layout directives and leaked translator memos inside a hand-edited dataset, the packer-side rules that remove them without touching dialogue, and the regression that keeps ordinary punctuation safe.
+- [Shared Block Buffers Need One Owner](shinku-chen/shared-block-buffer-caches.md) — why per-stream caches over one shared decompression buffer decode the wrong stream from the second page on, why single-frame screenshots cannot see it, and the continuity tests that do.
+- [Porting Games Whose Source Is a Linear Page Table](shinku-chen/linear-page-table-ports.md) — compiling a JavaScript branch configuration into verified data tables, packing pages and text as block streams, sorting the chapter list by page, and the duplicated-block loop and route-reachability checks to run before shipping.
 
 - [Packing a Visual-Novel Script for a No-PSRAM Board](shinku-chen/vn-script-pack-budget-and-failure-modes.md) — a 5.06 MB script packed into 1.45 MB, why the chunk size is set by the largest free block (7.7 KB, not by the free heap), and three unrelated defects that all presented as "the story ends immediately" plus the boot self-check that named them.
+- [An ADC Ladder Keypad Can Read a Long Press as Another Key](shinku-chen/adc-ladder-keypad-long-press-misread.md) — three keys on one ADC pin behind voltage windows, how a momentary contact break in a held key sweeps the voltage through another key's window and its watchers, the key-identity lock that fixes it, and the key-event black box that records the ADC millivolts behind every event.
+- [Packing a Visual Novel into 8 MB with No PSRAM](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.md) — a 5.26 MB image pack and a 1.43 MB script pack around a 7.7 KB largest free block: why the ROM's inflate did not fit, the 3 KB block ceilings and the compression ratio they cost, native-geometry packing, and two silent failures caused by fixed-size limits.
 
 **Application playbooks:**
 
@@ -64,6 +85,16 @@ The engineering rules themselves live under
 **Application playbooks:**
 
 - [Offline Pokédex](sunny0826/offline-pokedex/README.md) — a fully offline Pokédex that embeds all 1,025 Pokémon, their sprites, and cries in the firmware.
+
+### starsms007
+
+**Experience entries:**
+
+- [LVGL Memory Pool Budgeting on ESP32-C3 (No PSRAM)](starsms007/lvgl-pool-budget-without-psram.md) — log `lv_mem_monitor()` from boot, read the margin from `maxused` rather than `free`, sample long enough to separate a peak from a leak, and recognize pool exhaustion as a frozen half-drawn frame rather than a crash.
+
+**Application playbooks:**
+
+- [Faraway](starsms007/faraway/README.md) — a travel journal for an orange cat: send it out for 15 seconds to 12 hours, collect 24 postcards and 24 keepsakes, unlock four mini-games, and watch seven weather layers drift by.
 
 ## Adding an experience entry
 
