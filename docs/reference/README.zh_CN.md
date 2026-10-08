@@ -38,6 +38,8 @@
 - [LVGL 内存池按最坏一屏配，并用门禁证明 CJK 字形覆盖](shinku-chen/lvgl-pool-and-glyph-coverage.zh_CN.md) — 池子按最坏一屏而非均值配（24KB 会把界面弄花、56KB 可用）、LVGL 9 改过的池键名，以及为什么数据生成的 CJK 子集需要一道同时扫源码的门禁。
 
 - [在无 PSRAM 的板子上打视觉小说剧本包](shinku-chen/vn-script-pack-budget-and-failure-modes.zh_CN.md) — 5.06 MB 剧本压到 1.45 MB、块大小为什么由「最大连续空闲块 7.7 KB」而不是空闲堆决定，以及三个互不相关的缺陷为什么都表现为「一进阅读就全剧终」，还有让它们现形的启动自检。
+- [ADC 阶梯键盘会把长按读成另一个键](shinku-chen/adc-ladder-keypad-long-press-misread.zh_CN.md) — 三个键共用一个 ADC 引脚靠电压窗口区分；按住的键触点短暂失联时电压会扫过别的键的窗口、把它报成一次单击；修掉它的键位锁，以及把每个事件当时的 ADC 毫伏值记下来的按键黑匣子。
+- [无 PSRAM 把视觉小说装进 8 MB](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.zh_CN.md) — 在最大连续空闲块只有 7.7 KB 的前提下塞进 5.26 MB 图片包与 1.43 MB 剧本包：ROM inflate 为何不可用、3 KB 块上限及其压缩率代价、按设备原生几何打包，以及两次由固定上限导致的静默失败。
 
 **应用档案：**
 

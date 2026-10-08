@@ -45,6 +45,8 @@ The engineering rules themselves live under
 - [Sizing the LVGL Pool and Proving CJK Glyph Coverage](shinku-chen/lvgl-pool-and-glyph-coverage.md) — size the pool for the worst page instead of the average (24 KB corrupts the UI, 56 KB works), the renamed LVGL 9 pool key, and why a data-generated CJK subset needs a gate that scans the sources too.
 
 - [Packing a Visual-Novel Script for a No-PSRAM Board](shinku-chen/vn-script-pack-budget-and-failure-modes.md) — a 5.06 MB script packed into 1.45 MB, why the chunk size is set by the largest free block (7.7 KB, not by the free heap), and three unrelated defects that all presented as "the story ends immediately" plus the boot self-check that named them.
+- [An ADC Ladder Keypad Can Read a Long Press as Another Key](shinku-chen/adc-ladder-keypad-long-press-misread.md) — three keys on one ADC pin behind voltage windows, how a momentary contact break in a held key sweeps the voltage through another key's window and its watchers, the key-identity lock that fixes it, and the key-event black box that records the ADC millivolts behind every event.
+- [Packing a Visual Novel into 8 MB with No PSRAM](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.md) — a 5.26 MB image pack and a 1.43 MB script pack around a 7.7 KB largest free block: why the ROM's inflate did not fit, the 3 KB block ceilings and the compression ratio they cost, native-geometry packing, and two silent failures caused by fixed-size limits.
 
 **Application playbooks:**
 
