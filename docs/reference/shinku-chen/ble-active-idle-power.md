@@ -12,12 +12,14 @@ them was the difference between "power saving enabled" and "power saving that ev
 ## Do not enable system light sleep while the link is up
 
 `CONFIG_PM_ENABLE` with dynamic frequency scaling is safe: the CPU drops to its 40 MHz
-floor between work items and the link stays up. Adding `light_sleep_enable = true` to
-`esp_pm_configure()` - which is what the upstream Low Power demo does - does not: with an
-active BLE connection the link dropped and the phone reported a GATT supervision timeout
-(`status=8`), then reconnected. The observed behavior was consistent and reproducible, so
-the product uses DFS only. Keep the controller's own modem sleep
-(`CONFIG_BT_CTRL_MODEM_SLEEP`) enabled; that one does not stall the link.
+floor between work items and the link stays up. Enabling light sleep through the
+automatic power-management path - `light_sleep_enable = true` in `esp_pm_configure()` -
+does not: with an active BLE connection the link dropped and the phone reported a GATT
+supervision timeout (`status=8`), then reconnected. Note this automatic entry is not how
+the upstream Low Power demo enters light sleep; it calls `esp_light_sleep_start()`
+explicitly. The observed behavior was consistent and reproducible, so the product uses
+DFS only. Keep the controller's own modem sleep (`CONFIG_BT_CTRL_MODEM_SLEEP`) enabled;
+that one does not stall the link.
 
 The practical rule for this class of device: any power state that can delay the radio's
 supervision response is off limits while the link is the product.

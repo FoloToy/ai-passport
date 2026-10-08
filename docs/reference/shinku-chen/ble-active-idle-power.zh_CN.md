@@ -8,7 +8,7 @@
 
 ## 链路在用时，不要开系统浅睡
 
-`CONFIG_PM_ENABLE` 配合动态调频是安全的：设备一闲下来 CPU 就落到 40 MHz 的底频，链路照旧。但按上游 Low Power demo 的做法往 `esp_pm_configure()` 里加 `light_sleep_enable = true` 就不行：BLE 连接活跃时链路会断开，手机会报 GATT 监督超时（`status=8`）然后重连。这个现象稳定可复现，所以本产品只用 DFS 降频。控制器自己的 modem sleep（`CONFIG_BT_CTRL_MODEM_SLEEP`）可以留——它不会拖住链路。
+`CONFIG_PM_ENABLE` 配合动态调频是安全的：设备一闲下来 CPU 就落到 40 MHz 的底频，链路照旧。但走自动电源管理的浅睡入口——在 `esp_pm_configure()` 里加 `light_sleep_enable = true`——就不行：BLE 连接活跃时链路会断开，手机会报 GATT 监督超时（`status=8`）然后重连。注意这是自动电源管理入口；上游 Low Power demo 并非这样进浅睡，而是显式调用 `esp_light_sleep_start()`。这个现象稳定可复现，所以本产品只用 DFS 降频。控制器自己的 modem sleep（`CONFIG_BT_CTRL_MODEM_SLEEP`）可以留——它不会拖住链路。
 
 这类设备的实用准则：**只要链路就是产品，任何可能推迟射频监督响应的电源状态就不在选项里。**
 
