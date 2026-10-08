@@ -32,13 +32,18 @@ CONFIG_LV_MEM_SIZE_KILOBYTES=24
 CONFIG_FREERTOS_HZ=1000
 
 # --- Bluetooth LE / NimBLE ---
-# ESP32-C3 仅支持 BLE；示例只启用单连接 peripheral 所需的最小 host 配置。
+# ESP32-C3 仅支持 BLE；基线示例只需要单连接 peripheral + broadcaster。
 CONFIG_BT_ENABLED=y
 CONFIG_BT_NIMBLE_ENABLED=y
 CONFIG_BT_NIMBLE_ROLE_CENTRAL=n
 CONFIG_BT_NIMBLE_ROLE_PERIPHERAL=y
 CONFIG_BT_NIMBLE_ROLE_BROADCASTER=y
-CONFIG_BT_NIMBLE_ROLE_OBSERVER=n
+# Pocket Finder（Finder 页）需要【观察者】角色才能被动扫描并把 RSSI 喂进滤波器。
+# 这是相对"仅广播"基线的一处【有意修改】，不是顺手打开的功能：
+#   * 代价：Flash 约 +4–8 KB、RAM < 2 KB（相对 0x7f0000 应用分区可忽略）；
+#   * 回退：把本行改回 =n 即恢复基线（Finder 页随即无法扫描，界面会显示 SCAN FAILED）；
+#   * 该页本身不广播，所以不存在"扫描挤占自身广播"的问题——压占空比只为功耗。
+CONFIG_BT_NIMBLE_ROLE_OBSERVER=y
 CONFIG_BT_NIMBLE_MAX_CONNECTIONS=1
 CONFIG_BT_NIMBLE_HOST_BASED_PRIVACY=n
 CONFIG_BT_NIMBLE_NVS_PERSIST=n

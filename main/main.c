@@ -39,6 +39,10 @@ static const demo_entry_t DEMOS[] = {
       .key = demo_ble_key, .start = demo_ble_start, .stop = demo_ble_stop },
     { .name = "Low Power", .enter = demo_low_power_enter, .exit = demo_low_power_exit,
       .key = demo_low_power_key, .start = demo_low_power_start, .stop = demo_low_power_stop },
+    // 衍生应用：自建界面、自持导航（长按在本页另有含义，由页面自己解释）。
+    { .name = "Finder", .enter = demo_finder_enter, .exit = demo_finder_exit,
+      .key = demo_finder_key, .start = demo_finder_start, .stop = demo_finder_stop,
+      .owns_navigation = true, .poll_leave = demo_finder_poll_leave },
 };
 #define DEMO_COUNT (sizeof(DEMOS) / sizeof(DEMOS[0]))
 #define INPUT_QUEUE_DEPTH 8
@@ -103,23 +107,38 @@ static demo_nav_input_t navigation_input(bsp_btn_t btn, bsp_btn_ev_t event) {
     return DEMO_NAV_INPUT_OTHER;
 }
 
+// 离开当前演示页的收尾：先停慢服务，再持锁删页并回到菜单。
+// 两条路径共用——基线页由"长按确定"触发，自持导航的页面由 poll_leave 触发。
+static void leave_active_demo(const demo_entry_t *demo) {
+    esp_err_t e = demo->stop ? demo->stop() : ESP_OK;
+    if (e != ESP_OK) {
+        ESP_LOGE(TAG, "%s 页面停止失败: %s", demo->name, esp_err_to_name(e));
+        return;
+    }
+    if (!bsp_lvgl_lock(500)) return;
+    demo->exit();
+    demo_navigation_complete_exit(&s_navigation);
+    enter_menu();
+    bsp_lvgl_unlock();
+}
+
 static void process_input(const input_event_t *input) {
     demo_nav_input_t nav_input = navigation_input(input->btn, input->event);
 
     if (s_navigation.active >= 0) {
+        const demo_entry_t *active = &DEMOS[s_navigation.active];
+
+        // 自持导航的页面（衍生应用）：main 不解释任何按键，全部原样转交，
+        // 由页面自己的状态机决定按键含义与退出时机。基线页不走这条路。
+        if (active->owns_navigation) {
+            active->key(input->btn, input->event);
+            return;
+        }
+
         demo_nav_result_t result = demo_navigation_handle(&s_navigation, nav_input, true);
         const demo_entry_t *demo = &DEMOS[result.index];
         if (result.action == DEMO_NAV_ACTION_EXIT) {
-            esp_err_t e = demo->stop ? demo->stop() : ESP_OK;
-            if (e != ESP_OK) {
-                ESP_LOGE(TAG, "%s 页面停止失败: %s", demo->name, esp_err_to_name(e));
-                return;
-            }
-            if (!bsp_lvgl_lock(500)) return;
-            demo->exit();
-            demo_navigation_complete_exit(&s_navigation);
-            enter_menu();
-            bsp_lvgl_unlock();
+            leave_active_demo(demo);
         } else if (result.action == DEMO_NAV_ACTION_FORWARD) {
             demo->key(input->btn, input->event);
         }
@@ -155,8 +174,17 @@ static void input_task(void *arg) {
     (void)arg;
     input_event_t input;
     for (;;) {
-        if (xQueueReceive(s_input_queue, &input, portMAX_DELAY) == pdTRUE) {
+        // 带超时接收：自持导航的页面可能在不按键的情况下请求离开（例如两步退出
+        // 的第二次长按），这里负责把它兑现成一次完整的收尾。
+        if (xQueueReceive(s_input_queue, &input, pdMS_TO_TICKS(50)) == pdTRUE) {
             process_input(&input);
+            continue;
+        }
+        if (s_navigation.active >= 0) {
+            const demo_entry_t *active = &DEMOS[s_navigation.active];
+            if (active->owns_navigation && active->poll_leave && active->poll_leave()) {
+                leave_active_demo(active);
+            }
         }
     }
 }
