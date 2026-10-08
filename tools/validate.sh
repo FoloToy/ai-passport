@@ -32,6 +32,23 @@ run_static_checks() {
         tests/test_demo_navigation.c main/demo_navigation.c \
         -o "${test_dir}/test_demo_navigation"
     "${test_dir}/test_demo_navigation"
+    # Pocket Finder：纯逻辑（滤波/设备表/蜂鸣），与 ESP-IDF 和 LVGL 完全解耦。
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_finder_rssi.c main/finder_rssi.c \
+        -o "${test_dir}/test_finder_rssi"
+    "${test_dir}/test_finder_rssi"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_finder_table.c main/finder_table.c main/finder_rssi.c \
+        -o "${test_dir}/test_finder_table"
+    "${test_dir}/test_finder_table"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_finder_beep.c main/finder_beep.c \
+        -o "${test_dir}/test_finder_beep"
+    "${test_dir}/test_finder_beep"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_finder_ui.c main/finder_ui.c \
+        -o "${test_dir}/test_finder_ui"
+    "${test_dir}/test_finder_ui"
     "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Icomponents/bsp/src \
         tests/test_bsp_display_rounding.c components/bsp/src/bsp_display_rounding.c \
         -o "${test_dir}/test_bsp_display_rounding"
