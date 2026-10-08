@@ -64,6 +64,12 @@ The engineering rules themselves live under
 
 - [Offline Pokédex](sunny0826/offline-pokedex/README.md) — a fully offline Pokédex that embeds all 1,025 Pokémon, their sprites, and cries in the firmware.
 
+### Noah-1106
+
+**Application playbooks:**
+
+- [Xiaonuo Jianlu (Voice Notes & Lists)](noah-1106/xiaonuo-jianlu/README.md) — hold-to-talk AI notes organized by a self-hosted hub, a stacked-card list UI, offline capture with on-device playback, BLUFI + mDNS zero-config setup, and a work-domain watchdog.
+
 ## Adding an experience entry
 
 Each release may produce **one or more** reusable, post-release learnings; each is
