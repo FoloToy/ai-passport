@@ -43,3 +43,7 @@ source <ESP-IDF-v5.5.3-路径>/export.sh
 
 未安装 ESP-IDF 5.5.3 时先按[环境引导](../engineering/environment-setup.zh_CN.md)搭建。CI
 失败应先在本地运行相同模式。不要在 workflow 中复制另一套构建或校验命令。
+
+## 可选的资源模型回归
+
+`resource-stress.yml` 在工具、测试、样例、指南或工作流变化时运行[通用资源工具](../engineering/resource-stress.zh_CN.md)回归，并支持手动触发。它只有 `contents: read` 权限，不使用密钥，checkout Action 固定到完整提交。它不向 `tools/validate.sh` 增加设备性能关卡，合成样例不能证明真机校准。与其他按路径触发的工作流一样，不应要求无关变更也满足此状态。使用 `python3 tests/test_resource_stress.py` 复现。

@@ -1,0 +1,35 @@
+{
+  "schema": 2,
+  "duration_us": 12000000,
+  "source": "Synthetic reader lifecycle; no application rules.",
+  "events": [
+    {
+      "at_us": 0,
+      "active": []
+    },
+    {
+      "at_us": 2000000,
+      "active": [
+        "display",
+        "playback"
+      ]
+    },
+    {
+      "at_us": 7000000,
+      "active": [
+        "playback"
+      ]
+    },
+    {
+      "at_us": 10000000,
+      "active": []
+    },
+    {
+      "at_us": 11000000,
+      "active": [
+        "display",
+        "playback"
+      ]
+    }
+  ]
+}

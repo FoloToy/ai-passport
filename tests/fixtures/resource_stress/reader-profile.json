@@ -1,0 +1,52 @@
+{
+  "schema": 2,
+  "name": "Synthetic reader with narrated playback",
+  "calibration": {
+    "status": "synthetic",
+    "source": "Deterministic regression fixture; values are not board measurements.",
+    "assumptions": [
+      "All costs are illustrative; this fixture is not a measured application.",
+      "Playback buffer begins full."
+    ]
+  },
+  "memory": {
+    "available_bytes": 120000,
+    "largest_block_bytes": 100000,
+    "reserve_bytes": 20000,
+    "allocations": [
+      {
+        "name": "optional scratch",
+        "bytes": 4096
+      }
+    ]
+  },
+  "stalls": [],
+  "tasks": [
+    {
+      "id": "display",
+      "mode": "periodic",
+      "priority": 4,
+      "cpu_us": 50000,
+      "period_us": 110000,
+      "transfer_us": 50000,
+      "wait": "blocking",
+      "limits": {
+        "max_lateness_us": 2000,
+        "max_dropped_jobs": 0
+      }
+    },
+    {
+      "id": "playback",
+      "mode": "buffered",
+      "priority": 3,
+      "cpu_us": 500,
+      "refill_us": 8000,
+      "capacity_us": 90000,
+      "initial_buffer_us": 90000,
+      "limits": {
+        "max_underrun_us": 0,
+        "max_startup_us": 60000
+      }
+    }
+  ]
+}

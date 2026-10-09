@@ -1,0 +1,35 @@
+name: Resource model checks
+
+on:
+  pull_request:
+    paths:
+      - "tools/resource_stress.py"
+      - "tests/test_resource_stress.py"
+      - "tests/fixtures/resource_stress/**"
+      - "docs/development/engineering/resource-stress*.md"
+      - ".github/workflows/resource-stress.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tools/resource_stress.py"
+      - "tests/test_resource_stress.py"
+      - "tests/fixtures/resource_stress/**"
+      - "docs/development/engineering/resource-stress*.md"
+      - ".github/workflows/resource-stress.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: resource-model-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  model:
+    name: Generic model regressions (not device acceptance)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Check scheduling oracle and fault controls
+        run: python3 tests/test_resource_stress.py

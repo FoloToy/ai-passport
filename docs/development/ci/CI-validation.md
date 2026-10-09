@@ -52,3 +52,7 @@ source <path-to-esp-idf-v5.5.3>/export.sh
 Follow the [environment bootstrap](../engineering/environment-setup.md) if ESP-IDF 5.5.3 is
 not installed. Reproduce a CI failure with the same mode locally. Do not
 maintain duplicate validation commands inside the workflow.
+
+## Optional resource-model regression
+
+`resource-stress.yml` runs the [general resource tool](../engineering/resource-stress.md) regression suite when its tool, tests, fixtures, guide or workflow changes, and supports manual dispatch. It uses `contents: read`, no secrets, and a pinned checkout action. It does not add a device-performance gate to `tools/validate.sh`. Synthetic fixtures cannot establish device calibration. Like other path-filtered workflows, do not require its status for unrelated changes. Reproduce it with `python3 tests/test_resource_stress.py`.
