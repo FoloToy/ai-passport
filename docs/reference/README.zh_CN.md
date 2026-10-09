@@ -69,6 +69,7 @@
 
 - [AI Passport 网络音频流与内存预算经验](phoenixzhc/network-audio-streaming-and-memory.zh_CN.md) — 有边界的 HTTP 音频流、ES8311/I2S 资源归属，以及解码、JSON、DMA 与 LVGL 的统一内存预算。
 - [AI Passport SoftAP 配网与资源预算经验](phoenixzhc/softap-provisioning-and-resource-budget.zh_CN.md) — DHCP 状态、弹窗认证兼容、表单与上传边界，以及无 PSRAM 条件下的资源规划。
+- [AI Passport BLE Xbox 手柄与键盘接入经验](phoenixzhc/ble-xbox-keyboard.zh_CN.md) — BLE 协议边界、广播与扫描响应合并、Xbox 绑定、键盘配对码、HID 媒体报告状态，以及断连重连的验证方法。
 
 ### Y2Lin
 

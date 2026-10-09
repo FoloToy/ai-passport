@@ -76,6 +76,7 @@ The engineering rules themselves live under
 
 - [Network Audio Streaming and Memory Budgeting on AI Passport](phoenixzhc/network-audio-streaming-and-memory.md) — bounded HTTP audio streaming, ES8311/I2S ownership, and joint memory budgeting for decoding, JSON, DMA, and LVGL.
 - [SoftAP Provisioning and Resource Budgets on AI Passport](phoenixzhc/softap-provisioning-and-resource-budget.md) — DHCP state, captive-portal compatibility, bounded forms and uploads, and no-PSRAM resource planning.
+- [AI Passport BLE Xbox Controller and Keyboard Integration Lessons](phoenixzhc/ble-xbox-keyboard.md) — BLE transport limits, advertisement merging, Xbox bonding, keyboard passkeys, HID media-report state, and disconnection/reconnection validation.
 
 ### Y2Lin
 
