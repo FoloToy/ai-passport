@@ -11,6 +11,15 @@ idf_component_register(
          "demo_wifi.c"
          "demo_ble.c"
          "demo_low_power.c"
+         "demo_finder.c"
+         "finder_rssi.c"
+         "finder_idle.c"
+         "finder_table.c"
+         "finder_beep.c"
+         "finder_ui.c"
+         "finder_scan.c"
+         "finder_audio.c"
+         "finder_view.c"
     INCLUDE_DIRS "."
     REQUIRES bsp bt esp_event esp_hw_support esp_netif esp_timer esp_wifi nvs_flash
 )

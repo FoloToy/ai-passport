@@ -2,6 +2,8 @@
 // 新增演示页 = 实现 enter/exit/key，慢服务按需实现 start/stop，再注册到 DEMOS[]。
 #pragma once
 
+#include <stdbool.h>
+
 #include "bsp_button.h"
 
 typedef struct {
@@ -11,6 +13,11 @@ typedef struct {
     void (*key)(bsp_btn_t btn, bsp_btn_ev_t ev);  // lifecycle task 调用;函数自行缩短 LVGL 锁范围
     esp_err_t (*start)(void);                     // 可选:页面创建后,不持 LVGL 锁启动慢服务
     esp_err_t (*stop)(void);                      // 可选:删页面前,不持 LVGL 锁停止 producer
+    // 可选：衍生应用自行处理按键与导航。置真后 main 不再把"长按确定"解释为返回菜单，
+    // 所有按键原样转交页面，并由 poll_leave 决定何时离开。
+    // 基线硬件测试页保持假（零初始化），行为与改动前完全一致。
+    bool owns_navigation;
+    bool (*poll_leave)(void);
 } demo_entry_t;
 
 // 各演示页(定义在各自的 .c 里)
@@ -38,3 +45,9 @@ esp_err_t demo_ble_start(void); esp_err_t demo_ble_stop(void);
 void demo_low_power_enter(void); void demo_low_power_exit(void);
 void demo_low_power_key(bsp_btn_t btn, bsp_btn_ev_t ev);
 esp_err_t demo_low_power_start(void); esp_err_t demo_low_power_stop(void);
+
+// Pocket Finder（衍生应用：自建界面，自持导航）
+void demo_finder_enter(void); void demo_finder_exit(void);
+void demo_finder_key(bsp_btn_t btn, bsp_btn_ev_t ev);
+esp_err_t demo_finder_start(void); esp_err_t demo_finder_stop(void);
+bool demo_finder_poll_leave(void);
