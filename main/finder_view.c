@@ -29,6 +29,13 @@
 #define DOT_SEL_SIZE   18
 #define RADAR_SLOTS    12 // 30 度一格；取整到固定格位，避免逐帧浮点三角函数
 
+// 背景刻度环的数量，必须等于 radius_for_level() 的档位数（等级 1..5）。
+// 为什么必须少：LVGL 按【半径】缓存圆形抗锯齿蒙版，每个半径约占
+// (r*6+6) + ((r+1)*16) 字节。半径种类一多就会把 LVGL 内存池吃光，而分配失败时
+// LVGL 的 LV_ASSERT_MALLOC 会走到死循环断言（LV_USE_ASSERT_MALLOC=y），
+// 表现是 LVGL 任务空转、IDLE 被饿死、界面彻底不动。
+#define RING_COUNT      5
+
 // 每 30 度的单位向量，放大 1000 倍；只做整数乘除，无浮点。
 static const int16_t k_slot_cos[RADAR_SLOTS] = {
     1000, 866, 500, 0, -500, -866, -1000, -866, -500, 0, 500, 866,
@@ -88,7 +95,7 @@ static lv_obj_t *s_battery; // 右上角电量（三页共用）
 static lv_obj_t *s_notice;  // 瞬时提示
 
 // 雷达页
-static lv_obj_t *s_ring[RADAR_SLOTS]; // 仅作背景刻度环，不表示方位
+static lv_obj_t *s_ring[RING_COUNT]; // 仅作背景刻度档位，不表示方位
 static lv_obj_t *s_dot[FINDER_TABLE_MAX];
 static lv_obj_t *s_dot_sel;           // 选中高亮环（非方位标识）
 static lv_obj_t *s_sel_name;
@@ -143,7 +150,11 @@ static void build_radar(lv_obj_t *scr)
     build_header(scr, "RADAR");
 
     // 同心刻度环：只表达半径档位，方向中性。
-    for (int i = 0; i < RADAR_SLOTS; i++) {
+    // 半径与 radius_for_level() 的 5 档一一对应（20/36/52/68/84）。
+    // 这里曾经写成按 RADAR_SLOTS(12) 循环、半径每次 +16 —— 于是产生了 12 个
+    // 半径、最大 196px（直径 394px，远超 240px 屏），蒙版缓存约 28.8KB，
+    // 直接吃穿 24KB 的 LVGL 池，最终触发 LVGL 的分配断言死循环。
+    for (int i = 0; i < RING_COUNT; i++) {
         int16_t r = (int16_t)(20 + i * 16);
         s_ring[i] = lv_obj_create(scr);
         lv_obj_set_size(s_ring[i], (int)r * 2 + 2, (int)r * 2 + 2);
@@ -283,7 +294,7 @@ void finder_view_delete(void)
         s_sel_seg[i] = NULL;
         s_bar[i] = NULL;
     }
-    for (int i = 0; i < RADAR_SLOTS; i++) {
+    for (int i = 0; i < RING_COUNT; i++) {
         s_ring[i] = NULL;
     }
 }

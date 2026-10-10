@@ -24,9 +24,15 @@ CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_DEF_REFR_PERIOD=20
 CONFIG_LV_FONT_MONTSERRAT_14=y
 CONFIG_LV_FONT_MONTSERRAT_20=y
+# 供 LV_ASSERT_HANDLER=abort() 使用：让 LVGL 源码在展开断言前先拿到 abort() 的声明。
+# 只写头文件名，不要写成 <stdlib.h> —— Kconfig 的字符串值在 sdkconfig.h 里自带引号，
+# 尖括号会一起进入 #include "..."，编译器会去找一个名字里带尖括号的文件而报错。
+CONFIG_LV_ASSERT_HANDLER_INCLUDE="stdlib.h"
 # LVGL 内置 malloc 池大小(KB)。它是独立静态区、不与系统堆共享,配大了会白白占用 RAM。
-# 本 demo UI 简单,24KB 足够;若自建复杂界面出现绘制卡死/看门狗,调大此值。
-CONFIG_LV_MEM_SIZE_KILOBYTES=24
+# 24KB 对基线 demo 足够，但 Finder 页的对象与圆形蒙版更多：LVGL 按【半径】缓存圆形
+# 抗锯齿蒙版，每多一种半径就常驻一份（约 (r*6+6)+((r+1)*16) 字节）。32KB 留出余量，
+# 避免走到"分配失败 → 断言"这条路（该路径已被上面的 LV_ASSERT_HANDLER 改成重启而非卡死）。
+CONFIG_LV_MEM_SIZE_KILOBYTES=32
 
 # --- 系统 ---
 CONFIG_FREERTOS_HZ=1000
