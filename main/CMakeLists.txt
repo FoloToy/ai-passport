@@ -13,6 +13,7 @@ idf_component_register(
          "demo_low_power.c"
          "demo_finder.c"
          "finder_rssi.c"
+         "finder_idle.c"
          "finder_table.c"
          "finder_beep.c"
          "finder_ui.c"

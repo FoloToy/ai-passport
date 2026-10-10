@@ -6,9 +6,11 @@
 //   * 其余全部         跑在 LVGL 任务（lv_timer 回调）→ 状态机、设备表、界面、音频等级。
 // 这样 finder_table / finder_ui 只被一个任务改，无需额外互斥；也让"回调只做有界工作"
 // 这条运行时约束落到实处。
+#include "bsp_display.h"
 #include "demo.h"
 #include "demo_radio.h"
 #include "finder_audio.h"
+#include "finder_idle.h"
 #include "finder_scan.h"
 #include "finder_table.h"
 #include "finder_ui.h"
@@ -46,6 +48,16 @@ static bool           s_intro_dismiss_pending;
 static volatile bool  s_leave_requested;
 static volatile bool  s_active;
 static esp_err_t      s_scan_err;
+static finder_idle_t  s_idle;
+static uint8_t        s_backlight;
+
+// 闲置计时用 32 位毫秒（xTaskGetTickCount() 的原生宽度，约 49 天回绕）：
+// finder_idle 被按键任务写、被本文件的 tick（LVGL 任务）读，32 位对齐读写在
+// ESP32-C3 上是单条指令，不会读到撕裂值。理由与回绕处理见 finder_idle.h。
+static uint32_t now_ms_u32(void)
+{
+    return (uint32_t)xTaskGetTickCount() * (uint32_t)portTICK_PERIOD_MS;
+}
 
 // 聚焦目标用【地址】而不是槽位号跟随：槽位会被淘汰后复用给别的设备，
 // 只认槽位号会在后台悄悄把用户追的设备换掉。
@@ -127,6 +139,12 @@ static finder_input_t translate(bsp_btn_t btn, bsp_btn_ev_t ev)
 void demo_finder_key(bsp_btn_t btn, bsp_btn_ev_t ev)
 {
     if (!s_input_queue) {
+        return;
+    }
+    // 息屏后的第一下只用来点亮屏幕：同一次按压后续还会产生 RELEASE / CLICK / LONG，
+    // 它们在唤醒宽限期内一并被丢弃。看不见屏幕时触发动作，用户无法知道自己改了什么
+    // （"短按 OK = 下一个设备"本身已是静默传送，见 PRD 风险 R10）。
+    if (finder_idle_note_key(&s_idle, now_ms_u32())) {
         return;
     }
     finder_input_t input = translate(btn, ev);
@@ -249,6 +267,18 @@ static void tick(lv_timer_t *timer)
     }
     int64_t now_ms = (int64_t)xTaskGetTickCount() * portTICK_PERIOD_MS;
 
+    // 0) 待机显示：闲置 1 分钟背光减半、3 分钟息屏。这里是背光的唯一写入者，
+    //    且只在目标值变化时才调 LEDC，不每个 tick 重配一次。
+    uint8_t want_backlight =
+        finder_idle_backlight(finder_idle_state_at(&s_idle, (uint32_t)now_ms));
+    if (want_backlight != s_backlight) {
+        bsp_display_backlight(want_backlight);
+        s_backlight = want_backlight;
+        // 真机验收靠串口看这两次跳变，不必盯着屏幕掐表。
+        ESP_LOGI(TAG, "背光 %u%%（闲置 %u ms）", (unsigned)want_backlight,
+                 (unsigned)((uint32_t)now_ms - s_idle.last_activity_ms));
+    }
+
     // 1) 扫描结果 → 设备表（回调只入队，实际工作在这里做）
     finder_scan_result_t sample;
     int drained = 0;
@@ -321,6 +351,10 @@ void demo_finder_enter(void)
     s_leave_requested = false;
     s_intro_dismiss_pending = false;
     s_notice_text[0] = '\0';
+    // 从"刚刚有活动"起算；同时先恢复全亮——上一个应用可能把背光留成 0。
+    finder_idle_init(&s_idle, now_ms_u32());
+    bsp_display_backlight((uint8_t)FINDER_IDLE_FULL_PERCENT);
+    s_backlight = (uint8_t)FINDER_IDLE_FULL_PERCENT;
     s_active = true;
 
     sync_page();
@@ -330,6 +364,10 @@ void demo_finder_enter(void)
 void demo_finder_exit(void)
 {
     s_active = false;
+
+    // 本应用是背光的唯一写入者，离场就得还回全亮，否则菜单会在息屏状态里出现。
+    bsp_display_backlight((uint8_t)FINDER_IDLE_FULL_PERCENT);
+    s_backlight = (uint8_t)FINDER_IDLE_FULL_PERCENT;
 
     if (s_timer) {
         lv_timer_delete(s_timer);
