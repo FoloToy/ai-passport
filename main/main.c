@@ -98,6 +98,17 @@ static void enter_menu(void) {
     menu_build();
 }
 
+// 开机直达的应用页:自持导航的页面即本固件的产品界面(DEMOS[] 里用 owns_navigation 声明)。
+// 没有这样的条目就返回越界值,调用方回退到菜单,保持基线行为不变。
+static size_t boot_app_index(void) {
+    for (size_t i = 0; i < DEMO_COUNT; i++) {
+        if (DEMOS[i].owns_navigation) {
+            return i;
+        }
+    }
+    return DEMO_COUNT;
+}
+
 static demo_nav_input_t navigation_input(bsp_btn_t btn, bsp_btn_ev_t event) {
     if (event == BSP_BTN_LONG && btn == BSP_BTN_OK) return DEMO_NAV_INPUT_OK_LONG;
     if (event != BSP_BTN_CLICK) return DEMO_NAV_INPUT_OTHER;
@@ -120,6 +131,27 @@ static void leave_active_demo(const demo_entry_t *demo) {
     demo_navigation_complete_exit(&s_navigation);
     enter_menu();
     bsp_lvgl_unlock();
+}
+
+// 进入某个演示页。调用方必须已持 LVGL 锁：本函数在 enter() 之后解锁，并在锁外启动
+// 慢服务（扫描、音频等），避免持锁做慢操作。
+// 菜单点击与"开机直达应用"两条路径共用这里，lifecycle 顺序只写一遍。
+static void enter_demo(size_t index) {
+    const demo_entry_t *demo = &DEMOS[index];
+    if (s_menu_scr) {
+        ui_pixel_mascot_jump(s_mascot);
+        lv_obj_delete(s_menu_scr);
+        s_menu_scr = NULL;
+        s_mascot = NULL;
+    }
+    s_navigation.active = (int)index;
+    demo->enter();
+    bsp_lvgl_unlock();
+
+    esp_err_t e = demo->start ? demo->start() : ESP_OK;
+    if (e != ESP_OK) {
+        ESP_LOGE(TAG, "%s 页面启动失败: %s", demo->name, esp_err_to_name(e));
+    }
 }
 
 static void process_input(const input_event_t *input) {
@@ -153,18 +185,7 @@ static void process_input(const input_event_t *input) {
         menu_refresh();
         ui_pixel_mascot_jump(s_mascot);
     } else if (result.action == DEMO_NAV_ACTION_ENTER) {
-        const demo_entry_t *demo = &DEMOS[result.index];
-        ui_pixel_mascot_jump(s_mascot);
-        lv_obj_delete(s_menu_scr);
-        s_menu_scr = NULL;
-        s_mascot = NULL;
-        demo->enter();
-        bsp_lvgl_unlock();
-
-        esp_err_t e = demo->start ? demo->start() : ESP_OK;
-        if (e != ESP_OK) {
-            ESP_LOGE(TAG, "%s 页面启动失败: %s", demo->name, esp_err_to_name(e));
-        }
+        enter_demo(result.index); // enter_demo 内部已解锁
         return;
     }
     bsp_lvgl_unlock();
@@ -270,7 +291,12 @@ void app_main(void) {
     demo_navigation_init(&s_navigation, DEMO_COUNT);
 
     // 其余外设单项失败不阻塞:菜单里标 [FAIL],其他项照常可测。
-    s_ok[0] = true;                                   // Display 已确认可用
+    // 先默认全部可用,再只覆盖【有真实初始化结果】的下标。
+    // 这样以后往 DEMOS[] 加条目就不必回来补下标 —— 漏写会让该条目被误标 [FAIL],
+    // 而标了 [FAIL] 的条目在菜单里是进不去的。
+    for (size_t i = 0; i < DEMO_COUNT; i++) {
+        s_ok[i] = true;
+    }
     esp_err_t input_err = input_dispatch_init();
     esp_err_t button_err = input_err == ESP_OK
                          ? bsp_button_init(on_key, NULL)
@@ -292,13 +318,17 @@ void app_main(void) {
     }
     s_ok[2] = (bsp_audio_init() == ESP_OK);
     s_ok[3] = (bsp_battery_init() == ESP_OK);
-    s_ok[4] = true;                                    // 页面内按需初始化并显示错误
-    s_ok[5] = true;
-    s_ok[6] = true;
 
     if (bsp_lvgl_lock(1000)) {
-        enter_menu();
-        bsp_lvgl_unlock();
+        // 本固件的产品界面就是那个应用：开机直接进入，不先让用户在基线测试菜单里选。
+        // 应用内"下键长按两次"会退到菜单，基线测试页仍然可达。
+        const size_t boot = boot_app_index();
+        if (boot < DEMO_COUNT) {
+            enter_demo(boot); // 内部已解锁
+        } else {
+            enter_menu();
+            bsp_lvgl_unlock();
+        }
         s_input_ready = true;
     }
 

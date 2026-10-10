@@ -8,6 +8,10 @@ This branch (`feature/pocket-finder`) turns a FoloToy AI Passport into a **Bluet
 proximity detector**. It scans for nearby BLE advertisers and shows how strong each
 one is; you pick one, walk toward it, and move on to the next when you get there.
 
+The firmware boots straight into the radar — this play is the product screen, so there
+is no menu to walk through first. The baseline test menu is still reachable behind the
+exit gesture (hold DOWN twice), so the hardware pages stay available.
+
 It is a **play**, not an asset tracker. Read the honesty rule below before expecting
 it to find a specific object.
 
