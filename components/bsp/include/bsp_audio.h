@@ -44,3 +44,10 @@ esp_err_t bsp_audio_read(void *pcm, size_t bytes);
 
 // 输出音量 0..100(%)。
 void bsp_audio_set_volume(uint8_t percent);
+
+// 麦克风模拟输入增益（dB）。ES8311 的 PGA 范围约 0..30 dB。
+//
+// 默认 30 dB 对"人贴近卡片说话"是过载的 —— 实测 16bit 采样频繁打到 32768（削顶），
+// 削平后的语音识别不出来。语音输入建议 12..18 dB；要现场调就用这个接口，
+// 不必重新烧固件。音频未初始化时返回 ESP_ERR_INVALID_STATE。
+esp_err_t bsp_audio_set_in_gain(float db);
