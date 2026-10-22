@@ -153,6 +153,7 @@ python tools/check_font_cov.py ①②③    # 字库到底覆盖哪些码点（�
 python tools/sim_screen.py             # 1:1 复现固件折行，算出屏幕每行内容
 python tools/probe_fw_log.py COM4      # 独占串口发指令 + 读固件日志，末端取证
 python tools/bench_relay.py            # 把串口换 TCP，测公网延迟下协议是否还成立
+python tools/push_to_github.py --check # 推送前体检：SSH/公钥/仓库/token 各查一遍
 ```
 
 写这些是因为踩够了「返回成功但什么都没发生」：`SendInput` 少 8 字节静默返回 0、
