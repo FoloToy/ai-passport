@@ -24,9 +24,13 @@ CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_DEF_REFR_PERIOD=20
 CONFIG_LV_FONT_MONTSERRAT_14=y
 CONFIG_LV_FONT_MONTSERRAT_20=y
+# 中文字库由 tools/gen_font.py 生成（main/fonts/lv_font_wb_zh_16.c，GB2312 全集 8058 码点）。
+# LVGL 自带的 source_han_sans_sc_16_cjk 只有 1456 个码点，"确认/拒绝/说话/就绪"都缺，
+# 屏幕上会画方块 —— 所以这里停用它，改用自己生成的全量字库。
+# CONFIG_LV_FONT_SOURCE_HAN_SANS_SC_16_CJK is not set
 # LVGL 内置 malloc 池大小(KB)。它是独立静态区、不与系统堆共享,配大了会白白占用 RAM。
-# 本 demo UI 简单,24KB 足够;若自建复杂界面出现绘制卡死/看门狗,调大此值。
-CONFIG_LV_MEM_SIZE_KILOBYTES=24
+# CJK 字体按需缓存字形,64KB 才够一屏汉字稳定渲染;界面上限仍由静态对象数决定。
+CONFIG_LV_MEM_SIZE_KILOBYTES=64
 
 # --- 系统 ---
 CONFIG_FREERTOS_HZ=1000
@@ -42,3 +46,7 @@ CONFIG_BT_NIMBLE_ROLE_OBSERVER=n
 CONFIG_BT_NIMBLE_MAX_CONNECTIONS=1
 CONFIG_BT_NIMBLE_HOST_BASED_PRIVACY=n
 CONFIG_BT_NIMBLE_NVS_PERSIST=n
+
+# 不编译 LVGL 自带的 examples/demos：占用近 400 个编译单元，且产品固件用不到。
+# CONFIG_LV_BUILD_EXAMPLES is not set
+# CONFIG_LV_BUILD_DEMOS is not set

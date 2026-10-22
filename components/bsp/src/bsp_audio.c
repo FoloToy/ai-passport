@@ -25,6 +25,10 @@ static const audio_codec_gpio_if_t *s_gpio;
 static uint32_t s_hz;
 static uint8_t  s_bits, s_ch;
 static bool     s_opened;
+// 麦克风模拟 PGA 增益（dB）。open 会被 codec 复位，所以必须记住这里的值并重新施加。
+// 这块板子必须给足：实测 15dB 时采集 rms 只有 25（等于没录到），识别全空；
+// 30dB 时 rms 278、peak 6161（离削顶还有 5 倍余量），逐字准确。
+static float    s_in_gain = 30.0f;
 static bool     s_sleeping;
 static bool     s_initialized;
 static esp_err_t s_sleep_result;
@@ -464,7 +468,7 @@ esp_err_t bsp_audio_set_format(uint32_t hz, uint8_t bits, uint8_t ch) {
     // ⚠ open 之后【不要】手动覆写 ES8311 的时钟分频寄存器(REG01~06):
     //   驱动已按采样率与 MCLK 精确算好,覆写会导致 ADC/DAC 时序错乱、录音回放全是杂音。
     //   这里只设麦克风模拟 PGA 增益。
-    r = esp_codec_dev_set_in_gain(s_dev, 30.0f);
+    r = esp_codec_dev_set_in_gain(s_dev, s_in_gain);
     if (r == ESP_CODEC_DEV_OK) r = esp_codec_dev_set_out_vol(s_dev, s_volume);
     if (r != ESP_CODEC_DEV_OK || s_io_error != ESP_CODEC_DEV_OK) {
         e = ESP_FAIL;
@@ -562,6 +566,22 @@ esp_err_t bsp_audio_write(const void *pcm, size_t bytes) {
 esp_err_t bsp_audio_read(void *pcm, size_t bytes) {
     if (!s_dev || !s_opened || s_sleeping) return ESP_ERR_INVALID_STATE;
     return esp_codec_dev_read(s_dev, pcm, bytes) == 0 ? ESP_OK : ESP_FAIL;
+}
+
+esp_err_t bsp_audio_set_in_gain(float db) {
+    if (db < 0.0f) db = 0.0f;
+    if (db > 30.0f) db = 30.0f;
+    // 记住这个值：codec 每次 open 都会把 PGA 复位，
+    // 只写硬件不记账的话，下次开录就退回默认 15dB（曾因此误判"增益随机跳"）。
+    s_in_gain = db;
+    if (!s_dev || !s_opened || s_sleeping) return ESP_OK;   // 下次 open 时会生效
+    int r = esp_codec_dev_set_in_gain(s_dev, db);
+    if (r == 0) {
+        ESP_LOGI(TAG, "麦克风输入增益设为 %.1f dB", db);
+        return ESP_OK;
+    }
+    ESP_LOGW(TAG, "设置输入增益失败: %d", r);
+    return ESP_FAIL;
 }
 
 void bsp_audio_set_volume(uint8_t percent) {

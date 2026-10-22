@@ -35,6 +35,10 @@ void demo_ble_enter(void);     void demo_ble_exit(void);
 void demo_ble_key(bsp_btn_t btn, bsp_btn_ev_t ev);
 esp_err_t demo_ble_start(void); esp_err_t demo_ble_stop(void);
 
+void demo_workbuddy_enter(void);    void demo_workbuddy_exit(void);
+void demo_workbuddy_key(bsp_btn_t btn, bsp_btn_ev_t ev);
+esp_err_t demo_workbuddy_start(void); esp_err_t demo_workbuddy_stop(void);
+
 void demo_low_power_enter(void); void demo_low_power_exit(void);
 void demo_low_power_key(bsp_btn_t btn, bsp_btn_ev_t ev);
 esp_err_t demo_low_power_start(void); esp_err_t demo_low_power_stop(void);

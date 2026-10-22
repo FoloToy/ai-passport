@@ -11,3 +11,31 @@ managed_components/
 /.agents/skills/passport-build
 /.agents/skills/passport-device-test
 /.agents/skills/passport-debug
+
+# ---------------------------------------------------------------
+# 主机侧（host/）——只提交源码，运行期产物与依赖不进仓库
+# ---------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+host/.venv/
+.venv/
+
+# 本机配置（含 COM 口号等与具体机器绑定的值）。模板见 host/.env.example
+host/.env
+
+# ASR 模型约 307MB，首次运行单独下载，不进仓库
+host/models/
+
+# 运行期产物：事件日志、录音回放
+host/events.log
+host/recordings/
+*.log
+# uiautomation 的运行日志（调试注入时生成）
+@AutomationLog.txt
+
+# 字体生成工具的依赖
+tools/node_modules/
+
+# ESP-IDF 早期 bring-up 的一次性脚本与日志（移动而非删除，可随时还原）
+_attic/

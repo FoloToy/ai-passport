@@ -1,0 +1,37 @@
+# AI PASSPORT × WorkBuddy · 主机侧依赖
+#
+# 安装（Windows）：
+#   python -m venv .venv
+#   .venv\Scripts\python.exe -m pip install -r requirements.txt
+#
+# 三个必须注意的点：
+# 1. mcp 必须 pin <2。2.x 把 FastMCP 改名成 MCPServer，本项目的
+#    mcp_server.py 是按 1.x 的 FastMCP 写的。
+# 2. 不要装 ctranslate2 / faster-whisper。本机（venv 3.13 与 D:\Python311 都测过）
+#    载入即崩，是原生库 DLL 初始化问题。语音走 sherpa-onnx，不需要它。
+# 3. sherpa-onnx 只是推理运行时，模型文件要另外下载：
+#      tools/dl_sensevoice.py    SenseVoice（默认引擎，228MB int8）
+#      tools/dl_paraformer.py    Paraformer-small（兜底，78MB）
+#      tools/dl_vad.py           silero VAD（0.6MB）
+
+# —— 设备链路 ——
+pyserial>=3.5
+
+# —— MCP 服务 ——
+mcp>=1.2,<2
+
+# —— 配置 ——
+python-dotenv>=1.0
+
+# —— 音频处理 / 识别 ——
+numpy>=1.24
+sherpa-onnx>=1.10
+
+# —— 注入 WorkBuddy 输入框（UI Automation）——
+uiautomation>=2.0
+comtypes>=1.2
+pywin32>=306
+
+# —— 诊断与截图 ——
+psutil>=5.9
+pillow>=10.0
