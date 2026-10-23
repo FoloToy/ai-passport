@@ -49,10 +49,11 @@ if ! curl --fail --location --silent --show-error --retry 3 --retry-all-errors \
     gh release download "v${version}" --repo rhysd/actionlint \
         --pattern "${archive_name}" --dir "${destination}"
 fi
-if command -v sha256sum >/dev/null 2>&1; then
-    printf '%s  %s\n' "${checksum}" "${archive_path}" | sha256sum --check --status
-elif command -v shasum >/dev/null 2>&1; then
+# Prefer shasum: recent macOS ships a BSD-style /sbin/sha256sum without --check.
+if command -v shasum >/dev/null 2>&1; then
     [[ "$(shasum -a 256 "${archive_path}" | awk '{print $1}')" == "${checksum}" ]]
+elif command -v sha256sum >/dev/null 2>&1; then
+    printf '%s  %s\n' "${checksum}" "${archive_path}" | sha256sum --check --status
 else
     echo "No SHA-256 verification tool is available" >&2
     exit 1
