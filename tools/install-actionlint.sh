@@ -49,7 +49,10 @@ if ! curl --fail --location --silent --show-error --retry 3 --retry-all-errors \
     gh release download "v${version}" --repo rhysd/actionlint \
         --pattern "${archive_name}" --dir "${destination}"
 fi
-if command -v sha256sum >/dev/null 2>&1; then
+# Some systems ship a sha256sum without coreutils' --check/--status (macOS), so
+# only take that path when the option is really supported.
+if command -v sha256sum >/dev/null 2>&1 \
+    && sha256sum --help 2>&1 | grep -q -- '--status'; then
     printf '%s  %s\n' "${checksum}" "${archive_path}" | sha256sum --check --status
 elif command -v shasum >/dev/null 2>&1; then
     [[ "$(shasum -a 256 "${archive_path}" | awk '{print $1}')" == "${checksum}" ]]
