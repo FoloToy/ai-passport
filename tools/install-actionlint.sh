@@ -49,10 +49,15 @@ if ! curl --fail --location --silent --show-error --retry 3 --retry-all-errors \
     gh release download "v${version}" --repo rhysd/actionlint \
         --pattern "${archive_name}" --dir "${destination}"
 fi
-if command -v sha256sum >/dev/null 2>&1; then
+# macOS can ship a BSD-style sha256sum without --check support, so only the
+# non-Darwin path may rely on GNU sha256sum; elsewhere shasum verifies.
+if [[ "${system_name}" != "Darwin" ]] && command -v sha256sum >/dev/null 2>&1; then
     printf '%s  %s\n' "${checksum}" "${archive_path}" | sha256sum --check --status
 elif command -v shasum >/dev/null 2>&1; then
-    [[ "$(shasum -a 256 "${archive_path}" | awk '{print $1}')" == "${checksum}" ]]
+    # Compare explicitly: under stock macOS bash 3.2, set -e does not act on a
+    # failing [[ ]] in an if/elif body, so a bare test would pass a mismatch.
+    [[ "$(shasum -a 256 "${archive_path}" | awk '{print $1}')" == "${checksum}" ]] \
+        || { echo "actionlint checksum mismatch" >&2; exit 1; }
 else
     echo "No SHA-256 verification tool is available" >&2
     exit 1
