@@ -55,3 +55,9 @@ BSP 在 `components/bsp/src/bsp_battery.c` 中嵌入这 80 字节，主机检查
 `fa7365671093ef449c5bdcfb4adb279e3d275f888109f50b6b2f21e9b96220d5`。
 这是电量计参数，不是充电配置，也不能通用于所有 500 mAh 电芯；详见
 [硬件指南](../docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.zh_CN.md#9-cw2017-电池计)。
+
+## 全球广播字库
+
+| 文件 | 说明 |
+| --- | --- |
+| `fonts/radio_font_16.c` | LVGL 9 子集，16px 4bpp，由 macOS **Arial Unicode.ttf** 经 `lv_font_conv@1.5.2` 生成。字符表：`main/radio_font_symbols.txt`。门禁：`tools/check_radio_font_glyphs.py`。 |

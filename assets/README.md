@@ -59,3 +59,9 @@ Decoded 80-byte SHA-256:
 `fa7365671093ef449c5bdcfb4adb279e3d275f888109f50b6b2f21e9b96220d5`.
 This is a fuel-gauge profile, not a charging configuration or a generic profile
 for every 500 mAh cell; see the [hardware guide](../docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md#9-cw2017-fuel-gauge).
+
+## Global Radio (全球广播) fonts
+
+| File | Notes |
+| --- | --- |
+| `fonts/radio_font_16.c` | LVGL 9 subset, 16px 4bpp, generated with `lv_font_conv@1.5.2` from macOS **Arial Unicode.ttf**. Symbols inventory: `main/radio_font_symbols.txt`. Gate: `tools/check_radio_font_glyphs.py`. |
