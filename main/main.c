@@ -82,6 +82,10 @@ void app_main(void)
 
     ESP_ERROR_CHECK(bsp_i2c_init());
     ESP_ERROR_CHECK(bsp_display_init());
+    if (!bsp_lvgl_init()) {
+        ESP_LOGE(TAG, "bsp_lvgl_init failed");
+        abort();
+    }
     ESP_ERROR_CHECK(bsp_battery_init());
 
     s_input_queue = xQueueCreate(INPUT_QUEUE_DEPTH, sizeof(input_event_t));
