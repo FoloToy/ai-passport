@@ -116,8 +116,8 @@ static void set_page(ui_page_t page)
         lv_obj_clear_flag(s_meta, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text(s_title, "配网模式");
         lv_label_set_text_fmt(s_meta, "热点 %s", radio_wifi_softap_ssid());
-        lv_label_set_text(s_status, "连热点后浏览器打开 192.168.4.1");
-        lv_label_set_text(s_hint, "长按确定返回播放页");
+        lv_label_set_text(s_status, "连热点后打开 192.168.4.1");
+        lv_label_set_text(s_hint, "关流量后开网页  长按返回");
     } else {
         lv_obj_add_flag(s_list_box, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_title, LV_OBJ_FLAG_HIDDEN);

@@ -7,7 +7,7 @@ idf_component_register(
          "radio_ui.c"
     INCLUDE_DIRS "."
     REQUIRES bsp nvs_flash esp_event esp_http_client esp_http_server esp_netif esp_wifi
-             esp_timer esp_hw_support freertos
+             esp_timer esp_hw_support freertos dns_server
 )
 
 target_sources(${COMPONENT_LIB} PRIVATE
