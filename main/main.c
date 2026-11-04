@@ -86,6 +86,9 @@ void app_main(void)
         ESP_LOGE(TAG, "bsp_lvgl_init failed");
         abort();
     }
+    /* backlight_init() leaves duty at 0; without this the panel stays black and
+     * looks like a failed power-on even though the app is running. */
+    bsp_display_backlight(100);
     ESP_ERROR_CHECK(bsp_battery_init());
 
     s_input_queue = xQueueCreate(INPUT_QUEUE_DEPTH, sizeof(input_event_t));
