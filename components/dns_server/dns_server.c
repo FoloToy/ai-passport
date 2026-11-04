@@ -219,41 +219,32 @@ void dns_server_task(void *pvParameters)
         ESP_LOGI(TAG, "Socket bound, port %d", DNS_PORT);
 
         while (handle->started) {
-            ESP_LOGI(TAG, "Waiting for data");
-            struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+            ESP_LOGD(TAG, "Waiting for data");
+            struct sockaddr_in source_addr = {0};
             socklen_t socklen = sizeof(source_addr);
-            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0,
+                               (struct sockaddr *)&source_addr, &socklen);
 
-            // Error occurred during receiving
             if (len < 0) {
                 ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
                 close(sock);
                 break;
             }
-            // Data received
-            else {
-                // Get the sender's ip address as string
-                if (source_addr.sin6_family == PF_INET) {
-                    inet_ntoa_r(((struct sockaddr_in *)&source_addr)->sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
-                } else if (source_addr.sin6_family == PF_INET6) {
-                    inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1);
-                }
 
-                // Null-terminate whatever we received and treat like a string...
-                rx_buffer[len] = 0;
+            inet_ntoa_r(source_addr.sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
+            rx_buffer[len] = 0;
 
-                char reply[DNS_MAX_LEN];
-                int reply_len = parse_dns_request(rx_buffer, len, reply, DNS_MAX_LEN, handle);
+            char reply[DNS_MAX_LEN];
+            int reply_len = parse_dns_request(rx_buffer, len, reply, DNS_MAX_LEN, handle);
 
-                ESP_LOGI(TAG, "Received %d bytes from %s | DNS reply with len: %d", len, addr_str, reply_len);
-                if (reply_len <= 0) {
-                    ESP_LOGE(TAG, "Failed to prepare a DNS reply");
-                } else {
-                    int err = sendto(sock, reply, reply_len, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
-                    if (err < 0) {
-                        ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-                        break;
-                    }
+            ESP_LOGI(TAG, "Received %d bytes from %s | DNS reply with len: %d", len, addr_str, reply_len);
+            if (reply_len <= 0) {
+                ESP_LOGE(TAG, "Failed to prepare a DNS reply");
+            } else {
+                int err = sendto(sock, reply, reply_len, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+                if (err < 0) {
+                    ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
+                    break;
                 }
             }
         }

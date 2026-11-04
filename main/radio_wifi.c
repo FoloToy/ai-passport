@@ -9,6 +9,7 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include "lwip/inet.h"
 #include "nvs_flash.h"
 
 #include <stdio.h>
@@ -31,6 +32,8 @@ static bool s_allow_sta_connect;
 static EventGroupHandle_t s_events;
 static const int GOT_IP_BIT = BIT0;
 static const int FAIL_BIT = BIT1;
+/* DHCP option 114 keeps a pointer; must outlive the DHCP server. */
+static char s_captive_uri[32];
 
 static void notify(radio_wifi_state_t st, const char *detail)
 {
@@ -59,7 +62,9 @@ static void on_wifi(void *arg, esp_event_base_t base, int32_t id, void *data)
         wifi_event_ap_stadisconnected_t *ev = (wifi_event_ap_stadisconnected_t *)data;
         ESP_LOGI(TAG, "phone left SoftAP " MACSTR " reason=%d", MAC2STR(ev->mac), ev->reason);
     } else if (base == IP_EVENT && id == IP_EVENT_AP_STAIPASSIGNED) {
-        ESP_LOGI(TAG, "DHCP assigned phone an IP");
+        ip_event_ap_staipassigned_t *ev = (ip_event_ap_staipassigned_t *)data;
+        ESP_LOGI(TAG, "DHCP assigned " IPSTR " to " MACSTR,
+                 IP2STR(&ev->ip), MAC2STR(ev->mac));
     } else if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)data;
         snprintf(s_ip, sizeof(s_ip), IPSTR, IP2STR(&event->ip_info.ip));
@@ -206,7 +211,7 @@ static esp_err_t start_httpd(void)
         return ESP_OK;
     }
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    /* Keep sockets modest on no-PSRAM C3, but high enough for phone probes. */
+    /* LWIP_MAX_SOCKETS leaves only 7 usable for httpd on this no-PSRAM build. */
     config.max_open_sockets = 7;
     config.lru_purge_enable = true;
     config.stack_size = 6144;
@@ -217,8 +222,19 @@ static esp_err_t start_httpd(void)
     }
     const httpd_uri_t root = {.uri = "/", .method = HTTP_GET, .handler = root_get};
     const httpd_uri_t save = {.uri = "/save", .method = HTTP_POST, .handler = save_post};
+    /* Common OS captive probes — serve the form directly instead of only 404→303. */
+    const httpd_uri_t gen204 = {.uri = "/generate_204", .method = HTTP_GET, .handler = root_get};
+    const httpd_uri_t gen204_alt = {.uri = "/gen_204", .method = HTTP_GET, .handler = root_get};
+    const httpd_uri_t hotspot = {.uri = "/hotspot-detect.html", .method = HTTP_GET, .handler = root_get};
+    const httpd_uri_t ncsi = {.uri = "/ncsi.txt", .method = HTTP_GET, .handler = root_get};
+    const httpd_uri_t connecttest = {.uri = "/connecttest.txt", .method = HTTP_GET, .handler = root_get};
     httpd_register_uri_handler(s_httpd, &root);
     httpd_register_uri_handler(s_httpd, &save);
+    httpd_register_uri_handler(s_httpd, &gen204);
+    httpd_register_uri_handler(s_httpd, &gen204_alt);
+    httpd_register_uri_handler(s_httpd, &hotspot);
+    httpd_register_uri_handler(s_httpd, &ncsi);
+    httpd_register_uri_handler(s_httpd, &connecttest);
     httpd_register_err_handler(s_httpd, HTTPD_404_NOT_FOUND, http_404_handler);
     ESP_LOGI(TAG, "httpd listening on :80");
     return ESP_OK;
@@ -305,6 +321,59 @@ esp_err_t radio_wifi_connect_saved(const radio_settings_t *settings)
     return ESP_FAIL;
 }
 
+static void configure_ap_dhcp_captive(void)
+{
+    if (!s_ap) {
+        return;
+    }
+    esp_netif_ip_info_t ip_info;
+    if (esp_netif_get_ip_info(s_ap, &ip_info) != ESP_OK) {
+        ESP_LOGW(TAG, "SoftAP IP unavailable");
+        return;
+    }
+
+    char ip_addr[16];
+    inet_ntoa_r(ip_info.ip.addr, ip_addr, sizeof(ip_addr));
+    ESP_LOGI(TAG, "SoftAP IP %s", ip_addr);
+
+    /*
+     * ESP_NETIF_DOMAIN_NAME_SERVER takes a uint8 enable flag (non-zero = offer DNS),
+     * not esp_netif_dns_info_t. Passing dns_info previously cleared OFFER_DNS because
+     * ESP_IPADDR_TYPE_V4 is 0 — phones then joined SoftAP with no usable DNS/gateway path.
+     * DNS address itself is set with esp_netif_set_dns_info().
+     */
+    uint8_t offer_dns = 1;
+    esp_netif_dns_info_t dns = {0};
+    dns.ip.type = ESP_IPADDR_TYPE_V4;
+    dns.ip.u_addr.ip4.addr = ip_info.ip.addr;
+    snprintf(s_captive_uri, sizeof(s_captive_uri), "http://%s", ip_addr);
+
+    esp_err_t err = esp_netif_dhcps_stop(s_ap);
+    if (err != ESP_OK && err != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
+        ESP_LOGW(TAG, "dhcps_stop: %s", esp_err_to_name(err));
+    }
+    err = esp_netif_dhcps_option(s_ap, ESP_NETIF_OP_SET, ESP_NETIF_DOMAIN_NAME_SERVER,
+                                 &offer_dns, sizeof(offer_dns));
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "dhcps DNS offer: %s", esp_err_to_name(err));
+    }
+    err = esp_netif_set_dns_info(s_ap, ESP_NETIF_DNS_MAIN, &dns);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "set_dns_info: %s", esp_err_to_name(err));
+    }
+    err = esp_netif_dhcps_option(s_ap, ESP_NETIF_OP_SET, ESP_NETIF_CAPTIVEPORTAL_URI,
+                                 s_captive_uri, strlen(s_captive_uri));
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "captive URI option: %s", esp_err_to_name(err));
+    }
+    err = esp_netif_dhcps_start(s_ap);
+    if (err != ESP_OK && err != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED) {
+        ESP_LOGE(TAG, "dhcps_start failed: %s", esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "DHCP offering DNS %s + captive %s", ip_addr, s_captive_uri);
+    }
+}
+
 esp_err_t radio_wifi_start_softap(void)
 {
     uint8_t mac[6];
@@ -317,7 +386,7 @@ esp_err_t radio_wifi_start_softap(void)
     ap.ap.ssid_len = strlen(s_ap_ssid);
     ap.ap.max_connection = 4;
     ap.ap.authmode = WIFI_AUTH_OPEN;
-    ap.ap.channel = 6;
+    ap.ap.channel = 1; /* channel 1 is usually friendlier than 6 on crowded 2.4G */
 
     /* AP-only while provisioning: more RAM/sockets, no empty STA connect. */
     s_allow_sta_connect = false;
@@ -327,6 +396,10 @@ esp_err_t radio_wifi_start_softap(void)
         ESP_ERROR_CHECK(esp_wifi_start());
         s_wifi_started = true;
     }
+    /* After start: disable power save so phone DHCP/HTTP stays reliable. */
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
+
+    configure_ap_dhcp_captive();
 
     esp_err_t err = start_httpd();
     if (err != ESP_OK) {
