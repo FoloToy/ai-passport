@@ -268,7 +268,9 @@ esp_err_t radio_wifi_start_softap(void)
 {
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_WIFI_SOFTAP);
-    snprintf(s_ap_ssid, sizeof(s_ap_ssid), "全球广播-%02X%02X", mac[4], mac[5]);
+    /* Phones often fail to list/join UTF-8 Chinese SoftAP SSIDs; keep ASCII on air.
+     * The on-device UI still shows Chinese copy. */
+    snprintf(s_ap_ssid, sizeof(s_ap_ssid), "GlobalRadio-%02X%02X", mac[4], mac[5]);
 
     wifi_config_t ap = {0};
     strncpy((char *)ap.ap.ssid, s_ap_ssid, sizeof(ap.ap.ssid));
