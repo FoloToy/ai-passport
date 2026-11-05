@@ -2,7 +2,9 @@
 
 # Stella of the End reader
 
-A landscape 320x240 visual-novel reader for Stella of the End on the AI Passport, part of the `v1.0.0` batch of twelve ports (November 2026). Script, backgrounds, sprites and event CGs ship inside the application partition and read fully offline.
+A landscape 320x240 visual-novel reader for Stella of the End on the AI Passport, part of the `v1.0.0` batch of twelve ports (November 2026). The script, backgrounds, sprites and event CGs of the **21-chapter main story** ship inside the application partition and read fully offline.
+
+> Scope: the main story only. Upstream also ships nine after-story chapters (`story/101`-`109`, 1,550 lines, about 229 KB raw / 70 KB deflated); they are **not included** because of the 8 MB partition limit. The partition currently has 66,992 B free, so adding them requires freeing space first.
 
 ## Scale
 

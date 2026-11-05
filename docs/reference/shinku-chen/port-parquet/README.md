@@ -6,7 +6,7 @@ A landscape 320x240 visual-novel reader for PARQUET on the AI Passport, part of 
 
 ## Scale
 
-- 107 scenes in 434 script blocks, 11,205 ops and 11,098 lines, four choices, four endings, 367 event CGs in 37 groups and 979 sprite ids
+- 107 scenes in 434 script blocks, 11,205 ops and 11,098 lines, four choices and four endings; 367 event CGs in 37 groups and 979 sprite ids are reference counts from the packer (the `images/p014` and `s015` directories hold 400 JPEG files).
 
 ## Controls
 

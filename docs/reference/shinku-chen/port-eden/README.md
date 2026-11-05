@@ -6,7 +6,7 @@ A landscape 320x240 visual-novel reader for eden* on the AI Passport, part of th
 
 ## Scale
 
-- 21 chapters, 8,860 lines, 295 CG groups, 2,178 composed frames (1,594 patch deltas) and a 2,681-glyph Chinese font subset
+- 21 chapters, 8,860 lines and 295 CG groups; the packer's internal counters report 2,178 composed frames (1,594 patch deltas), while the upstream tree currently holds 855 JPEG files and the gallery references 2,341 times (2,076 distinct ids) - the frame counter is a packer metric, not a file count. The Chinese font subset carries 2,681 glyphs.
 
 ## Controls
 
