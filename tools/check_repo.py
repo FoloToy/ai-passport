@@ -304,6 +304,38 @@ def check_root_language_links(files: list[Path], errors: list[str]) -> None:
                 errors.append(f"{path.name}: language link to {peer.name} must be reciprocal")
 
 
+def root_opening_links(path: Path) -> set[Path]:
+    text = path.read_text(encoding="utf-8")
+    opening = "\n".join(text.splitlines()[:8])
+    targets = [local_link_target(path, raw) for raw in MARKDOWN_LINK_RE.findall(opening)]
+    targets += [local_link_target(path, raw) for raw in HTML_LINK_RE.findall(opening)]
+    return {target.resolve() for target in targets if target is not None}
+
+
+def check_root_readme_links(files: list[Path], errors: list[str]) -> None:
+    """Require README.md to link every existing root README language version."""
+    root = ROOT.resolve()
+    readmes = {
+        path.name: path
+        for path in files
+        if path.parent.resolve() == root and ROOT_README_RE.fullmatch(path.name)
+    }
+    if not readmes:
+        return
+
+    default = readmes.get("README.md")
+    if default is None:
+        errors.append("README.md: root README is required when language versions exist")
+        return
+    if len(readmes) == 1:
+        return
+
+    default_links = root_opening_links(default)
+    for name, path in sorted(readmes.items()):
+        if name != "README.md" and path.resolve() not in default_links:
+            errors.append(f"README.md: missing top language link to {name}")
+
+
 def check_action_pins(errors: list[str]) -> None:
     workflow_dir = ROOT / ".github" / "workflows"
     for path in sorted(workflow_dir.glob("*.y*ml")):
@@ -363,6 +395,7 @@ def main() -> int:
     check_community_document_links(files, errors)
     check_document_languages(files, errors, vendored_roots)
     check_root_language_links(files, errors)
+    check_root_readme_links(files, errors)
     check_action_pins(errors)
     check_issue_forms(errors)
     check_sensitive_content(files, errors)

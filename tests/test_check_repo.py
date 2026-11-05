@@ -200,6 +200,7 @@ class RootMarkdownLanguageTest(unittest.TestCase):
         errors: list[str] = []
         CHECKS.check_document_languages(files, errors)
         CHECKS.check_root_language_links(files, errors)
+        CHECKS.check_root_readme_links(files, errors)
         return errors
 
     def test_root_readme_needs_no_language_pair(self) -> None:
@@ -249,6 +250,45 @@ class RootMarkdownLanguageTest(unittest.TestCase):
             ),
         ]
         self.assertEqual(self.language_errors(files), [])
+
+    def test_root_readme_accepts_supported_language_sets(self) -> None:
+        sets = [
+            {"README.md": "# 项目\n"},
+            {
+                "README.md": '<a href="README.zh_CN.md">简体中文</a>\n',
+                "README.zh_CN.md": '<a href="README.md">简体中文</a>\n',
+            },
+            {
+                "README.md": '<a href="README.en_US.md">English</a>\n',
+                "README.en_US.md": '<a href="README.md">简体中文</a>\n',
+            },
+            {
+                "README.md": '<a href="README.zh_CN.md">简体中文</a> · <a href="README.en_US.md">English</a>\n',
+                "README.zh_CN.md": '<a href="README.md">简体中文</a>\n',
+                "README.en_US.md": '<a href="README.md">简体中文</a>\n',
+            },
+        ]
+        for content in sets:
+            with self.subTest(files=sorted(content)):
+                files = [self.document(name, text) for name, text in content.items()]
+                self.assertEqual(self.language_errors(files), [])
+
+    def test_root_readme_versions_require_default_links(self) -> None:
+        files = [
+            self.document("README.md", "# 项目\n"),
+            self.document("README.en_US.md", "# Project\n"),
+        ]
+        self.assertEqual(
+            self.language_errors(files),
+            ["README.md: missing top language link to README.en_US.md"],
+        )
+
+    def test_root_readme_version_requires_default(self) -> None:
+        lone_translation = self.document("README.ja_JP.md", "# プロジェクト\n")
+        self.assertEqual(
+            self.language_errors([lone_translation]),
+            ["README.md: root README is required when language versions exist"],
+        )
 
     def test_root_missing_html_language_target_is_rejected(self) -> None:
         page = self.document("README.md", '<a href="README.en_US.md">English</a>\n')
