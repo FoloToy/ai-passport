@@ -24,9 +24,11 @@ CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_DEF_REFR_PERIOD=20
 CONFIG_LV_FONT_MONTSERRAT_14=y
 CONFIG_LV_FONT_MONTSERRAT_20=y
-# LVGL 内置 malloc 池大小(KB)。它是独立静态区、不与系统堆共享,配大了会白白占用 RAM。
-# 本 demo UI 简单,24KB 足够;若自建复杂界面出现绘制卡死/看门狗,调大此值。
-CONFIG_LV_MEM_SIZE_KILOBYTES=24
+# LVGL 分配器：默认改用系统堆的标准 malloc/realloc/free。
+# 内置 24KB 静态池在复杂圆角/蒙版绘制时会耗尽，lv_malloc 返回 NULL 后 LVGL 断言死循环，
+# 饿死 IDLE 触发 TWDT 冻屏（真机已复现：圆角蒙版表分配失败）。系统堆约 130KB 可用，
+# 不会占用额外静态区；仍可按需改回内置池并调 CONFIG_LV_MEM_SIZE_KILOBYTES。
+CONFIG_LV_USE_CLIB_MALLOC=y
 
 # --- 系统 ---
 CONFIG_FREERTOS_HZ=1000
