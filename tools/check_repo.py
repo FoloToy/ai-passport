@@ -29,11 +29,9 @@ SECRET_PATTERNS = {
 ROOT_MARKDOWN_ALLOWLIST = {
     "AGENTS.md",
     "AGENTS.zh_CN.md",
-    "CLAUDE.md",
-    "CLAUDE.zh_CN.md",
     "README.md",
-    "README.zh_CN.md",
 }
+ROOT_README_RE = re.compile(r"README(?:\.[A-Za-z0-9_-]+)?\.md\Z")
 # Register only concrete, vendored component directories, e.g. "components/foo".
 # These exemptions never change the input to sensitive-content/conflict checks.
 VENDORED_DOC_ROOTS: tuple[str, ...] = ()
@@ -107,8 +105,6 @@ def check_required_files(errors: list[str]) -> None:
     required = (
         "AGENTS.md",
         "AGENTS.zh_CN.md",
-        "CLAUDE.md",
-        "CLAUDE.zh_CN.md",
         "docs/CHANGELOG.md",
         ".github/CONTRIBUTING.md",
         ".github/CODE_OF_CONDUCT.md",
@@ -130,10 +126,25 @@ def check_required_files(errors: list[str]) -> None:
         errors.append("dependencies.lock must be tracked, not ignored")
 
     for path in sorted(ROOT.glob("*.md")):
-        if path.name not in ROOT_MARKDOWN_ALLOWLIST:
+        if path.name not in ROOT_MARKDOWN_ALLOWLIST and not ROOT_README_RE.fullmatch(path.name):
             errors.append(
                 f"{path.name}: root Markdown must move to docs/ or .github/"
             )
+
+
+def local_link_target(path: Path, raw_target: str) -> Path | None:
+    target = raw_target.strip()
+    if target.startswith("<"):
+        closing = target.find(">")
+        target = target[1:closing] if closing != -1 else target[1:]
+    else:
+        target = target.split(maxsplit=1)[0].strip("<>")
+    if not target or target.startswith(("#", "http://", "https://", "mailto:")):
+        return None
+    local = unquote(target.split("#", 1)[0])
+    if not local:
+        return None
+    return (ROOT / local.lstrip("/")) if local.startswith("/") else (path.parent / local)
 
 
 def check_markdown_links(
@@ -144,13 +155,10 @@ def check_markdown_links(
             continue
         text = path.read_text(encoding="utf-8")
         for raw_target in MARKDOWN_LINK_RE.findall(text):
-            target = raw_target.strip().split(maxsplit=1)[0].strip("<>")
-            if not target or target.startswith(("#", "http://", "https://", "mailto:")):
-                continue
-            local = unquote(target.split("#", 1)[0])
-            resolved = (ROOT / local.lstrip("/")) if local.startswith("/") else (path.parent / local)
-            if local and not resolved.resolve().exists():
-                errors.append(f"{path.relative_to(ROOT).as_posix()}: missing link target {target}")
+            target = local_link_target(path, raw_target)
+            if target is not None and not target.resolve().exists():
+                display = raw_target.strip().split(maxsplit=1)[0].strip("<>")
+                errors.append(f"{path.relative_to(ROOT).as_posix()}: missing link target {display}")
 
 
 def check_community_document_links(files: list[Path], errors: list[str]) -> None:
@@ -207,7 +215,7 @@ def check_community_document_links(files: list[Path], errors: list[str]) -> None
 def check_document_languages(
     files: list[Path], errors: list[str], vendored_roots: tuple[Path, ...] = ()
 ) -> None:
-    """Require an English default and a linked Simplified Chinese peer."""
+    """Require an English default and a linked Simplified Chinese peer outside the root."""
     markdown = {
         path for path in files
         if path.suffix.lower() == ".md" and not is_vendored_document(path, vendored_roots)
@@ -218,6 +226,9 @@ def check_document_languages(
         text = path.read_text(encoding="utf-8")
         opening = "\n".join(text.splitlines()[:8])
 
+        # The language exemption applies only to root README files.
+        if path.parent == ROOT and ROOT_README_RE.fullmatch(path.name):
+            continue
         if name.endswith(".zh_CN.md"):
             default_name = f"{name[:-len('.zh_CN.md')]}.md"
             default_path = path.with_name(default_name)
@@ -249,6 +260,80 @@ def check_document_languages(
             errors.append(
                 f"{path.relative_to(ROOT).as_posix()}:{line}: default Markdown must use English prose"
             )
+
+
+def check_root_language_links(files: list[Path], errors: list[str]) -> None:
+    """Keep optional root-language navigation valid and reciprocal."""
+    root = ROOT.resolve()
+    root_markdown = {
+        path.resolve(): path
+        for path in files
+        if path.parent.resolve() == root and path.suffix.lower() == ".md"
+    }
+
+    for resolved_path, path in sorted(root_markdown.items(), key=lambda item: item[0].name):
+        text = path.read_text(encoding="utf-8")
+        opening = "\n".join(text.splitlines()[:8])
+        links = [
+            (raw, local_link_target(path, raw), False)
+            for raw in MARKDOWN_LINK_RE.findall(opening)
+        ]
+        links += [
+            (raw, local_link_target(path, raw), True)
+            for raw in HTML_LINK_RE.findall(opening)
+        ]
+
+        for raw, target, html in links:
+            if target is None:
+                continue
+            target_path = target.resolve()
+            if not target_path.exists():
+                if html:
+                    errors.append(f"{path.name}: missing language link target {raw}")
+                continue
+            if target_path.parent != root or target_path.suffix.lower() != ".md":
+                continue
+            peer = root_markdown.get(target_path)
+            if peer is None or peer == path:
+                continue
+            peer_text = peer.read_text(encoding="utf-8")
+            peer_opening = "\n".join(peer_text.splitlines()[:8])
+            peer_links = [local_link_target(peer, item) for item in MARKDOWN_LINK_RE.findall(peer_opening)]
+            peer_links += [local_link_target(peer, item) for item in HTML_LINK_RE.findall(peer_opening)]
+            if resolved_path not in {link.resolve() for link in peer_links if link is not None}:
+                errors.append(f"{path.name}: language link to {peer.name} must be reciprocal")
+
+
+def root_opening_links(path: Path) -> set[Path]:
+    text = path.read_text(encoding="utf-8")
+    opening = "\n".join(text.splitlines()[:8])
+    targets = [local_link_target(path, raw) for raw in MARKDOWN_LINK_RE.findall(opening)]
+    targets += [local_link_target(path, raw) for raw in HTML_LINK_RE.findall(opening)]
+    return {target.resolve() for target in targets if target is not None}
+
+
+def check_root_readme_links(files: list[Path], errors: list[str]) -> None:
+    """Require README.md to link every existing root README language version."""
+    root = ROOT.resolve()
+    readmes = {
+        path.name: path
+        for path in files
+        if path.parent.resolve() == root and ROOT_README_RE.fullmatch(path.name)
+    }
+    if not readmes:
+        return
+
+    default = readmes.get("README.md")
+    if default is None:
+        errors.append("README.md: root README is required when language versions exist")
+        return
+    if len(readmes) == 1:
+        return
+
+    default_links = root_opening_links(default)
+    for name, path in sorted(readmes.items()):
+        if name != "README.md" and path.resolve() not in default_links:
+            errors.append(f"README.md: missing top language link to {name}")
 
 
 def check_action_pins(errors: list[str]) -> None:
@@ -309,6 +394,8 @@ def main() -> int:
     check_markdown_links(files, errors, vendored_roots)
     check_community_document_links(files, errors)
     check_document_languages(files, errors, vendored_roots)
+    check_root_language_links(files, errors)
+    check_root_readme_links(files, errors)
     check_action_pins(errors)
     check_issue_forms(errors)
     check_sensitive_content(files, errors)

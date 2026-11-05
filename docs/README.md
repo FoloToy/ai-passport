@@ -191,8 +191,7 @@ docs/                    Project docs, changelog, engineering/contribution rules
 sdkconfig.defaults       ESP32-C3, USB console, Flash, and LVGL defaults
 partitions.csv           Minimal default: NVS, PHY data, and one factory application
 dependencies.lock        Reproducible ESP-IDF Managed Component resolution
-AGENTS.md                Mandatory AI-agent entry point (paired with AGENTS.zh_CN.md)
-CLAUDE.md                Claude Code pointer to AGENTS.md (paired Chinese version)
+AGENTS.md / AGENTS.zh_CN.md  Mandatory AI-agent entry point (English / Simplified Chinese)
 LICENSE                  Repository license
 ```
 
