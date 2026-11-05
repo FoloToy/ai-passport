@@ -57,6 +57,7 @@ The engineering rules themselves live under
 - [An ADC Ladder Keypad Can Read a Long Press as Another Key](shinku-chen/adc-ladder-keypad-long-press-misread.md) — three keys on one ADC pin behind voltage windows, how a momentary contact break in a held key sweeps the voltage through another key's window and its watchers, the key-identity lock that fixes it, and the key-event black box that records the ADC millivolts behind every event.
 - [Packing a Visual Novel into 8 MB with No PSRAM](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.md) — a 5.26 MB image pack and a 1.43 MB script pack around a 7.7 KB largest free block: why the ROM's inflate did not fit, the 3 KB block ceilings and the compression ratio they cost, native-geometry packing, and two silent failures caused by fixed-size limits.
 
+- [Galgame Reader Porting Lessons](shinku-chen/galgame-port-lessons.md) — the shared reader requirements, packing and banded-rendering capabilities, twelve defects that only surfaced on hardware (LVGL 9 label wrap modes, tjpgd's BGR output, `lv_image_set_src` resetting the object size, a root scrollbar from oversized bands, per-band buffers, stack-size and click-swallow traps), and the pre-release acceptance checklist across twelve visual-novel ports.
 **Application playbooks:**
 
 - [Voice Keychain](shinku-chen/voice-keychain/README.md) — a sound-effects keychain that turns the AI Passport into a pocket audio player.
@@ -69,6 +70,18 @@ The engineering rules themselves live under
 - [Senren * Banka](shinku-chen/senren-banka/README.md) — a portrait visual novel reader that carries the whole game — story, backgrounds, sprites and event illustrations — on the device, with auto-read, fast-forward, chapter skipping and save slots.
 - [Sanoba Witch](shinku-chen/sanoba-witch/README.md) — a portrait visual novel reader with 101 chapters, five routes and five endings, packed entirely into Flash.
 - [Pocket Intercom](shinku-chen/intercom/README.md) — a phone-tethered AI intercom: hold OK to talk through a companion Android app, with the answer back on the device screen and in the phone, three buttons, and no network setup on the device itself.
+- [anemoi](shinku-chen/port-anemoi/README.md) — a landscape reader for the common route of *anemoi*: 71 of 264 source scenes, layered body and face sprites, 30 save slots and an automatic slot.
+- [Steins;Gate](shinku-chen/port-steins/README.md) — a landscape reader carrying the complete *Steins;Gate* script, backgrounds, sprites and event CGs offline.
+- [Steins;Gate 0](shinku-chen/port-steins0/README.md) — a landscape reader for *Steins;Gate 0* with 104 chapter entries, six endings and a versioned 34-byte unlock blob.
+- [CLANNAD](shinku-chen/port-clannad/README.md) — a landscape reader for the 212-scene, 195-chapter *CLANNAD* build, with per-speaker faces and a panel flush to the bottom edge.
+- [Summer Pockets REFLECTION BLUE](shinku-chen/port-summer/README.md) — a landscape reader for 422 scenes and 81,040 lines of *Summer Pockets REFLECTION BLUE*, with 14 routes and 136 CG groups.
+- [Mahou Shojo no Majo Saiban](shinku-chen/port-manosaba/README.md) — a landscape reader whose pack carries source engine commands: a C virtual machine runs 90,243 commands of *Mahou Shojo no Majo Saiban*.
+- [PARQUET](shinku-chen/port-parquet/README.md) — a landscape reader for *PARQUET* built on a two-band canvas, with chapter auto-continue and content de-duplicated sprites.
+- [NianNiang Love Story](shinku-chen/port-nianniang/README.md) — the portrait 240x320 reader for *NianNiang Love Story*: 13 scenes, four endings and four independent render bands.
+- [Galgame Master](shinku-chen/port-galgod/README.md) — a landscape reader for *Galgame Master* with its own reader layer, a strip canvas pivot fix and content-based sprite de-duplication.
+- [eden*](shinku-chen/port-eden/README.md) — a landscape reader for *eden\** that fills the panel with one scaled image instead of bands, because the device gives no large contiguous heap.
+- [Stella of the End](shinku-chen/port-stella/README.md) — a landscape reader for the 21-chapter *Stella of the End*, the tightest partition of the batch at 99.20%.
+- [Paper no Mahou Tsukai](shinku-chen/port-paper/README.md) — a landscape reader for *Paper no Mahou Tsukai* with a fixed BGR-to-RGB565 path and a runtime CG cover ratio.
 
 ### PhoenixZHC
 

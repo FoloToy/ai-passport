@@ -50,6 +50,7 @@
 - [ADC 阶梯键盘会把长按读成另一个键](shinku-chen/adc-ladder-keypad-long-press-misread.zh_CN.md) — 三个键共用一个 ADC 引脚靠电压窗口区分；按住的键触点短暂失联时电压会扫过别的键的窗口、把它报成一次单击；修掉它的键位锁，以及把每个事件当时的 ADC 毫伏值记下来的按键黑匣子。
 - [无 PSRAM 把视觉小说装进 8 MB](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.zh_CN.md) — 在最大连续空闲块只有 7.7 KB 的前提下塞进 5.26 MB 图片包与 1.43 MB 剧本包：ROM inflate 为何不可用、3 KB 块上限及其压缩率代价、按设备原生几何打包，以及两次由固定上限导致的静默失败。
 
+- [Galgame 阅读器移植经验](shinku-chen/galgame-port-lessons.zh_CN.md) —— 十二部视觉小说共用的阅读器需求、打包与分带渲染能力、只在真机上才暴露的十二个缺陷（LVGL 9 标签换行模式、tjpgd 的 BGR 输出、`lv_image_set_src` 重置对象尺寸、带高之和超过屏幕导致 root 滚动条、每带独立缓冲、栈大小与吞点击的坑），以及发版前的验收清单。
 **应用档案：**
 
 - [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) — 把 AI Passport 变成口袋音频播放器的音效钥匙扣。
@@ -62,6 +63,18 @@
 - [千恋＊万花](shinku-chen/senren-banka/README.zh_CN.md) — 竖屏视觉小说阅读器，把整部剧情连通背景、立绘与事件插图装进设备，支持自动阅读、快进、跳过章节与多档存档。
 - [魔女的夜宴](shinku-chen/sanoba-witch/README.zh_CN.md) — 101 章、五条线五个结局、全部装进 Flash 的竖屏视觉小说阅读器。
 - [随身 AI 对讲机](shinku-chen/intercom/README.zh_CN.md) — 挂在手机上的 AI 对讲机：按住 OK 说话，配套安卓应用把话交给自己的 AI 助理，回答回到设备屏与手机；设备本身不联网，只有三个键。
+- [anemoi](shinku-chen/port-anemoi/README.zh_CN.md) — 《anemoi》共通篇的横屏阅读器：覆盖 71/264 场景，身体与表情两层立绘、30 个手动存档加自动档。
+- [命运石之门](shinku-chen/port-steins/README.zh_CN.md) — 把《命运石之门》完整剧本、背景、立绘与事件 CG 离线装进机身的横屏阅读器。
+- [命运石之门0](shinku-chen/port-steins0/README.zh_CN.md) — 《命运石之门0》横屏阅读器：104 个章节入口、6 个结局、34 字节带版本解锁 blob。
+- [CLANNAD](shinku-chen/port-clannad/README.zh_CN.md) — 212 场景 / 195 章的《CLANNAD》横屏阅读器，立绘跟随说话人、对话框贴底。
+- [Summer Pockets REFLECTION BLUE](shinku-chen/port-summer/README.zh_CN.md) — 422 场景、81,040 句正文的《Summer Pockets REFLECTION BLUE》横屏阅读器，14 条路线、136 组 CG。
+- [魔法少女的魔女审判](shinku-chen/port-manosaba/README.zh_CN.md) — 包内是源引擎指令的《魔法少女的魔女审判》横屏阅读器：C 虚拟机执行 90,243 条指令。
+- [PARQUET](shinku-chen/port-parquet/README.zh_CN.md) — 用双带画布渲染的《PARQUET》横屏阅读器，带章节自动续播与按内容去重的立绘。
+- [男娘恋爱物语](shinku-chen/port-nianniang/README.zh_CN.md) — 《男娘恋爱物语》竖屏 240×320 阅读器：13 场景、4 结局、四条独立渲染分带。
+- [想成为Galgame领域大神！！！](shinku-chen/port-galgod/README.zh_CN.md) — 自带阅读层的《想成为Galgame领域大神！！！》横屏阅读器：条带画布 pivot 修正、按内容去重立绘。
+- [eden*](shinku-chen/port-eden/README.zh_CN.md) — 《eden\*》横屏阅读器：真机没有大块连续堆，所以用单图缩放铺满而不是分带。
+- [星之终途](shinku-chen/port-stella/README.zh_CN.md) — 21 章的《星之终途》横屏阅读器，本批分区最紧（99.20%）。
+- [纸上的魔法使](shinku-chen/port-paper/README.zh_CN.md) — 《纸上的魔法使》横屏阅读器：修正 BGR→RGB565 换序，CG 铺满比按画布高度运行时计算。
 
 ### PhoenixZHC
 
