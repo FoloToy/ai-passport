@@ -115,12 +115,17 @@ static int cw_update_profile(void) {
     return cw_enter_active();
 }
 
-// 首次计算期间 SOC 可能暂时大于 100；最多等待 5 秒再判定初始化失败。
+// 首次计算期间 SOC 可能暂时大于 100；冷启动（深睡唤醒/久置断电后）SOC 与电压
+// 可能同时读到 0——供电中的板上 0 mV 物理不可能，低于 2500 mV 也带不动 3.3V
+// 供电链路，一律视为尚未就绪，在等待窗口内继续轮询。
+#define CW_MV_MIN_PLAUSIBLE 2500
+
 static int cw_wait_soc_ready(void) {
     for (int retry = 0; retry < 50; retry++) {
         uint8_t soc = 0;
         vTaskDelay(pdMS_TO_TICKS(100));
-        if (cw_read(CW_REG_SOC_H, &soc, 1) == 0 && soc <= 100) return 0;
+        if (cw_read(CW_REG_SOC_H, &soc, 1) == 0 && soc <= 100 &&
+            bsp_battery_mv() >= CW_MV_MIN_PLAUSIBLE) return 0;
     }
     return -1;
 }
@@ -177,7 +182,7 @@ esp_err_t bsp_battery_init(void) {
     }
 
     if (cw_wait_soc_ready() != 0) {
-        ESP_LOGE(TAG, "等待首次 SOC 计算超时");
+        ESP_LOGE(TAG, "等待首次 SOC 计算超时（含电压不合理：冷启动误读 0mV）");
         e = ESP_ERR_TIMEOUT;
         goto fail;
     }
