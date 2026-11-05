@@ -242,18 +242,18 @@ README 更新与其他五项一样是**可选**动作，也是归档的默认伴
 
 ### 规则
 
-- 只碰 fork 拥有的根 README（`README.md` / `README.zh_CN.md`）；不改 `docs/README.md` 的上游项目概览。
+- 只碰 fork 拥有的根 `README.md` 及其多语言版本；不改 `docs/README.md` 的上游项目概览。
 - 检查每个相关分支（`main` 与当前 `feature/*` 分支）的根 README，而不只是分支其一。
 - `feature/*` 分支的根 README **只介绍本分支自己的应用**——做什么、怎么用、相关说明；全项目目录只放在 fork `main`，不要在分支上重复它，也不要把目录简化成链接。
 - fork `main` 的根 README 是 **fork 项目的目录**：它**完整包含**各项目自身 README 的内容——应用做什么、怎么用的完整描述（交互、模式、按键、持久化与说明）——而不是一行简介加分支链接。内容取自承载分支的 README。
 - fork 根 README 与承载分支的根 README 都是 fork 拥有内容，直接提交（merge）而非开 PR；只有意图送上游时才开 PR。
-- 遵守仓库语言规则：默认 `.md` 用英文、配对的 `.zh_CN.md` 用简体中文，同一变更里对齐。
+- 遵守仓库语言规则：根 `README.md` 可以使用任意语言并存在多个语言版本；其它所有维护中的 Markdown 默认 `.md` 用英文、配对的 `.zh_CN.md` 用简体中文，并在同一变更里对齐。
 
 ### 步骤
 
 1. 确认同意与可用 GitHub 通道（GitHub MCP、GitHub skill 或 `gh`）。
 2. 在承载 `feature/*` 分支：若双语 README 对缺失则创建，或更新以添加/刷新应用自身的描述。
-3. 在 fork `main`：更新根 README 对，让已发布应用可从仓库落地页被发现，完整包含承载分支 README 的内容。
+3. 在 fork `main`：更新根 `README.md` 及其多语言版本，让已发布应用可从仓库落地页被发现，完整包含承载分支 README 的内容。
 4. 直接把 README 更新提交到分支 / fork `main`（fork 拥有内容）；除非是上游变更，否则不开 PR。
 
 相关：[fork 工作流与根 README 归属](../../fork-guide.zh_CN.md)、[`plays-archive` skill](../../../skills/plays-archive/SKILL.zh_CN.md)、[文档规范](../../contribution/doc-conventions.zh_CN.md)。
