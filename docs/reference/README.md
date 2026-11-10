@@ -106,6 +106,12 @@ The engineering rules themselves live under
 
 - [Xiaonuo Jianlu (Voice Notes & Lists)](noah-1106/xiaonuo-jianlu/README.md) — hold-to-talk AI notes organized by a self-hosted hub, a stacked-card list UI, offline capture with on-device playback, BLUFI + mDNS zero-config setup, and a work-domain watchdog.
 
+### Raymond-Fan
+
+**Application playbooks:**
+
+- [Tricky Pinyin](raymond-fan/pinyin-quiz/README.md) — a 48-question pinyin drill that keeps only the sounds beginners get wrong, with distractors that reproduce real mistakes and a review book that clears a question only after it is answered right.
+
 ## Adding an experience entry
 
 Each release may produce **one or more** reusable, post-release learnings; each is
