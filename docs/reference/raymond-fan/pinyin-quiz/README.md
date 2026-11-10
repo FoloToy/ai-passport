@@ -59,8 +59,10 @@ reading the boot log.
 
 ## Source
 
-- Not published to a public repository; this archive was assembled in a checkout
-  of upstream `FoloToy/ai-passport` (the application is not part of upstream).
+- **Public source**: `macwoos-crypto/ai-passport`, branch `app/pinyin-quiz`
+  (<https://github.com/macwoos-crypto/ai-passport/tree/app/pinyin-quiz>). The branch
+  carries the application on top of upstream `FoloToy/ai-passport`; the application
+  itself is not part of upstream. The same URL is recorded on the community project.
 - Application code lives in `main/`: `pinyin_quiz.*` (question bank types and a
   pure-C quiz state machine), `pinyin_quiz_data.c` (the 48 questions),
   `wrong_book*.c` (review-book logic and its NVS layer), and `app_pinyin.c`

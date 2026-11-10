@@ -43,7 +43,9 @@
 
 ## 源码
 
-- 未发布到公开仓库；本档案是在上游 `FoloToy/ai-passport` 的工作副本中整理的（该应用不在上游仓库内）。
+- **公开源码**：`macwoos-crypto/ai-passport` 的 `app/pinyin-quiz` 分支
+  （<https://github.com/macwoos-crypto/ai-passport/tree/app/pinyin-quiz>）。该分支在上游
+  `FoloToy/ai-passport` 之上加入本应用；应用本身不在上游仓库内。同一地址已记录在社区项目上。
 - 应用代码在 `main/`：`pinyin_quiz.*`（题库类型与纯 C 答题状态机）、`pinyin_quiz_data.c`（48 道题）、
   `wrong_book*.c`（错题本逻辑与其 NVS 层）、`app_pinyin.c`（界面与按键处理）。
 - 字体：由 `tools/gen_app_fonts.py` 生成的 Noto Sans SC 子集。仓库自带的 Montserrat 既没有拼音调号
