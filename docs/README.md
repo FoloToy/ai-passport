@@ -4,8 +4,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../assets/images/logo-wordmark-dark.png">
-    <img src="../assets/images/logo-wordmark.png" alt="FoloToy wordmark" width="128">
+    <source media="(prefers-color-scheme: dark)" srcset="/assets/images/logo-wordmark-dark.png">
+    <img src="/assets/images/logo-wordmark.png" alt="FoloToy wordmark" width="128">
   </picture>
 </p>
 
@@ -35,7 +35,7 @@ remix, and create. Start with a simple idea, build your own experience, and make
 it anything—from a pocket companion to something no one has imagined yet.
 
 <p align="center">
-  <img src="../assets/images/home.jpg" alt="FoloToy AI Passport wearable device shown from the front, side, and back." width="100%">
+  <img src="/assets/images/home.jpg" alt="FoloToy AI Passport wearable device shown from the front, side, and back." width="100%">
 </p>
 
 | Open and remixable | Easy to start | Yours to create |
@@ -47,9 +47,9 @@ it anything—from a pocket companion to something no one has imagined yet.
 | I want to… | Start here |
 | --- | --- |
 | Use the device or try an official play | [Getting started](https://ai-passport.folotoy.cn/guides/getting-started/) · [Official plays](https://ai-passport.folotoy.cn/plays/) |
-| Build a custom application with AI | [Agent instructions](../AGENTS.md) · [AI development guide](development/ai-guide.md) · [Required skills](../skills/README.md) |
-| Prepare my environment and build firmware | [Environment setup](/docs/development/engineering/environment-setup.md) · [Build and test](development/engineering/build-and-test.md) |
-| Explore the board or contribute | [Hardware guide](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) · [Contributing](../.github/CONTRIBUTING.md) |
+| Build a custom application with AI | [Agent instructions](/AGENTS.md) · [AI development guide](/docs/development/ai-guide.md) · [Required skills](/skills/README.md) |
+| Prepare my environment and build firmware | [Environment setup](/docs/development/engineering/environment-setup.md) · [Build and test](/docs/development/engineering/build-and-test.md) |
+| Explore the board or contribute | [Hardware guide](/docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) · [Contributing](/.github/CONTRIBUTING.md) |
 
 > [!IMPORTANT]
 > `main` is a minimal, runnable **hardware-test baseline**, not a finished application.
@@ -58,8 +58,8 @@ it anything—from a pocket companion to something no one has imagined yet.
 
 ## Start development with one requirement
 
-1. Open the repository in your AI coding tool and have it read [`AGENTS.md`](../AGENTS.md).
-2. Let it check and install the [five required skills](../skills/README.md), with any permissions your environment requires.
+1. Open the repository in your AI coding tool and have it read [`AGENTS.md`](/AGENTS.md).
+2. Let it check and install the [five required skills](/skills/README.md), with any permissions your environment requires.
 3. Describe what you want to build. Start from `main` on a new `feature/*` branch.
 
 Copy this prompt and adapt it to your idea:
@@ -76,7 +76,7 @@ unexecuted device checks, and on-device acceptance steps separately.
 Redesign the application's UI; do not use the current demo test menu or screens.
 ```
 
-Before starting, check [`docs/reference/`](reference/README.md) for an existing or
+Before starting, check [`docs/reference/`](/docs/reference/README.md) for an existing or
 reference application and previously recorded, reusable experience, and the demo
 branches. See what is already built and reusable.
 
@@ -99,13 +99,13 @@ When details are omitted, the assistant may choose conservative defaults that do
 > A successful build is not hardware validation. Test the application on a real
 > device after implementation; flashing requires your approval. Deliver a verified
 > merged `full.bin` for flashing at `0x0`. No original-firmware backup is required,
-> but a merged flash may reset stored data. See the [flashing policy](development/engineering/firmware-layout.md#flashing-and-stored-data).
+> but a merged flash may reset stored data. See the [flashing policy](/docs/development/engineering/firmware-layout.md#flashing-and-stored-data).
 
 ## Demo branches are design cases, not a feature pile
 
 Each `demo/*` branch evolves the baseline into an independent application. The branches demonstrate how specific problems were solved. New applications should normally branch from `main` and consult relevant examples instead of merging multiple demos wholesale.
 
-The menu and `demo_*.c` pages on `main` are hardware-capability tests, not an application UI. Every derivative application must redesign and implement its own screens and interaction flow; using the current test menu, screens, or visual shell is prohibited. Renaming or recoloring them does not satisfy this requirement. BSP APIs, ordinary LVGL widgets, lifecycle patterns, and isolated logic may still be reused. See the [mandatory UI redesign rule](development/ai-guide.md#mandatory-ui-redesign-for-derivative-applications); maintenance of the baseline hardware-test demo itself is a separate task.
+The menu and `demo_*.c` pages on `main` are hardware-capability tests, not an application UI. Every derivative application must redesign and implement its own screens and interaction flow; using the current test menu, screens, or visual shell is prohibited. Renaming or recoloring them does not satisfy this requirement. BSP APIs, ordinary LVGL widgets, lifecycle patterns, and isolated logic may still be reused. See the [mandatory UI redesign rule](/docs/development/ai-guide.md#mandatory-ui-redesign-for-derivative-applications); maintenance of the baseline hardware-test demo itself is a separate task.
 
 | Branch | Application | Patterns worth reusing |
 | --- | --- | --- |
@@ -162,7 +162,7 @@ The table below describes the application capabilities implemented by the curren
 | Shared bus | ES8311 and CW2017 share I2C0 | `bsp_i2c_*` | Every device must reuse the bus owned by the BSP; do not create another bus on the same port for scanning or a new device |
 | Logging and flashing | Native ESP32-C3 USB Serial/JTAG | ESP-IDF console | GPIO18/19 are reserved for USB; the default UART0 TX on GPIO21 conflicts with the backlight |
 
-All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](../components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
+All pins, addresses, panel parameters, and button voltage windows are defined only in [`components/bsp/include/bsp_pins.h`](/components/bsp/include/bsp_pins.h). Application code must not duplicate these constants. See the [AI Hardware Development Guide](/docs/hardware-design/AI_HARDWARE_DEVELOPMENT_GUIDE.md) for the complete pin map, panel initialization, ADC thresholds, I2C addressing rules, audio clocks, and memory details.
 
 Applications may also use ESP-IDF timers, FreeRTOS tasks, and internal Flash/NVS; the Pomodoro branch contains an NVS example. Wi-Fi and Bluetooth LE remain ESP-IDF application services rather than BSP APIs: their menu pages initialize each stack only while open and release it on exit. `demo/claude-buddy-port` remains a fuller BLE application architecture reference, not a substitute for measuring the current board's antenna, RF performance, power consumption, and coexistence behavior.
 
@@ -205,18 +205,18 @@ provide reference material. Choose the entry that matches your task.
 
 | Resource | What you will find |
 | --- | --- |
-| [Development](development/README.md) | AI workflow, engineering conventions, CI, and release guidance |
-| [AI skills](../skills/README.md) | Development, environment setup, builds, device testing, and debugging |
-| [Hardware](hardware-design/README.md) | Board facts, interface boundaries, acceptance checklists, and troubleshooting |
-| [Chinese fonts](development/engineering/lvgl-chinese-fonts.md) | Glyph coverage, widget font selection, and blank-text troubleshooting |
-| [Wi-Fi provisioning](development/engineering/wifi-provisioning.md) | Bluetooth provisioning reference and companion mini program |
-| [Community projects and experience](reference/README.md) | Playbooks and reusable knowledge under `docs/reference/<username>/` |
-| [Contributing](contribution/README.md) | Documentation, commits, and pull-request conventions |
-| [Brand assets](brand/README.md) | Product visual references and [brand language](brand/brand-and-product.md) |
-| [Fork guide](fork-guide.md) · [Changelog](CHANGELOG.md) | Downstream workflows and release history |
+| [Development](/docs/development/README.md) | AI workflow, engineering conventions, CI, and release guidance |
+| [AI skills](/skills/README.md) | Development, environment setup, builds, device testing, and debugging |
+| [Hardware](/docs/hardware-design/README.md) | Board facts, interface boundaries, acceptance checklists, and troubleshooting |
+| [Chinese fonts](/docs/development/engineering/lvgl-chinese-fonts.md) | Glyph coverage, widget font selection, and blank-text troubleshooting |
+| [Wi-Fi provisioning](/docs/development/engineering/wifi-provisioning.md) | Bluetooth provisioning reference and companion mini program |
+| [Community projects and experience](/docs/reference/README.md) | Playbooks and reusable knowledge under `docs/reference/<username>/` |
+| [Contributing](/docs/contribution/README.md) | Documentation, commits, and pull-request conventions |
+| [Brand assets](/docs/brand/README.md) | Product visual references and [brand language](/docs/brand/brand-and-product.md) |
+| [Fork guide](/docs/fork-guide.md) · [Changelog](/docs/CHANGELOG.md) | Downstream workflows and release history |
 
 ---
 
-[Contribute](../.github/CONTRIBUTING.md) · [Get help](../.github/SUPPORT.md) · [Code of conduct](../.github/CODE_OF_CONDUCT.md) · [Security](../.github/SECURITY.md) · [MIT License](../LICENSE)
+[Contribute](/.github/CONTRIBUTING.md) · [Get help](/.github/SUPPORT.md) · [Code of conduct](/.github/CODE_OF_CONDUCT.md) · [Security](/.github/SECURITY.md) · [MIT License](/LICENSE)
 
-AI agents: start with [`AGENTS.md`](../AGENTS.md) and follow its task-specific routing.
+AI agents: start with [`AGENTS.md`](/AGENTS.md) and follow its task-specific routing.
