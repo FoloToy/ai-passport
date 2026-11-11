@@ -44,7 +44,8 @@ retain the separate authorization requirements for flashing, Git writes, and pub
 - A demo must stop every task, timer, callback, and event handler that can access its UI before deleting the screen.
 - Keep testable state machines, protocols, timing, and layout calculations independent from ESP-IDF/LVGL and cover them with host tests.
 - Never commit credentials, device QR secrets, private keys, personal data, or unsanitized logs.
-- Every maintained Markdown document uses English at its default `.md` path and Simplified Chinese in a paired `.zh_CN.md` file. Keep both versions aligned and retain reciprocal language links.
+- Every maintained Markdown document outside the root README set uses English at its default `.md` path and Simplified Chinese in a paired `.zh_CN.md` file. Keep both versions aligned and retain reciprocal language links. This includes other root Markdown such as `AGENTS.md`. Root README files are exempt: `README.md` may use any language, and any number of `README.<tag>.md` versions may coexist; when multiple versions exist, keep every language link valid and reciprocal.
+- Root README scope follows the branch model. The `main` README catalogs the applications hosted on other branches; when development happens directly on `main`, it describes `main`'s own functionality instead. Every other branch's root README describes only that branch's application and must not list or advertise other branches' applications.
 
 ## Task-specific context routing
 

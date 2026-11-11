@@ -186,8 +186,7 @@ docs/                    项目说明、变更记录、工程/协作规范与设
 sdkconfig.defaults       ESP32-C3、USB console、Flash、LVGL 默认配置
 partitions.csv           最简默认分区：NVS、PHY data 和单个 factory 应用
 dependencies.lock        可复现的 ESP-IDF Managed Component 解析结果
-AGENTS.md                AI agent 必读入口（与 AGENTS.zh_CN.md 配对）
-CLAUDE.md                Claude Code 指向 AGENTS.md 的入口（含中文配对）
+AGENTS.md / AGENTS.zh_CN.md  AI agent 必读入口（英文 / 简体中文）
 LICENSE                  仓库许可证
 ```
 

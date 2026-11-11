@@ -146,7 +146,9 @@ class VendoredDocumentationTest(unittest.TestCase):
         target = self.document("components/vendor_audio/README.md")
         link = self.root / "README.md"
         self.symlink(link, target)
-        self.assertEqual(len(self.document_errors([link])), 2)
+        errors = self.document_errors([link])
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing link target", errors[0])
 
     def test_main_keeps_security_and_conflict_checks_for_vendored_text(self) -> None:
         # Assemble deliberately synthetic fixtures so the test source itself is clean.
@@ -177,6 +179,121 @@ class VendoredDocumentationTest(unittest.TestCase):
             "possible unsanitized device QR link", "unresolved merge conflict marker",
         ):
             self.assertTrue(any(expected in error for error in errors), errors)
+
+
+class RootMarkdownLanguageTest(unittest.TestCase):
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory(prefix="ai-passport-root-doc-tests-")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        root_patch = patch.object(CHECKS, "ROOT", self.root)
+        root_patch.start()
+        self.addCleanup(root_patch.stop)
+
+    def document(self, name: str, content: str) -> Path:
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        return path
+
+    def language_errors(self, files: list[Path]) -> list[str]:
+        errors: list[str] = []
+        CHECKS.check_document_languages(files, errors)
+        CHECKS.check_root_language_links(files, errors)
+        CHECKS.check_root_readme_links(files, errors)
+        return errors
+
+    def test_root_readme_needs_no_language_pair(self) -> None:
+        readme = self.document("README.md", "# 项目说明\n\n没有英文或中文配对。\n")
+        self.assertEqual(self.language_errors([readme]), [])
+
+    def test_root_agents_requires_english_and_chinese_peer(self) -> None:
+        agents = self.document("AGENTS.md", "# 仓库规范\n")
+        errors = self.language_errors([agents])
+        self.assertTrue(any("missing Simplified Chinese peer AGENTS.zh_CN.md" in error for error in errors))
+        self.assertTrue(any("default Markdown must use English prose" in error for error in errors))
+
+        files = [
+            self.document(
+                "AGENTS.md",
+                '<a href="AGENTS.zh_CN.md">简体中文</a>\n# Repository Guidelines\n',
+            ),
+            self.document(
+                "AGENTS.zh_CN.md",
+                '<a href="AGENTS.md">English</a>\n# AI 仓库规范\n',
+            ),
+        ]
+        self.assertEqual(self.language_errors(files), [])
+
+    def test_root_multilingual_links_must_be_reciprocal(self) -> None:
+        chinese = self.document("README.md", '<a href="README.en_US.md">English</a>\n')
+        english = self.document("README.en_US.md", '<a href="README.md">简体中文</a>\n')
+        self.assertEqual(self.language_errors([chinese, english]), [])
+
+        english.write_text("# English\n", encoding="utf-8")
+        errors = self.language_errors([chinese, english])
+        self.assertEqual(errors, ["README.md: language link to README.en_US.md must be reciprocal"])
+
+    def test_root_markdown_allows_multiple_language_versions(self) -> None:
+        files = [
+            self.document(
+                "README.md",
+                '<a href="README.en_US.md">English</a> · <a href="README.zh_CN.md">简体中文</a>\n',
+            ),
+            self.document(
+                "README.en_US.md",
+                '<a href="README.md">简体中文</a> · <a href="README.zh_CN.md">简体中文</a>\n',
+            ),
+            self.document(
+                "README.zh_CN.md",
+                '<a href="README.md">简体中文</a> · <a href="README.en_US.md">English</a>\n',
+            ),
+        ]
+        self.assertEqual(self.language_errors(files), [])
+
+    def test_root_readme_accepts_supported_language_sets(self) -> None:
+        sets = [
+            {"README.md": "# 项目\n"},
+            {
+                "README.md": '<a href="README.zh_CN.md">简体中文</a>\n',
+                "README.zh_CN.md": '<a href="README.md">简体中文</a>\n',
+            },
+            {
+                "README.md": '<a href="README.en_US.md">English</a>\n',
+                "README.en_US.md": '<a href="README.md">简体中文</a>\n',
+            },
+            {
+                "README.md": '<a href="README.zh_CN.md">简体中文</a> · <a href="README.en_US.md">English</a>\n',
+                "README.zh_CN.md": '<a href="README.md">简体中文</a>\n',
+                "README.en_US.md": '<a href="README.md">简体中文</a>\n',
+            },
+        ]
+        for content in sets:
+            with self.subTest(files=sorted(content)):
+                files = [self.document(name, text) for name, text in content.items()]
+                self.assertEqual(self.language_errors(files), [])
+
+    def test_root_readme_versions_require_default_links(self) -> None:
+        files = [
+            self.document("README.md", "# 项目\n"),
+            self.document("README.en_US.md", "# Project\n"),
+        ]
+        self.assertEqual(
+            self.language_errors(files),
+            ["README.md: missing top language link to README.en_US.md"],
+        )
+
+    def test_root_readme_version_requires_default(self) -> None:
+        lone_translation = self.document("README.ja_JP.md", "# プロジェクト\n")
+        self.assertEqual(
+            self.language_errors([lone_translation]),
+            ["README.md: root README is required when language versions exist"],
+        )
+
+    def test_root_missing_html_language_target_is_rejected(self) -> None:
+        page = self.document("README.md", '<a href="README.en_US.md">English</a>\n')
+        errors = self.language_errors([page])
+        self.assertEqual(errors, ["README.md: missing language link target README.en_US.md"])
 
 
 class CommunityDocumentLinksTest(unittest.TestCase):

@@ -22,10 +22,16 @@ The root `README.md` path is intentionally available to a fork owner. Upstream's
 
 Root README content follows the branch model. A `feature/*` branch's root README
 describes only that branch's application: what it does, its interactions, and its
-notes. The fork `main` root README is the catalog of every hosted project and keeps
-one section per application, refreshed when an application is released or archived.
-Do not repeat the whole catalog on a feature branch, and do not reduce the `main`
-catalog to a list of links.
+notes. The fork `main` root README is normally the catalog of every hosted project
+and keeps one section per application, refreshed when an application is released or
+archived. When development happens directly on `main`, its README introduces
+`main`'s own functionality instead of a catalog.
+Do not repeat the whole catalog or advertise other branches' applications from a
+feature branch, and do not reduce the `main` catalog to a list of links.
+The root README may use any language and have any number of language versions;
+when multiple versions exist, keep their language links valid and reciprocal.
+Other root Markdown, including `AGENTS.md`, still follows the normal English
+default and Simplified Chinese companion rule.
 
 ## Fork rules
 
