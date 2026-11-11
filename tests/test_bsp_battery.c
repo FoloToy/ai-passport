@@ -29,6 +29,7 @@ static unsigned cold_zero_polls; /* 前 N 次 SOC 轮询期间强制 VCELL 读�
 static void reset_device(bool matched, bool flag)
 {
     s_dev = NULL; // Simulate a fresh application boot, not a driver deinit API.
+    s_ready = false;
     memset(registers, 0, sizeof(registers));
     memset(config_writes, 0, sizeof(config_writes));
     memcpy(registers + CW_REG_PROFILE,
@@ -238,7 +239,7 @@ static void test_soc_and_voltage(void)
     reset_device(true, true);
     registers[CW_REG_SOC_H] = 101;
     assert(bsp_battery_init() == ESP_ERR_TIMEOUT);
-    assert(soc_polls == 50 && delay_ms == 5000 && removes == 1 && !s_dev);
+    assert(soc_polls == 50 && delay_ms == 5000 && removes == 0 && s_dev);
     registers[CW_REG_SOC_H] = 100;
     assert(bsp_battery_init() == ESP_OK);
     assert(bsp_battery_soc() == 100);
@@ -267,7 +268,7 @@ static void test_soc_and_voltage(void)
     fail_read_reg = CW_REG_SOC_H;
     fail_reads = 50;
     assert(bsp_battery_init() == ESP_ERR_TIMEOUT);
-    assert(soc_polls == 50 && delay_ms == 5000 && removes == 1 && !s_dev);
+    assert(soc_polls == 50 && delay_ms == 5000 && removes == 0 && s_dev);
 }
 
 static void test_cold_start_guard(void)
@@ -280,12 +281,16 @@ static void test_cold_start_guard(void)
     assert(bsp_battery_soc() == 62 && bsp_battery_mv() == 4000);
     cold_zero_polls = 0;
 
-    /* 持续 0mV：不可放行，等待窗口耗尽后按超时失败 */
+    /* 持续 0mV：不可放行，等待窗口耗尽后软降级——句柄保留，运行期读数继续可用 */
     reset_device(true, true);
     cold_zero_polls = 1000;
     assert(bsp_battery_init() == ESP_ERR_TIMEOUT);
-    assert(soc_polls == 50 && delay_ms == 5000 && removes == 1 && !s_dev);
+    assert(soc_polls == 50 && delay_ms == 5000 && removes == 0 && s_dev);
     cold_zero_polls = 0;
+    /* 自愈：假读数消失后运行期读数立即恢复，重试 init 只重跑等待段 */
+    assert(bsp_battery_soc() == 62 && bsp_battery_mv() == 4000);
+    assert(bsp_battery_init() == ESP_OK);
+    assert(bsp_battery_soc() == 62 && bsp_battery_mv() == 4000);
 }
 
 int main(void)

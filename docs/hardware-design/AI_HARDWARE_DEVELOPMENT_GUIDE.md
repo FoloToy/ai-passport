@@ -200,7 +200,7 @@ with the firmware. It replaces the previous cell profile; equal nominal capacity
 does not make profiles interchangeable. This change does not alter the charging
 circuit, current, voltage limits, pin map, Flash partitions, or NVS format.
 
-Initialization reads VERSION and checks the profile update flag plus all 80 profile bytes. When needed, it puts the gauge to sleep, writes and verifies the configured profile, sets the update flag, restarts the gauge with the required `0x30` to `0x00` sequence, and waits up to five seconds for a valid SOC. A matching profile is reused without rewriting. The ready log reports observed SOC and voltage (`-1` means an unavailable read). Replacing the cell requires a matching vendor-generated profile and renewed charge/discharge validation.
+Initialization reads VERSION and checks the profile update flag plus all 80 profile bytes. When needed, it puts the gauge to sleep, writes and verifies the configured profile, sets the update flag, restarts the gauge with the required `0x30` to `0x00` sequence, and waits up to five seconds for a valid SOC (both SOC and voltage must be plausible; the zero pair read inside the post-restart recompute window does not pass). A timeout degrades softly: the handle is kept, runtime reads keep returning the gauge's live values, and a retry re-runs only the wait. A matching profile is reused without rewriting. The ready log reports observed SOC and voltage (`-1` means an unavailable read). Replacing the cell requires a matching vendor-generated profile and renewed charge/discharge validation.
 
 The readiness check accepts SOC in the range 0..100; it does not wait for a
 nonzero voltage measurement. A successful initialization therefore does not
