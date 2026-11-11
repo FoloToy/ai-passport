@@ -43,6 +43,8 @@ _Static_assert(sizeof(s_battery_profile) == CW_PROFILE_SIZE,
                "CW2017 battery profile must contain exactly 80 bytes");
 
 static i2c_master_dev_handle_t s_dev;
+// 就绪标志:就绪等待超时(软降级)后保持为假,重试 init 只重跑等待段。
+static bool s_ready;
 
 static esp_err_t cw_read(uint8_t reg, uint8_t *buf, size_t n) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
@@ -131,9 +133,13 @@ static int cw_wait_soc_ready(void) {
 }
 
 esp_err_t bsp_battery_init(void) {
-    if (s_dev) return ESP_OK;
+    if (s_ready) return ESP_OK;
 
-    esp_err_t e = bsp_i2c_init();
+    // 一次性探测(总线/句柄/VERSION/profile)只在无句柄时执行;软降级后的
+    // 重试直接进入 profile 校验与就绪等待。
+    esp_err_t e = ESP_OK;
+    if (!s_dev) {
+    e = bsp_i2c_init();
     if (e != ESP_OK) return e;
 
     i2c_device_config_t dc = {
@@ -153,6 +159,7 @@ esp_err_t bsp_battery_init(void) {
         return ESP_ERR_NOT_FOUND;
     }
     ESP_LOGI(TAG, "检测到 CW2017 VERSION=0x%02X", ver);
+    }  // !s_dev 探测段结束
 
     bool profile_matches = false;
     if (cw_profile_matches(&profile_matches) != 0) {
@@ -182,10 +189,13 @@ esp_err_t bsp_battery_init(void) {
     }
 
     if (cw_wait_soc_ready() != 0) {
-        ESP_LOGE(TAG, "等待首次 SOC 计算超时（含电压不合理：冷启动误读 0mV）");
-        e = ESP_ERR_TIMEOUT;
-        goto fail;
+        // 软降级:句柄保留、s_ready 仍为假。soc()/mv() 照常读芯片当前值
+        // (插着 USB 唤醒时重算可能整段超时、读数被充电路径带偏是已知现象,
+        // 应用层的周期刷新会在电量计追上来后自愈);重试 init 只重跑等待。
+        ESP_LOGE(TAG, "等待首次 SOC 计算超时(软降级,运行期读数继续可用)");
+        return ESP_ERR_TIMEOUT;
     }
+    s_ready = true;
 
     ESP_LOGI(TAG, "CW2017 ready: SOC=%d%%, voltage=%d mV",
              bsp_battery_soc(), bsp_battery_mv());
