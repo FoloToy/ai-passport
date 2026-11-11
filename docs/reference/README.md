@@ -125,6 +125,13 @@ The engineering rules themselves live under
 
 - [Tricky Pinyin](raymond-fan/pinyin-quiz/README.md) — a 48-question pinyin drill that keeps only the sounds beginners get wrong, with distractors that reproduce real mistakes and a review book that clears a question only after it is answered right.
 
+### Jiaqingrun
+
+**Experience entries:**
+
+- [Keeping a Persistent World Alive on a Three-Key Handheld](jiaqingrun/persistent-world-simulation-on-a-handheld.md) — tick-length-derived growth, soft tech-driven capacity, and four anti-snowball mechanisms that stop recurring swarms from repeatedly resetting a world.
+- [Live Overlays, Redraws and Audio on a No-FPU Handheld](jiaqingrun/live-overlays-and-audio-on-a-handheld.md) — why a full-screen opacity animation stalls the board, a 16 kHz soft-wave audio path, a glyph-coverage gate, and a header that survives billion-scale numbers.
+
 ## Adding an experience entry
 
 Each release may produce **one or more** reusable, post-release learnings; each is

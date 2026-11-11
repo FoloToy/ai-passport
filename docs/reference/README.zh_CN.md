@@ -118,6 +118,13 @@
 
 - [拼音易错题](raymond-fan/pinyin-quiz/README.zh_CN.md) — 48 道只收易错点的拼音练习，干扰项复现真实写错方式，错题本要答对才逐次移出。
 
+### Jiaqingrun
+
+**经验条目：**
+
+- [让持续演化的世界在三键掌机上活下来](jiaqingrun/persistent-world-simulation-on-a-handheld.zh_CN.md) —— 由跳长推导增长、随科技成长的软承载力，以及阻止周期性虫潮反复重置世界的四层反雪球机制。
+- [无 FPU 掌机上的实时浮层、重绘与音频](jiaqingrun/live-overlays-and-audio-on-a-handheld.zh_CN.md) —— 全屏不透明度动画为何拖垮板子、16 kHz 柔和波形音频、缺字门禁，以及能容纳亿级数字的顶部布局。
+
 ## 新增经验条目
 
 一次发布可沉淀**一条或多条**可复用经验，每条作为独立条目新增，以发布版本（tag 或 commit）作为上下文。遵守仓库语言规则：默认 `.md` 路径用英文、配套 `.zh_CN.md` 用简体中文，并在同一次变更中对齐。
