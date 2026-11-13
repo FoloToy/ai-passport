@@ -39,31 +39,81 @@ static int64_t s_sample_time;
 static int s_sample_mv = -1;
 static bool s_sample_valid;
 
+// Key lock (see BSP_BTN_CONFIRM_MS / BSP_BTN_HOLD_MS in bsp_pins.h). The ladder can
+// report only one key at a time, so the three drivers share one decoded key instead
+// of judging their own window independently. -1 means no key.
+typedef struct {
+    int locked;          // key currently reported as pressed, or -1
+    int candidate;       // differing window being timed, or -1 when none is pending
+    int64_t since_us;    // when the candidate window was first seen
+    bool pending;        // a candidate is being timed
+} bsp_btn_decoder_t;
+static bsp_btn_decoder_t s_decoder = { .locked = -1, .candidate = -1 };
+static volatile uint32_t s_glitches;
+
+// Half-open windows prevent two keys from matching a shared boundary.
+static int window_of(int mv) {
+    if (mv < 0) return -1;   // read/conversion failure is never a key
+    for (int i = 0; i < BSP_BTN_COUNT; ++i) {
+        if (mv >= BTN_MV[i][0] && mv < BTN_MV[i][1]) return i;
+    }
+    return -1;
+}
+
+static void decoder_reset(bsp_btn_decoder_t *d) {
+    *d = (bsp_btn_decoder_t){ .locked = -1, .candidate = -1 };
+}
+
+// Feed one sample's window; returns the decoded key. Pure logic for host tests.
+static int decoder_feed(bsp_btn_decoder_t *d, int window, int64_t now_us) {
+    if (window == d->locked) {
+        // A different reading that did not last was a contact glitch: absorbed.
+        if (d->pending && d->locked >= 0) ++s_glitches;
+        d->pending = false;
+        d->candidate = -1;
+        return d->locked;
+    }
+    if (!d->pending || window != d->candidate) {
+        d->pending = true;
+        d->candidate = window;
+        d->since_us = now_us;
+    }
+    const int64_t need_us = (int64_t)(d->locked < 0 ? BSP_BTN_CONFIRM_MS : BSP_BTN_HOLD_MS) * 1000;
+    if (now_us - d->since_us >= need_us) {
+        d->locked = d->candidate;
+        d->pending = false;
+        d->candidate = -1;
+    }
+    return d->locked;
+}
+
 static uint8_t button_level(button_driver_t *driver) {
     if (!s_ready) return BUTTON_INACTIVE;
     const bsp_adc_button_t *button = (const bsp_adc_button_t *)driver;
     const int64_t now = esp_timer_get_time();
-    // Share one averaged reading across the three keys in a polling cycle.
+    // Share one averaged reading, and one decoder step, across the three keys in a
+    // polling cycle.
     if (!s_sample_valid || now - s_sample_time >= 1000) {
         int sum = 0;
+        bool ok = true;
         s_sample_time = now;
         s_sample_valid = true;
         s_sample_mv = -1;
         for (int i = 0; i < CONFIG_ADC_BUTTON_SAMPLE_TIMES; ++i) {
             int raw;
             if (adc_oneshot_read(s_adc, BSP_BTN_ADC_CHANNEL, &raw) != ESP_OK) {
-                return BUTTON_INACTIVE;
+                ok = false;
+                break;
             }
             sum += raw;
         }
-        if (adc_cali_raw_to_voltage(s_cali, sum / CONFIG_ADC_BUTTON_SAMPLE_TIMES,
-                                   &s_sample_mv) != ESP_OK) {
+        if (ok && adc_cali_raw_to_voltage(s_cali, sum / CONFIG_ADC_BUTTON_SAMPLE_TIMES,
+                                         &s_sample_mv) != ESP_OK) {
             s_sample_mv = -1;
         }
+        (void)decoder_feed(&s_decoder, window_of(s_sample_mv), now);
     }
-    // Half-open windows prevent two keys from matching a shared boundary.
-    return s_sample_mv >= BTN_MV[button->index][0] &&
-           s_sample_mv < BTN_MV[button->index][1] ? BUTTON_ACTIVE : BUTTON_INACTIVE;
+    return s_decoder.locked == (int)button->index ? BUTTON_ACTIVE : BUTTON_INACTIVE;
 }
 
 static esp_err_t button_driver_delete(button_driver_t *driver) {
@@ -93,6 +143,7 @@ static esp_err_t button_cleanup(void) {
     s_user = NULL;
     s_ready = false;
     s_sample_valid = false;
+    decoder_reset(&s_decoder);
 
     for (int i = BSP_BTN_COUNT - 1; i >= 0; i--) {
         if (!s_btn[i]) continue;
@@ -219,10 +270,15 @@ esp_err_t bsp_button_init(bsp_btn_cb_t cb, void *user) {
     }
 
     s_sample_valid = false;
+    decoder_reset(&s_decoder);
     s_ready = true;
     ESP_LOGI(TAG, "按键就绪:ADC1_CH%d 三键分压,短按 %dms 长按 %dms",
              BSP_BTN_ADC_CHANNEL, BSP_BTN_SHORT_PRESS_MS, BSP_BTN_LONG_PRESS_MS);
     return ESP_OK;
+}
+
+uint32_t bsp_button_glitch_count(void) {
+    return s_glitches;
 }
 
 int bsp_button_read_mv(void) {
