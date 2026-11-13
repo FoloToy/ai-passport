@@ -177,6 +177,7 @@ LVGL 非线程安全：
 - BSP 拥有唯一的 ADC1 oneshot unit 和校准句柄，通过公开 `iot_button` 驱动接口管理三个静态驱动；`bsp_button_read_mv()` 也复用它们。不要为电压显示另建 ADC1 unit。
 - ADC 衰减为 `ADC_ATTEN_DB_12`，每轮轮询三个按键复用一次平均采样，半开窗口避免边界同时命中两个键。
 - 校准创建失败会中止初始化并回滚；读取或换算失败视为未按下，而不是把无效电压作为 0 mV 触发 UP。BSP 不使用依赖的 ADC 索引注册表，避免部分分配失败后遗留占用索引、阻止重试。
+- 一次只报告一个键：两键同按得到的电压不落在任何窗口，应用不要设计双键组合。三个驱动共享一个经按键锁解码的键值：空闲时，读数须在同一窗口连续稳定 `BSP_BTN_CONFIRM_MS`（40 ms）才判为按下，顺带跳过按下过程中电压扫过的中间档；锁定某键后，任何别的读数（含松开态）须连续保持 `BSP_BTN_HOLD_MS`（120 ms）才改判。按住的键触点短暂断开时，节点电压会扫过上方每个键的窗口，持续时间超过 button 组件约 10 ms 的去抖，没有按键锁时会被报成相邻的键或让长按提前结束。代价是按下事件晚约 40 ms、抬起事件晚约 120 ms 上报，测得的按压时长多出约 80 ms。`bsp_button_glitch_count()` 统计被锁吸收的异常读数，长按期间持续增长说明触点在断续。读取失败视为无键：不会触发按下，按住的键在保持时间内也不会因此抬起。这些参数的实测依据见[长按误读经验条目](../reference/shinku-chen/adc-ladder-keypad-long-press-misread.zh_CN.md)。
 - 回调来自 button 组件使用的共享 `esp_timer` 任务，只能入队或执行同等级的有界操作，不能阻塞、录音、播放或访问 UI。
 - 事件包括 PRESS、CLICK、DOUBLE、LONG。应用菜单主要消费 CLICK；页面中的 OK LONG 被全局拦截用于返回。
 - 按键判定时序由 BSP 显式下发（`BSP_BTN_SHORT_PRESS_MS` = 180 ms、`BSP_BTN_LONG_PRESS_MS` = 500 ms，见 `bsp_pins.h`），不依赖组件 Kconfig 默认的 180 / 1500 ms：三个小按键上按住 1.5 s 才触发长按偏迟钝。组件对 `BUTTON_LONG_PRESS_TIME_MS` 的 Kconfig 下限同样是 500 ms，更短的长按只能在代码里下发。
