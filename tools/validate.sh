@@ -5,11 +5,54 @@ mode="${1:---all}"
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
 usage() {
-    echo "Usage: $0 [--all|--static|--firmware]" >&2
+    cat >&2 <<USAGE
+Usage: $0 [--all|--static|--firmware]
+
+Environment:
+  ACTIONLINT=fetch    (default) use ACTIONLINT_BIN, actionlint on PATH, or the
+                      cached binary; otherwise download the checksum-pinned release.
+  ACTIONLINT=offline  never download; use a local binary if one exists, otherwise
+                      report "actionlint: SKIPPED" and continue.
+  ACTIONLINT=<path>   use this actionlint executable.
+  ACTIONLINT_BIN      preinstalled actionlint, honoured by fetch and offline.
+USAGE
+}
+
+# Print the actionlint executable to use, or nothing when offline mode finds none.
+resolve_actionlint() {
+    local mode="${ACTIONLINT:-fetch}"
+    local candidate
+
+    case "${mode}" in
+        fetch|offline) ;;
+        *)
+            if [[ -f "${mode}" && -x "${mode}" ]]; then
+                printf '%s\n' "${mode}"
+                return 0
+            fi
+            echo "ERROR: ACTIONLINT must be fetch, offline, or an executable path (got '${mode}')" >&2
+            return 2
+            ;;
+    esac
+
+    candidate="${ACTIONLINT_BIN:-}"
+    if [[ -z "${candidate}" ]]; then
+        candidate="$(command -v actionlint || true)"
+    fi
+    if [[ -n "${candidate}" && -x "${candidate}" ]]; then
+        printf '%s\n' "${candidate}"
+        return 0
+    fi
+    if [[ "${mode}" == "offline" ]]; then
+        ./tools/install-actionlint.sh --cached-only || true
+        return 0
+    fi
+    ./tools/install-actionlint.sh
 }
 
 run_static_checks() {
     local actionlint_bin
+    local actionlint_skipped=0
     local test_dir
     local dead_strip_flag
 
@@ -21,14 +64,14 @@ run_static_checks() {
 
     python3 tools/check_repo.py
 
-    actionlint_bin="${ACTIONLINT_BIN:-}"
-    if [[ -z "${actionlint_bin}" ]]; then
-        actionlint_bin="$(command -v actionlint || true)"
+    actionlint_bin="$(resolve_actionlint)"
+    if [[ -n "${actionlint_bin}" ]]; then
+        "${actionlint_bin}" -color .github/workflows/*.yml
+        echo "actionlint: PASS"
+    else
+        actionlint_skipped=1
+        echo "actionlint: SKIPPED (offline mode: ACTIONLINT=offline and no local binary)"
     fi
-    if [[ -z "${actionlint_bin}" || ! -x "${actionlint_bin}" ]]; then
-        actionlint_bin="$(./tools/install-actionlint.sh)"
-    fi
-    "${actionlint_bin}" -color .github/workflows/*.yml
 
     test_dir="$(mktemp -d /tmp/ai-passport-host-tests.XXXXXX)"
     "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
@@ -84,6 +127,9 @@ run_static_checks() {
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_install_passport_skills.py
     rm -rf "${test_dir}"
     echo "Host tests: PASS"
+    if [[ "${actionlint_skipped}" == 1 ]]; then
+        echo "Static checks: PASS with actionlint SKIPPED (report it as not run)"
+    fi
 }
 
 run_firmware_checks() (
@@ -123,6 +169,9 @@ case "${mode}" in
         ;;
     --firmware)
         run_firmware_checks
+        ;;
+    -h|--help)
+        usage
         ;;
     *)
         usage

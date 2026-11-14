@@ -50,6 +50,11 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 ./tools/validate.sh             # 完整门禁
 ```
 
+无法联网时，运行 `ACTIONLINT=offline ./tools/validate.sh --static`。它使用已安装或
+已缓存的 `actionlint`，从不下载；两者都没有时输出 `actionlint: SKIPPED` 并继续执行
+其余检查，PR 中应把这一步记为未运行。`ACTIONLINT=/path/to/actionlint` 可指定具体
+可执行文件，详见 `./tools/validate.sh --help`。
+
 遵守 [`docs/development/engineering/build-and-test.zh_CN.md`](/docs/development/engineering/build-and-test.zh_CN.md) 的
 验证要求：干净的 `idf.py build` 是最低自动检查，不是硬件验收；构建结果与真机结果
 分开记录，禁止把编译通过描述成硬件验证通过。

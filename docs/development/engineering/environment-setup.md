@@ -424,7 +424,10 @@ Run the static gate first, then the firmware gate:
 
 The static gate requires Python 3, a C compiler, `curl`, `tar`, and a SHA-256
 tool. It downloads a checksum-pinned `actionlint` release into `/tmp` when one is
-not installed. The firmware gate is the preferred build path. It uses an
+not installed. On a machine without network access, set `ACTIONLINT=offline` to
+use only an installed or cached binary and report `actionlint: SKIPPED` instead
+of downloading; `ACTIONLINT=/path/to/actionlint` selects a specific binary. The
+firmware gate is the preferred build path. It uses an
 isolated temporary build and produces the verified `0x0` image at:
 
 ```text

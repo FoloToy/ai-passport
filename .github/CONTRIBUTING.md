@@ -56,6 +56,12 @@ The repository provides one validation entry point for local development and CI:
 ./tools/validate.sh             # complete gate
 ```
 
+Without network access, run `ACTIONLINT=offline ./tools/validate.sh --static`. It
+uses an installed or previously cached `actionlint` and never downloads; if none
+exists it prints `actionlint: SKIPPED` and runs every other check. Report that
+step as not run in the PR. `ACTIONLINT=/path/to/actionlint` selects a specific
+binary; see `./tools/validate.sh --help`.
+
 Follow the verification requirements in
 [`docs/development/engineering/build-and-test.md`](/docs/development/engineering/build-and-test.md):
 a clean `idf.py build` is the minimum automated check, not hardware validation.
