@@ -369,7 +369,10 @@ grep -E 'CONFIG_IDF_TARGET|CONFIG_ESPTOOLPY_FLASHSIZE|CONFIG_ESP_CONSOLE_USB_SER
 ```
 
 静态门禁需要 Python 3、C 编译器、`curl`、`tar` 和 SHA-256 工具；未安装
-`actionlint` 时，会把带固定校验和的版本下载到 `/tmp`。固件门禁是默认优先的
+`actionlint` 时，会把带固定校验和的版本下载到 `/tmp`。无法联网的机器可设置
+`ACTIONLINT=offline`：只使用已安装或已缓存的版本，没有时报告
+`actionlint: SKIPPED` 而不下载；`ACTIONLINT=/path/to/actionlint` 可指定具体可执行
+文件。固件门禁是默认优先的
 编译方式，它使用隔离的临时构建，并生成经过验证的 `0x0` 镜像：
 
 ```text

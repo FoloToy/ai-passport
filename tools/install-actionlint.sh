@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Usage: install-actionlint.sh [--cached-only] [destination]
+# --cached-only prints an already downloaded binary and exits 3 when there is none,
+# without touching the network.
 version="1.7.12"
+cached_only=0
+if [[ "${1:-}" == "--cached-only" ]]; then
+    cached_only=1
+    shift
+fi
 destination="${1:-/tmp/actionlint-${version}}"
 system_name="$(uname -s)"
 machine_name="$(uname -m)"
@@ -13,6 +21,9 @@ fi
 if [[ -x "${destination}/actionlint.exe" ]]; then
     printf '%s\n' "${destination}/actionlint.exe"
     exit 0
+fi
+if [[ "${cached_only}" == 1 ]]; then
+    exit 3
 fi
 
 case "${system_name}/${machine_name}" in
