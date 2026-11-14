@@ -124,6 +124,8 @@
 
 - [让持续演化的世界在三键掌机上活下来](jiaqingrun/persistent-world-simulation-on-a-handheld.zh_CN.md) —— 由跳长推导增长、随科技成长的软承载力，以及阻止周期性虫潮反复重置世界的四层反雪球机制。
 - [无 FPU 掌机上的实时浮层、重绘与音频](jiaqingrun/live-overlays-and-audio-on-a-handheld.zh_CN.md) —— 全屏不透明度动画为何拖垮板子、16 kHz 柔和波形音频、缺字门禁，以及能容纳亿级数字的顶部布局。
+- [240 × 320 掌机上的整屏旋转地图页](jiaqingrun/rotated-full-screen-map-page.zh_CN.md) —— 用索引转置代替旋转像素、LVGL 9 换源会重置尺寸与对齐的顺序陷阱，以及整屏图片上叠动画浮层为何是冻住而不是崩溃。
+- [可能还不存在的实体，怎么给它们建网格行](jiaqingrun/grid-rows-for-optional-entities.zh_CN.md) —— 混血尚未出现时一进物种页就重启，「只建一次」的守卫如何同时修好绘制、隐藏与选中，以及「不存在」为何不等于「隐藏」。
 
 **应用档案：**
 
