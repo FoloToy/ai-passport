@@ -145,6 +145,12 @@ bool app_font_has_glyph(const lv_font_t *font, uint32_t codepoint)
 
 动态内容必须有明确约定：只接受已声明字符集、补齐经过验证的字形，或显示有意设计且能正确显示的替代字符/不支持提示。不要悄悄丢弃未知字符，也不要把固定菜单子集描述成支持任意姓名和网络文本。支持范围变化后，重新生成字体并运行覆盖检查。
 
+### 静态覆盖门禁
+
+`./tools/validate.sh --static` 会运行 [`tools/check_glyphs.py`](../../../tools/check_glyphs.py)。它从 `assets/fonts/` 和 `main/` 下生成字体的 `lv_font_fmt_txt_cmap_t` 表读取字体实际包含的码点（而不是生成时请求的字符），`main/` 中字符串字面量用到字体之外的非 ASCII 字符时失败，并按 `文件:行号: U+XXXX` 列出每个缺字。它会解码 `\uXXXX` 转义，检查 `#define` 内容和 `snprintf` 格式串，跳过注释、`#if 0` 块、`#include` 路径，以及传给 `ESP_LOG*`、`printf`、`puts` 或断言的字面量。永不显示的行可加 `glyph-check: ignore` 注释跳过。没有内置字体的工程（例如本基线）报告 `SKIPPED`。
+
+该门禁检查所有内置字体的并集，无法判断控件实际选用哪种字体，看不到运行时拼接、用户输入或网络下发的文字，也不能证明字形能正确绘制。上文的逐字体检查和第 8 节的真机检查仍然需要。
+
 ## 7. 按顺序定位故障
 
 | 现象 | 下一步 |

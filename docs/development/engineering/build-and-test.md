@@ -157,7 +157,7 @@ cc -std=c11 -Wall -Wextra -Werror -Imain \
 Use the unified validation entry point:
 
 ```bash
-./tools/validate.sh --static    # repository checks, workflows, links, secrets, host tests
+./tools/validate.sh --static    # repository checks, glyph coverage, workflows, links, secrets, host tests
 ./tools/validate.sh --firmware  # build, merge-bin, offsets, and configured layout
 ./tools/validate.sh             # complete gate; requires an activated ESP-IDF environment
 ```
