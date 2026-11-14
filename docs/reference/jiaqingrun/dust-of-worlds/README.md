@@ -173,10 +173,11 @@ UP / DOWN flips pages, holding OK sleeps.
 
 ## Source
 
-- Not published as a public Git repository; the application is distributed through
-  the community library under project `community-c04b753d` (`projectId 2170`),
-  latest published revision `5382` (v0.36), with v0.51 submitted as revision
-  `5448` and pending review.
+- Repository: `Jiaqingrun/ai-passport-dust-of-worlds`, branch `main`
+  (<https://github.com/Jiaqingrun/ai-passport-dust-of-worlds>).
+- Published to the community library as project `community-c04b753d`
+  (`projectId 2170`); latest published revision `5382` (v0.36), with v0.51
+  submitted as revision `5448` and pending review.
 - Built from the AI Passport `main/` layout with the BSP components unchanged;
   pages, simulation and state live in `main/` (`dust_sim.c` for the world model,
   `dust_ui.c` for the five pages, `main.c` for keys, audio, sleep and storage).

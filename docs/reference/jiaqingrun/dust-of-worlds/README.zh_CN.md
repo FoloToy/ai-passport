@@ -134,9 +134,10 @@
 
 ## 来源
 
-- 没有公开的 Git 仓库；应用通过社区库分发，项目 `community-c04b753d`
-  （`projectId 2170`），已发布的最新修订是 `5382`（v0.36），v0.51 已作为修订
-  `5448` 提交，等待审核。
+- 仓库：`Jiaqingrun/ai-passport-dust-of-worlds`，分支 `main`
+  （<https://github.com/Jiaqingrun/ai-passport-dust-of-worlds>）。
+- 通过社区库分发，项目 `community-c04b753d`（`projectId 2170`）；已发布的最新
+  修订是 `5382`（v0.36），v0.51 已作为修订 `5448` 提交，等待审核。
 - 基于 AI Passport 的 `main/` 目录结构，BSP 组件未改动；页面、模拟与状态都在
   `main/` 内（世界模型在 `dust_sim.c`，五个页面在 `dust_ui.c`，按键、音频、
   休眠与存储在主程序里）。
