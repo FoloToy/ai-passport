@@ -52,21 +52,96 @@ blessings and answers to prayers, and the chronicle says what came of it.
   accumulates absurdity that can demote a civilization. Daji works passively from
   the Beast tribes — courts neglect their duties, generals defect — and needs no
   input. The First Emperor unites the Human tribes, opens a 3,700-year golden age
-  and slows time while he reigns (10 years per tick instead of 100), then leaves
-  institutions behind.
-- **Prayers, holy sites and wonders**: tribes burn incense and pray (the world
-  pauses and asks for grant / punish / silence, 20 s unanswered counts as
-  silence); they found holy sites and send pilgrims; high civilizations raise star
-  gates, sky towers and great temples, which can be inspected with a one-second
-  zoom shot from the World page.
-- **Twilight and rebirth**: after the old world ends, its wonders become broken
-  columns, myths and heroes are still sung, stardust falls and the next cycle
-  starts; the Data page shows how many cycles have passed.
-- **Intervention has a price**: divine power refills from the living's faith;
-  disasters accumulate wrath that suppresses the refill, and the world's climate
-  anomaly cools or warms every people.
+  and slows time while he reigns, then leaves institutions behind.
+- **Prayers, holy sites and wonders**: tribes burn incense and pray; they found
+  holy sites and send pilgrims; high civilizations raise star gates, sky towers
+  and great temples, which can be inspected with a one-second zoom shot from the
+  World page.
 - **Persistence**: manual save / load / restart plus an automatic save every
   180 s; loading a bad save never destroys the existing one.
+
+## How the world works
+
+### Divine power and wrath
+
+Power runs from 0 to 100 and starts at 30. Each tick it regenerates from two
+sources — the number of peoples alive and the faith each of them holds — and that
+regeneration is scaled by `(1 - wrath * 0.008)`, so a fully wrathful world (100)
+regenerates at one fifth of the rate. Wrath decays by 0.004 per tick; every
+disaster adds 10 to 16 of it. Above 35 wrath the world can push back at you at
+intervals, which is the price of treating the world as a sandbox.
+
+Six interventions, each with a fixed cost:
+
+| Intervention | Cost | Effect |
+| --- | --- | --- |
+| Star fire | 45 | meteor strike: instant loss, scorched land, a decade of cold |
+| Ice age | 60 | global cooling, glaciers advance, peoples migrate south |
+| Flood | 34 | destroys a city's stores, leaves fertile silt behind |
+| Volcano | 40 | kills now, ash becomes the best farmland centuries later |
+| Blessing | 26 | raises the chosen people's fortune |
+| Listen | 0 | hears the current prayer without answering it |
+
+Milestones also pay: the first tribe (+10), first city (+12), first kingdom
+(+15), first civilization (+25), first temple (+10) and each population threshold
+(+15 / +20 / +30 / +40). Watching the world is therefore the main income, not
+punishing it.
+
+### Answers and their consequences
+
+- **Grant a prayer**: the people's population ×1.25, faith +20, tech +5 and a
+  year of food — the cheapest way to make one people strong, and to raise the
+  faith that feeds your power.
+- **Punish a prayer**: population ×0.70 and faith −15.
+- **Stay silent**: faith −8. Twenty seconds without an answer counts as silence,
+  so a player who is watching the Atlas page still pays for ignoring the world.
+
+### Climate
+
+A global temperature anomaly sits between −0.70 and +0.30. Cold converts land to
+tundra and pushes peoples toward the equator; warmth melts the ice edge back into
+grass. Sky events — comets, eclipses, meteor showers — nudge the anomaly down,
+and the Star fire intervention adds a longer cold decade on top.
+
+### Civilization and the ages
+
+Tech sets a people's tier — settlement, city, kingdom, civilization, empire,
+divine dynasty — and culture decides how well it absorbs its neighbours. Each new
+age is announced in the Chronicle. When an empire-tier people exists and at least
+four peoples are still active, the world enters the dusk age, and the Chronicle
+starts a countdown.
+
+### Twilight and rebirth
+
+Dusk lasts 18,000 ticks (1.8 million years) before the old world ends; a world
+whose peoples are all dead for 2,000 ticks ends early. On the end the wonders
+become broken columns, one hero's name is kept as the legacy of that cycle, every
+people is gone, and the world starts again with a new continent and a new
+chronicle — the Data page counts the cycles.
+
+## Playing a run
+
+1. **Boot and read the map.** The World page shows the six colours plus magenta
+   for wonders, white-gold for holy sites and the hybrid mark. OK pauses, so the
+   first thing to do is pause and look.
+2. **Let the early world alone.** At settlement and city tier your power is low
+   and a disaster mostly costs you the faith income you need later. Let the
+   milestones fire; they are the earliest large power income.
+3. **Read the Chronicle, not the map.** It records cause as well as event (who
+   died, what killed them, which people split), and it is where a run's story
+   appears. The map alone tells you where; the Chronicle tells you why.
+4. **Intervene where the seams are.** A flood that ruins a granary also leaves
+   silt; a volcano kills a city and fertilises the valley below it. Every disaster
+   is a change of terrain first and a killing second.
+5. **Answer prayers on purpose.** Granting builds faith (and therefore power);
+   punishing is for a people you want gone; silence is a real option but costs
+   faith, and it happens by itself after 20 seconds.
+6. **Sleep instead of leaving it on.** Holding OK saves, turns the screen off and
+   keeps the world at 1×; the wake report tells you how much you missed. Nothing
+   is lost by walking away for an hour.
+7. **There is no failure state.** You cannot lose; you can only miss the century
+   in which something was worth watching. The dusk countdown exists to make that
+   point eventually.
 
 ## Interaction
 
@@ -93,6 +168,8 @@ UP / DOWN flips pages, holding OK sleeps.
   wars and events. A prayer wakes the screen on its own so the world can ask.
   Auto-sleep is on by default after 60 s without input and can be disabled; the
   Data page also sets brightness (40 / 60 / 80 / 100) and volume.
+- **Double clicks** (not in the table): a double OK from the World page cycles a
+  one-second zoom on each wonder, a double UP / DOWN jumps the speed.
 
 ## Source
 
@@ -116,6 +193,10 @@ UP / DOWN flips pages, holding OK sleeps.
   missing glyph fails the build instead of showing an empty box.
 - After boot the v0.51 build reported about 55 KB of free internal heap and 72 % of
   the LVGL pool in use.
+- The save blob is a versioned (v3) compact binary: 60 bytes per tribe, 27 per
+  group, 79 per chronicle entry, plus the terrain and fertility layers; the whole
+  world fits in a 30 KB buffer, which is why the automatic save is skipped when
+  free heap is too low instead of failing halfway.
 - Two experience entries written from earlier releases of this application cover
   the simulation side and the rendering / audio side: see
   [Keeping a Persistent World Alive on a Three-Key Handheld](../persistent-world-simulation-on-a-handheld.md)
