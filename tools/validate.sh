@@ -20,6 +20,7 @@ run_static_checks() {
     fi
 
     python3 tools/check_repo.py
+    python3 tools/check_glyphs.py
 
     actionlint_bin="${ACTIONLINT_BIN:-}"
     if [[ -z "${actionlint_bin}" ]]; then
@@ -79,6 +80,7 @@ run_static_checks() {
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_deep_sleep_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_key_wake_contract.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_repo.py
+    PYTHONDONTWRITEBYTECODE=1 python3 tests/test_check_glyphs.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_verify_firmware.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_archive_firmware.py
     PYTHONDONTWRITEBYTECODE=1 python3 tests/test_install_passport_skills.py

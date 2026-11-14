@@ -145,6 +145,12 @@ Decode all fixed text into Unicode code points and check the ones required by ea
 
 Dynamic content needs an explicit contract: accept a documented character set, add verified glyph coverage, or show a deliberate supported replacement/unsupported-text message. Do not silently drop unknown characters or claim that a fixed menu subset supports arbitrary names and network text. When the supported inventory changes, regenerate fonts and rerun coverage checks.
 
+### Static coverage gate
+
+`./tools/validate.sh --static` runs [`tools/check_glyphs.py`](../../../tools/check_glyphs.py). It reads the code points that generated fonts under `assets/fonts/` and `main/` actually contain, from their `lv_font_fmt_txt_cmap_t` tables rather than the converter's request, and fails when a string literal in `main/` uses a non-ASCII character outside them. Each missing character is reported as `file:line: U+XXXX`. It decodes `\uXXXX` escapes, checks `#define` bodies and `snprintf` formats, and skips comments, `#if 0` blocks, `#include` paths and literals passed to `ESP_LOG*`, `printf`, `puts`, or assertions. Mark a line that is never displayed with a `glyph-check: ignore` comment. A tree without a bundled font, such as this baseline, reports `SKIPPED`.
+
+The gate checks the union of all bundled fonts. It cannot tell which font a widget selects, does not see text assembled at runtime or received from users or the network, and does not prove the glyph renders. Keep the per-font checks above and the device inspection in section 8.
+
 ## 7. Diagnose failures in order
 
 | Symptom | Next action |
