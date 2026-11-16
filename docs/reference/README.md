@@ -138,6 +138,12 @@ The engineering rules themselves live under
 
 - [Dust of Worlds — God Simulator](jiaqingrun/dust-of-worlds/README.md) — a god-view world simulator where six species and four hybrids evolve on their own across five pages, three fixed rulers, prayers and wonders, and the player only intervenes with disasters and blessings.
 
+### arthas276
+
+**Application playbooks:**
+
+- [Pocket Password Card](arthas276/pocket-password-card/README.md) — an offline derived-password card: one fixed 8 × 10 grid from a 128-bit seed, sites as row + column + length + mode, masked 8-second reveals, a PIN mode that never appears on the printable card, and on-device seed migration with a CRC-8 checksum.
+
 ## Adding an experience entry
 
 Each release may produce **one or more** reusable, post-release learnings; each is
