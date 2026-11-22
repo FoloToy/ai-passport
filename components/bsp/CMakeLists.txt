@@ -3,6 +3,7 @@ idf_component_register(
          "src/bsp_display.c"
          "src/bsp_display_lvgl.c"
          "src/bsp_display_rounding.c"
+         "src/bsp_display_capture.c"
          "src/bsp_button.c"
          "src/bsp_audio.c"
          "src/bsp_es8311_sleep_check.c"

@@ -131,6 +131,22 @@ Before terminal deep sleep, stop new page work and hold the LVGL lock long enoug
 
 LVGL is not thread-safe. Timer callbacks in LVGL context may access objects directly. Button callbacks must not access LVGL; they enqueue input for the lifecycle task. The lifecycle task and other workers must use `bsp_lvgl_lock()`/`bsp_lvgl_unlock()` for short UI operations. Stop producers before deleting a page and clear static object pointers afterward.
 
+### Screen frame capture
+
+`bsp_display_capture_begin(cb)` / `bsp_display_capture_end()` (see
+`bsp_display_capture.h`) hand every flushed area of the next refresh to
+`cb` as `{x, y, w, h, pixels, stride}` - the masked RGB565 exactly as it
+ships to the panel link, with no additional full-screen buffer. Call
+`begin` under `bsp_lvgl_lock()` (or before `bsp_lvgl_init()`), invalidate
+the screen, and accumulate the areas by coordinates inside the callback.
+Three caveats are contractual: `stride` is bytes per row and may exceed
+`w * 2`; areas arrive in flush order and only cover the whole frame after
+a full refresh; `pixels` is renderer-owned and valid only inside the
+callback. The bytes are LVGL-native little-endian RGB565 (the panel swap
+happens later; black is 0 either way). `end()` may be called from inside
+the callback to stop after the current area. The host test
+`tests/test_bsp_display_capture.c` freezes this state machine.
+
 ## 6. ADC button ladder
 
 GPIO0 has an external 10 kΩ pull-up to 3.3 V. UP, DOWN, and OK connect it to ground through 0 Ω, 1 kΩ, and 2.2 kΩ respectively.

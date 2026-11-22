@@ -159,6 +159,20 @@ LVGL 非线程安全：
 
 显示和圆角回调必须在同一个可递归 LVGL port 锁内注册，先于第一帧 flush。注册失败后不能留下未遮罩的显示，也不能重新初始化旧任务可能仍在运行的 port。
 
+### 屏幕截帧
+
+`bsp_display_capture_begin(cb)` / `bsp_display_capture_end()`（见
+`bsp_display_capture.h`）把下一次刷新的每个刷新区以
+`{x, y, w, h, pixels, stride}` 交给 `cb`——即套完圆角遮罩、即将送往
+面板链路的 RGB565，全程零额外整屏缓冲。在 `bsp_lvgl_lock()` 内
+（或 `bsp_lvgl_init()` 之前）调用 `begin`，随后 invalidate 屏幕，在
+回调里按坐标把各区域拼进自己的缓冲。三条契约性告诫：`stride` 是
+每行字节数、可能大于 `w * 2`；各区域按 flush 顺序送达，整帧只有
+在一轮完整刷新后才拼得齐；`pixels` 归渲染器所有、仅在回调内有效。
+字节为 LVGL 原生小端 RGB565（面板的字节交换发生在其后；纯黑两种
+字节序同为 0）。回调内可以调用 `end()`，当前区域之后即停止投递。
+主机测试 `tests/test_bsp_display_capture.c` 冻结该状态机。
+
 ## 6. ADC 三按键
 
 三个物理按键共享 GPIO0：3.3 V 经外部 10 kΩ 上拉到 ADC 节点，按键按下后分别通过 0 Ω、1 kΩ、2.2 kΩ 接地。
