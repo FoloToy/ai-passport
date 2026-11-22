@@ -2,6 +2,7 @@
 // LVGL 接入单独成文件:不用 LVGL 的开发者删掉本文件 + idf_component.yml 里的两条依赖即可。
 #include "bsp_display.h"
 #include "bsp_display_rounding.h"
+#include "bsp_display_capture.h"
 #include "bsp_pins.h"
 #include "esp_lvgl_port.h"
 #include "esp_log.h"
@@ -51,6 +52,14 @@ static void rounded_flush_event(lv_event_t *event)
         }
     }
 
+    // Capture hook (issue #98): hand over this area's masked RGB565. Runs
+    // after masking so the app receives what ships to the panel link,
+    // before the port's byte swap (black is 0 either way).
+    if (bsp_display_capture_active()) {
+        bsp_display_capture_record(area->x1, area->y1, width,
+                                   area->y2 - area->y1 + 1,
+                                   draw_buf->data, draw_buf->header.stride);
+    }
 }
 
 lv_display_t *bsp_lvgl_init(void) {

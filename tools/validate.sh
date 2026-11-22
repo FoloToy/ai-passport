@@ -90,6 +90,10 @@ run_static_checks() {
         tests/test_bsp_display_rounding.c components/bsp/src/bsp_display_rounding.c \
         -o "${test_dir}/test_bsp_display_rounding"
     "${test_dir}/test_bsp_display_rounding"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Icomponents/bsp/include \
+        tests/test_bsp_display_capture.c components/bsp/src/bsp_display_capture.c \
+        -o "${test_dir}/test_bsp_display_capture"
+    "${test_dir}/test_bsp_display_capture"
     "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Icomponents/bsp/src \
         tests/test_bsp_es8311_sleep_check.c components/bsp/src/bsp_es8311_sleep_check.c \
         -o "${test_dir}/test_bsp_es8311_sleep_check"
@@ -105,6 +109,7 @@ run_static_checks() {
     "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
         -Itests/bsp_stubs -Icomponents/bsp/include \
         tests/test_bsp_lvgl_init.c components/bsp/src/bsp_display_rounding.c \
+        components/bsp/src/bsp_display_capture.c \
         -o "${test_dir}/test_bsp_lvgl_init"
     "${test_dir}/test_bsp_lvgl_init"
     "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
