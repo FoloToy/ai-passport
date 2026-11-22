@@ -32,7 +32,15 @@ def function_body(source: str, name: str) -> str:
 class KeyWakeGuardWiringTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.main = read("main/main.c")
+        # Derivative apps may put on_key in main.c or a separate app file.
+        # Try main/main.c first, fall back to main/treaai_app.c.
+        cls.main = None
+        for path in ("main/main.c", "main/treaai_app.c"):
+            text = read(path)
+            if re.search(r"\bon_key\s*\([^;]*?\)\s*\{", text):
+                cls.main = text
+                break
+        assert cls.main is not None, "on_key not found in main.c or treaai_app.c"
 
     def test_on_key_consumes_the_guard_before_the_readiness_check(self) -> None:
         # A release can arrive after the post-init voltage sample but before input
@@ -40,7 +48,7 @@ class KeyWakeGuardWiringTest(unittest.TestCase):
         # disarms it, instead of being discarded by the readiness early-return.
         body = function_body(self.main, "on_key")
         self.assertIn("key_guard_consume(", body)
-        self.assertLess(body.index("key_guard_consume("), body.index("!s_input_ready"))
+        self.assertLess(body.index("key_guard_consume("), body.index("!s_app.input_ready") if "s_app.input_ready" in body else body.index("!s_input_ready"))
 
 
 if __name__ == "__main__":
