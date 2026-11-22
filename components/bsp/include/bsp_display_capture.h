@@ -15,6 +15,9 @@
 // the whole frame only after a full refresh - accumulate them into your
 // own buffer by coordinates. pixels is reused by the renderer: copy what
 // you need inside the callback and never store the pointer.
+// The callback runs inside the LVGL render task: do a bounded memcpy only.
+// Never log per pixel, write UART/USB/flash, take the LVGL lock or block on
+// a queue there - stream the copy from your own task after the frame.
 typedef struct {
     int32_t x;
     int32_t y;

@@ -142,7 +142,10 @@ the screen, and accumulate the areas by coordinates inside the callback.
 Three caveats are contractual: `stride` is bytes per row and may exceed
 `w * 2`; areas arrive in flush order and only cover the whole frame after
 a full refresh; `pixels` is renderer-owned and valid only inside the
-callback. The bytes are LVGL-native little-endian RGB565 (the panel swap
+callback. The callback runs inside the LVGL render task, so it may only do
+a bounded copy: never send pixels over UART/USB, write flash, take the LVGL
+lock or block on a queue there; transmit from your own task afterwards.
+The bytes are LVGL-native little-endian RGB565 (the panel swap
 happens later; black is 0 either way). `end()` may be called from inside
 the callback to stop after the current area. The host test
 `tests/test_bsp_display_capture.c` freezes this state machine.
