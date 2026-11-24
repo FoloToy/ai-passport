@@ -79,6 +79,10 @@ static void ball_render(int index, uint8_t value) {
 }
 
 static void balls_layout(void) {
+    // 先隐藏全部球再按 nums_len 显示:否则上一次大个数抽取的球会残留。
+    for (int i = 0; i < LUCKY_COUNT_MAX; i++) {
+        lv_obj_add_flag(s_balls[i], LV_OBJ_FLAG_HIDDEN);
+    }
     int count = s_state.nums_len;
     const int ball_d = 52;
     const int cy0 = 118;                       // 第一行中心
