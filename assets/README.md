@@ -17,6 +17,31 @@ Store reusable font files and generated font sources in `fonts/`.
 - Check Flash and internal-RAM impact before adding a font; the ESP32-C3 has no PSRAM.
 - Do not commit fonts whose license does not permit redistribution.
 
+### Lucky Draw app font subsets (2026-11-24)
+
+| File | Size | Character range | Generated size |
+| --- | --- | --- | --- |
+| [`fonts/lucky_font_16.c`](fonts/lucky_font_16.c) | 16 px | ASCII 0x20-0x7E + the Chinese glyphs used by the app UI (see the Chinese entry for the full list) + U+00B7 middle dot + U+25B2/U+25BC triangles | ~68 KB |
+| [`fonts/lucky_font_24.c`](fonts/lucky_font_24.c) | 24 px | Same character set (page title, ball digits) | ~119 KB |
+| [`fonts/lucky_font_40.c`](fonts/lucky_font_40.c) | 40 px | ASCII 0x20-0x3F (setup-page large counter) | ~47 KB |
+
+- Source font: [`fonts/NotoSansCJKsc-Regular.otf`](fonts/NotoSansCJKsc-Regular.otf) (Noto Sans CJK SC Regular, aka Source Han Sans SC).
+- License: SIL Open Font License 1.1; redistribution permitted. Full license text lives in the upstream repository (https://github.com/notofonts/noto-cjk).
+- Conversion tool: lv_font_conv 1.5.3 (pinned, invoked via npx).
+- Conversion command (16 px shown; swap `--size`/`--lv-font-name` for the other sizes, and use `--range 0x20-0x3F` for the 40 px digit-only subset). The `--symbols` argument is written with bash ANSI-C Unicode escapes to keep this file free of CJK prose; the Chinese version lists the same glyphs literally:
+
+  ```bash
+  npx lv_font_conv@1.5.3 \
+    --font assets/fonts/NotoSansCJKsc-Regular.otf \
+    --size 16 --bpp 4 --format lvgl --no-compress \
+    --lv-font-name lucky_font_16 --lv-include lvgl.h \
+    --range 0x20-0x7E \
+    --symbols $'\u5FEB\u4E50\u9009\u53F7\u62E9\u4E2A\u6570\u4E0A\u4E0B\u8C03\u6574\u786E\u5B9A\u5F00\u59CB\u672C\u7EC4\u518D\u62BD\u957F\u6309\u8FD4\u56DE\u25B2\u25BC\u00B7' \
+    --output assets/fonts/lucky_font_16.c
+  ```
+
+- Integration: compiled via `target_sources` in `main/CMakeLists.txt`; widgets bind them through `LV_FONT_DECLARE` + `lv_obj_set_style_text_font`. When UI copy changes, regenerate every affected size and re-run `./tools/validate.sh --static` (`tools/check_glyphs.py` scans `main/` string literals against glyph coverage).
+
 ## Images
 
 Store reusable source images and generated display assets in `images/`.
