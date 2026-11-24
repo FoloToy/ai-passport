@@ -144,6 +144,12 @@ The engineering rules themselves live under
 
 - [Pocket Password Card](arthas276/pocket-password-card/README.md) — an offline derived-password card: one fixed 8 × 10 grid from a 128-bit seed, sites as row + column + length + mode, masked 8-second reveals, a PIN mode that never appears on the printable card, and on-device seed migration with a CRC-8 checksum.
 
+### jakegu10086
+
+**Application playbooks:**
+
+- [Pocket Physics Quiz](jakegu10086/physics-quiz/README.md) — a 60-question offline physics drill that draws ten random questions per round, checks each answer instantly with a one-line explanation, and scores the round by accuracy.
+
 ## Adding an experience entry
 
 Each release may produce **one or more** reusable, post-release learnings; each is
