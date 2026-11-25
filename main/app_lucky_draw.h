@@ -10,3 +10,7 @@ void app_lucky_init(void);
 // 按键事件入口。在应用事件任务上下文调用;内部自行持锁操作 LVGL。
 // 容忍 BSP_BTN_RELEASE 等非映射事件。
 void app_lucky_key(bsp_btn_t btn, bsp_btn_ev_t ev);
+
+// 开机后调用一次:没有任何 WiFi 凭据时自动进入手机配网页。
+// 需在 net_wifi_start() 之后调用(此时才知道 NVS 里有没有凭据),不要持锁调用。
+void app_lucky_auto_prov(void);

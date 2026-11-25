@@ -12,6 +12,7 @@
 #include "bsp_pins.h"      // 错误日志里要打印 BSP_LCD_* 引脚号
 #include "key_guard.h"
 #include "app_lucky_draw.h"
+#include "net_wifi.h"
 #include "esp_log.h"
 #include "esp_sleep.h"
 #include "esp_timer.h"
@@ -153,4 +154,9 @@ void app_main(void) {
         s_input_ready = true;
         ESP_LOGI(TAG, "就绪");
     }
+
+    // 开奖结果需要联网:UI 起好后再拉起 WiFi,连接过程在后台完成,不阻塞界面。
+    net_wifi_start();
+    // 没有凭据(NVS 为空,说明从没配过网)时直接进配网页。
+    app_lucky_auto_prov();
 }

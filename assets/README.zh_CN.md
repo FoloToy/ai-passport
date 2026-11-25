@@ -34,7 +34,7 @@
     --size 16 --bpp 4 --format lvgl --no-compress \
     --lv-font-name lucky_font_16 --lv-include lvgl.h \
     --range 0x20-0x7E \
-    --symbols "快乐选号选择个数上下调整确定开始本组再抽长按返回▲▼·" \
+    --symbols "快乐选号选择号码个数上下调整确定开始本组再抽长按返回双色球红蓝换玩法开奖结果期翻刷新未配置网络加载中拉取失败暂无数据连接看键切交保出动后启存已式待手机模点热等自退重提▲▼·" \
     --output assets/fonts/lucky_font_16.c
   ```
 

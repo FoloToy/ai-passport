@@ -23,6 +23,9 @@ Scope and rules:
   `\\x` and octal byte escapes are not.
 * A line whose comment contains `glyph-check: ignore` is skipped, for literals
   that are never displayed or are covered by a font outside this repository.
+* A file whose text contains `glyph-check: ignore-file` is skipped entirely, for
+  sources whose literals are not rendered on the panel (e.g. HTML templates that
+  the phone browser draws with its own fonts).
 * A tree without a bundled font is skipped, so the BSP baseline and
   applications that use only built-in fonts are unaffected.
 """
@@ -41,6 +44,7 @@ DEFAULT_FONT_DIRS = ("assets/fonts", "main")
 DEFAULT_SOURCE_DIRS = ("main",)
 SOURCE_SUFFIXES = {".c", ".h", ".cc", ".cpp", ".hpp"}
 IGNORE_MARKER = "glyph-check: ignore"
+IGNORE_FILE_MARKER = "glyph-check: ignore-file"
 ASCII_LIMIT = 0x80
 
 # Calls whose string arguments go to a console or an assertion, not to the panel.
@@ -367,6 +371,8 @@ def run(root: Path, font_dirs: tuple[str, ...], source_dirs: tuple[str, ...]) ->
         except UnicodeDecodeError as error:
             print(f"ERROR: {relative}: not valid UTF-8 ({error})", file=sys.stderr)
             return 1
+        if IGNORE_FILE_MARKER in text:
+            continue
         for literal in scan_source(text):
             for point in literal.codepoints:
                 if point < ASCII_LIMIT:

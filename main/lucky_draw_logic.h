@@ -47,8 +47,10 @@ bool lucky_ssq_valid(const uint8_t *nums);
 // ---------------------------------------------------------------------------
 
 typedef enum {
-    LUCKY_PAGE_SETUP,   // 选择号码个数
-    LUCKY_PAGE_RESULT,  // 展示最近一组结果
+    LUCKY_PAGE_SETUP,   // 选择玩法/号码个数
+    LUCKY_PAGE_RESULT,  // 展示最近一组抽取结果
+    LUCKY_PAGE_ISSUES,  // 双色球开奖结果(按期翻页)
+    LUCKY_PAGE_KL8,     // 快乐8开奖结果(按期翻页,快乐选号的官方开奖)
 } lucky_page_t;
 
 typedef enum {
@@ -56,10 +58,11 @@ typedef enum {
     LUCKY_KEY_DOWN_CLICK,
     LUCKY_KEY_OK_CLICK,
     LUCKY_KEY_OK_LONG,
+    LUCKY_KEY_DOWN_LONG,   // 设置页长按下键 = 看当前玩法的开奖
 } lucky_input_t;
 
 typedef enum {
-    LUCKY_MODE_LUCKY,   // 快乐选号:1-80 抽 1-9 个
+    LUCKY_MODE_LUCKY,   // 快乐选号:1-80 抽 1-9 个(开奖看福彩快乐8)
     LUCKY_MODE_SSQ,     // 双色球:6 红 + 1 蓝
 } lucky_mode_t;
 
@@ -69,6 +72,9 @@ typedef struct {
     int count;                       // SETUP 页当前选择的号码个数(仅快乐选号)
     uint8_t nums[LUCKY_COUNT_MAX];   // 最近一组结果(快乐选号升序;双色球=6红升序+1蓝)
     int nums_len;                    // 0 表示尚无结果(双色球为 LUCKY_SSQ_TOTAL)
+    int issue_idx;                   // 开奖页当前期序号(0=最新)
+    int issue_count;                 // 已缓存的期数,由宿主同步
+    bool refresh_requested;          // 开奖页按了确定,宿主应发起一次拉取
 } lucky_state_t;
 
 // 输入处理。返回 true 表示状态有变化;need_draw 置 true 时宿主应调用

@@ -90,6 +90,9 @@ run_static_checks() {
         tests/test_lucky_draw_logic.c main/lucky_draw_logic.c \
         -o "${test_dir}/test_lucky_draw_logic"
     "${test_dir}/test_lucky_draw_logic"
+    "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Imain \
+        tests/test_prov_form.c main/prov_form.c -o "${test_dir}/test_prov_form"
+    "${test_dir}/test_prov_form"
     "${CC:-cc}" -std=c11 -Wall -Wextra -Werror -Icomponents/bsp/src \
         tests/test_bsp_display_rounding.c components/bsp/src/bsp_display_rounding.c \
         -o "${test_dir}/test_bsp_display_rounding"

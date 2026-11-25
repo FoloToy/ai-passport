@@ -109,14 +109,52 @@ bool lucky_handle_input(lucky_state_t *st, lucky_input_t in, bool *need_draw) {
                         return true;
                     }
                     return false;
+                case LUCKY_KEY_DOWN_LONG:
+                    // 长按下键 = 看当前玩法的官方开奖:快乐选号看快乐8,双色球看双色球。
+                    // 短按下键在快乐选号里要减个数,所以这里用长按,两个玩法保持一致。
+                    st->page = (st->mode == LUCKY_MODE_LUCKY) ? LUCKY_PAGE_KL8 : LUCKY_PAGE_ISSUES;
+                    st->issue_idx = 0;
+                    st->refresh_requested = true;
+                    return true;
                 case LUCKY_KEY_OK_CLICK:
                     st->page = LUCKY_PAGE_RESULT;
                     if (need_draw) *need_draw = true;
                     return true;
                 case LUCKY_KEY_OK_LONG:
-                    // 设置页长按:在两种玩法之间切换,清掉旧结果避免串玩法显示。
-                    st->mode = (st->mode == LUCKY_MODE_LUCKY) ? LUCKY_MODE_SSQ
-                                                              : LUCKY_MODE_LUCKY;
+                    // 设置页长按:只切主玩法(快乐选号 <-> 双色球)。
+                    // 开奖不是同级玩法,入口是长按下键。
+                    st->mode = (st->mode == LUCKY_MODE_SSQ) ? LUCKY_MODE_LUCKY : LUCKY_MODE_SSQ;
+                    st->nums_len = 0;
+                    st->issue_idx = 0;
+                    st->page = LUCKY_PAGE_SETUP;
+                    return true;
+                default:
+                    return false;
+            }
+        case LUCKY_PAGE_ISSUES:
+        case LUCKY_PAGE_KL8:
+            switch (in) {
+                case LUCKY_KEY_UP_CLICK:
+                    // 期序号 0=最新,向上翻是看更新的期。
+                    if (st->issue_idx > 0) {
+                        st->issue_idx--;
+                        return true;
+                    }
+                    return false;
+                case LUCKY_KEY_DOWN_CLICK:
+                    if (st->issue_idx + 1 < st->issue_count) {
+                        st->issue_idx++;
+                        return true;
+                    }
+                    return false;
+                case LUCKY_KEY_OK_CLICK:
+                    st->refresh_requested = true;
+                    return true;
+                case LUCKY_KEY_OK_LONG:
+                case LUCKY_KEY_DOWN_LONG:
+                    // 长按返回:玩法不变,回到对应的设置页。
+                    st->page = LUCKY_PAGE_SETUP;
+                    st->issue_idx = 0;
                     st->nums_len = 0;
                     return true;
                 default:

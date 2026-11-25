@@ -146,10 +146,11 @@ int main(void) {
     bool need_draw = true;  // 非法输入不得误置 need_draw
     assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
     assert(need_draw == false);
-    // SETUP 长按=切换玩法:快乐选号 -> 双色球,旧结果被清空。
-    assert(st.mode == LUCKY_MODE_SSQ && st.nums_len == 0);
+    // SETUP 长按=在两个主玩法间切换:快乐选号 <-> 双色球;
+    // 开奖结果属于双色球,不再作为同级玩法出现在长按循环里。
+    assert(st.mode == LUCKY_MODE_SSQ && st.nums_len == 0 && st.page == LUCKY_PAGE_SETUP);
     assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
-    assert(st.mode == LUCKY_MODE_LUCKY && st.nums_len == 0);
+    assert(st.mode == LUCKY_MODE_LUCKY && st.page == LUCKY_PAGE_SETUP && st.nums_len == 0);
     assert(lucky_handle_input(&st, LUCKY_KEY_DOWN_CLICK, &need_draw));
     assert(st.count == 5 && !need_draw);
     assert(lucky_handle_input(&st, LUCKY_KEY_UP_CLICK, &need_draw));
@@ -161,13 +162,20 @@ int main(void) {
     assert(!lucky_handle_input(&st, LUCKY_KEY_DOWN_CLICK, &need_draw));
     assert(st.count == LUCKY_COUNT_MIN);
 
-    // 状态机:双色球模式下 UP/DOWN 无效(个数固定),OK 仍进结果页。
+    // 状态机:双色球模式下个数固定,单击上下键都无效;长按下键进双色球开奖。
     st.mode = LUCKY_MODE_SSQ;
     st.count = 6;
     assert(!lucky_handle_input(&st, LUCKY_KEY_UP_CLICK, &need_draw));
     assert(st.count == 6 && !need_draw);
     assert(!lucky_handle_input(&st, LUCKY_KEY_DOWN_CLICK, &need_draw));
     assert(st.count == 6 && !need_draw);
+    assert(lucky_handle_input(&st, LUCKY_KEY_DOWN_LONG, &need_draw));
+    assert(st.mode == LUCKY_MODE_SSQ && st.page == LUCKY_PAGE_ISSUES);
+    assert(st.issue_idx == 0 && st.refresh_requested && !need_draw);
+    // 开奖页长按退回双色球设置页,玩法不变。
+    st.refresh_requested = false;
+    assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
+    assert(st.mode == LUCKY_MODE_SSQ && st.page == LUCKY_PAGE_SETUP);
     assert(lucky_handle_input(&st, LUCKY_KEY_OK_CLICK, &need_draw));
     assert(st.page == LUCKY_PAGE_RESULT && need_draw);
     // 结果页行为与玩法无关:OK 再抽、长按回设置。
@@ -175,11 +183,55 @@ int main(void) {
     assert(st.page == LUCKY_PAGE_RESULT && need_draw);
     assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
     assert(st.page == LUCKY_PAGE_SETUP && !need_draw);
-    // 回到设置页后,长按从双色球切回快乐选号,再切一次回双色球。
+    // 回到设置页后长按切回快乐选号。
     assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
-    assert(st.mode == LUCKY_MODE_LUCKY && !need_draw);
-    assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
-    assert(st.mode == LUCKY_MODE_SSQ && !need_draw);
+    assert(st.mode == LUCKY_MODE_LUCKY && st.page == LUCKY_PAGE_SETUP && !need_draw);
+
+    // 状态机(开奖页):上下翻期两端夹紧,确定键请求刷新,长按回双色球设置页。
+    lucky_state_t st3 = {0};
+    st3.page = LUCKY_PAGE_ISSUES;
+    st3.mode = LUCKY_MODE_SSQ;
+    st3.issue_count = 3;
+    assert(!lucky_handle_input(&st3, LUCKY_KEY_UP_CLICK, &need_draw));  // 已在最新一期
+    assert(st3.issue_idx == 0);
+    assert(lucky_handle_input(&st3, LUCKY_KEY_DOWN_CLICK, &need_draw));
+    assert(st3.issue_idx == 1 && !need_draw);
+    assert(lucky_handle_input(&st3, LUCKY_KEY_DOWN_CLICK, &need_draw));
+    assert(st3.issue_idx == 2);
+    assert(!lucky_handle_input(&st3, LUCKY_KEY_DOWN_CLICK, &need_draw));  // 到最后一期夹紧
+    assert(st3.issue_idx == 2);
+    assert(lucky_handle_input(&st3, LUCKY_KEY_UP_CLICK, &need_draw));
+    assert(st3.issue_idx == 1);
+    assert(lucky_handle_input(&st3, LUCKY_KEY_OK_CLICK, &need_draw));
+    assert(st3.refresh_requested && !need_draw);
+    assert(lucky_handle_input(&st3, LUCKY_KEY_OK_LONG, &need_draw));
+    assert(st3.page == LUCKY_PAGE_SETUP && st3.mode == LUCKY_MODE_SSQ && !need_draw);
+    // 没有缓存时上下键无反应。
+    lucky_state_t st4 = {0};
+    st4.page = LUCKY_PAGE_ISSUES;
+    st4.mode = LUCKY_MODE_SSQ;
+    assert(!lucky_handle_input(&st4, LUCKY_KEY_DOWN_CLICK, &need_draw));
+    assert(st4.issue_idx == 0);
+
+    // 状态机(快乐8开奖):快乐选号设置页长按下键进入,玩法保持快乐选号(标签不变)。
+    lucky_state_t st5 = {0};
+    st5.page = LUCKY_PAGE_SETUP;
+    st5.mode = LUCKY_MODE_LUCKY;
+    st5.count = 6;
+    assert(lucky_handle_input(&st5, LUCKY_KEY_DOWN_LONG, &need_draw));
+    assert(st5.mode == LUCKY_MODE_LUCKY && st5.page == LUCKY_PAGE_KL8);
+    assert(st5.issue_idx == 0 && st5.refresh_requested && !need_draw);
+    // 快乐8 开奖页与双色球开奖页共用翻期/刷新/返回语义。
+    st5.refresh_requested = false;
+    st5.issue_count = 2;
+    assert(lucky_handle_input(&st5, LUCKY_KEY_DOWN_CLICK, &need_draw));
+    assert(st5.issue_idx == 1);
+    assert(!lucky_handle_input(&st5, LUCKY_KEY_DOWN_CLICK, &need_draw));  // 夹紧
+    assert(lucky_handle_input(&st5, LUCKY_KEY_OK_CLICK, &need_draw));
+    assert(st5.refresh_requested);
+    st5.refresh_requested = false;
+    assert(lucky_handle_input(&st5, LUCKY_KEY_DOWN_LONG, &need_draw));
+    assert(st5.page == LUCKY_PAGE_SETUP && st5.mode == LUCKY_MODE_LUCKY && !need_draw);
 
     // 状态机(快乐选号):SETUP OK 进结果页并要求抽取。
     lucky_state_t st2 = {0};
