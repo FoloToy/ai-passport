@@ -35,6 +35,7 @@ static const uint32_t BALL_PALETTE[BALL_COLORS] = {
 static lv_obj_t *s_scr;
 static lv_obj_t *s_setup_panel;
 static lv_obj_t *s_result_panel;
+static lv_obj_t *s_count_ball;
 static lv_obj_t *s_count_label;
 static lv_obj_t *s_count_summary;
 static lv_obj_t *s_balls[LUCKY_COUNT_MAX];
@@ -115,6 +116,13 @@ static void page_switch(lucky_page_t page) {
     if (page == LUCKY_PAGE_SETUP) {
         lv_obj_add_flag(s_result_panel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_setup_panel, LV_OBJ_FLAG_HIDDEN);
+        // 个数球颜色随个数轮换,调整时有色彩反馈。
+        lv_obj_set_style_bg_color(s_count_ball,
+                                  lv_color_hex(BALL_PALETTE[(s_state.count - 1) % BALL_COLORS]),
+                                  LV_PART_MAIN);
+        lv_obj_set_style_shadow_color(s_count_ball,
+                                      lv_color_hex(BALL_PALETTE[(s_state.count - 1) % BALL_COLORS]),
+                                      LV_PART_MAIN);
         char text[8];
         snprintf(text, sizeof(text), "%d", s_state.count);
         lv_label_set_text(s_count_label, text);
@@ -171,7 +179,11 @@ void app_lucky_init(void) {
     s_state.nums_len = 0;
 
     s_scr = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(s_scr, lv_color_hex(COLOR_BG), LV_PART_MAIN);
+    // 深蓝靛垂直渐变,两页共用,比纯色更有层次。
+    lv_obj_set_style_bg_opa(s_scr, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(s_scr, lv_color_hex(0x1B2D4F), LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_color(s_scr, lv_color_hex(0x0E1A30), LV_PART_MAIN);
+    lv_obj_set_style_bg_grad_dir(s_scr, LV_GRAD_DIR_VER, LV_PART_MAIN);
 
     s_battery_label = make_label(s_scr, &lucky_font_16, COLOR_SUBTLE);
     lv_label_set_text(s_battery_label, "-- %");
@@ -183,29 +195,72 @@ void app_lucky_init(void) {
     lv_obj_set_size(s_setup_panel, 240, 320);
     lv_obj_clear_flag(s_setup_panel, LV_OBJ_FLAG_SCROLLABLE);
 
+    // 角落装饰球:低透明度大圆,给纯文字页加氛围。
+    static const struct { int x, y, r; uint32_t color; } deco[] = {
+        {-36, 258, 52, 0x2E86DE},   // 左下,蓝
+        {214, 88, 40, 0x7F77DD},    // 右上,紫
+    };
+    for (int i = 0; i < 2; i++) {
+        lv_obj_t *orb = lv_obj_create(s_setup_panel);
+        lv_obj_remove_style_all(orb);
+        lv_obj_set_size(orb, deco[i].r * 2, deco[i].r * 2);
+        lv_obj_set_style_radius(orb, LV_RADIUS_CIRCLE, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(orb, LV_OPA_20, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(orb, lv_color_hex(deco[i].color), LV_PART_MAIN);
+        lv_obj_set_pos(orb, deco[i].x - deco[i].r, deco[i].y - deco[i].r);
+    }
+
+    // 标题上方六色圆点条,呼应号码球调色板。
+    for (int i = 0; i < BALL_COLORS; i++) {
+        lv_obj_t *dot = lv_obj_create(s_setup_panel);
+        lv_obj_remove_style_all(dot);
+        lv_obj_set_size(dot, 10, 10);
+        lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(dot, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(dot, lv_color_hex(BALL_PALETTE[i]), LV_PART_MAIN);
+        lv_obj_align(dot, LV_ALIGN_TOP_MID, i * 18 - 50, 24);
+    }
+
     lv_obj_t *title = make_label(s_setup_panel, &lucky_font_24, COLOR_TEXT);
     lv_label_set_text(title, "快乐选号");
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 46);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 44);
 
     lv_obj_t *hint_pick = make_label(s_setup_panel, &lucky_font_16, COLOR_SUBTLE);
     lv_label_set_text(hint_pick, "选择号码个数");
-    lv_obj_align(hint_pick, LV_ALIGN_TOP_MID, 0, 92);
+    lv_obj_align(hint_pick, LV_ALIGN_TOP_MID, 0, 86);
 
-    lv_obj_t *arrow_up = make_label(s_setup_panel, &lucky_font_16, COLOR_ACCENT);
+    lv_obj_t *arrow_up = make_label(s_setup_panel, &lucky_font_16, 0xEF9F27);
     lv_label_set_text(arrow_up, "▲");
-    lv_obj_align(arrow_up, LV_ALIGN_TOP_MID, 0, 126);
+    lv_obj_align(arrow_up, LV_ALIGN_TOP_MID, 0, 116);
 
-    s_count_label = make_label(s_setup_panel, &lucky_font_40, COLOR_TEXT);
+    // 个数大彩球:颜色随个数轮换,带同色光晕。
+    s_count_ball = lv_obj_create(s_setup_panel);
+    lv_obj_remove_style_all(s_count_ball);
+    lv_obj_set_size(s_count_ball, 88, 88);
+    lv_obj_set_style_radius(s_count_ball, LV_RADIUS_CIRCLE, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(s_count_ball, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_shadow_width(s_count_ball, 26, LV_PART_MAIN);
+    lv_obj_set_style_shadow_opa(s_count_ball, LV_OPA_50, LV_PART_MAIN);
+    lv_obj_align(s_count_ball, LV_ALIGN_TOP_MID, 0, 142);
+    s_count_label = make_label(s_count_ball, &lucky_font_40, 0xFFFFFF);
     lv_label_set_text(s_count_label, "6");
-    lv_obj_align(s_count_label, LV_ALIGN_TOP_MID, 0, 148);
+    lv_obj_center(s_count_label);
 
-    lv_obj_t *arrow_down = make_label(s_setup_panel, &lucky_font_16, COLOR_ACCENT);
+    lv_obj_t *arrow_down = make_label(s_setup_panel, &lucky_font_16, 0x1D9E75);
     lv_label_set_text(arrow_down, "▼");
-    lv_obj_align(arrow_down, LV_ALIGN_TOP_MID, 0, 206);
+    lv_obj_align(arrow_down, LV_ALIGN_TOP_MID, 0, 236);
 
-    lv_obj_t *hint_keys = make_label(s_setup_panel, &lucky_font_16, COLOR_SUBTLE);
+    // 底部提示胶囊:半透明蓝底,视觉收尾。
+    lv_obj_t *hint_pill = lv_obj_create(s_setup_panel);
+    lv_obj_remove_style_all(hint_pill);
+    lv_obj_set_size(hint_pill, 196, 34);
+    lv_obj_set_style_radius(hint_pill, LV_RADIUS_CIRCLE, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(hint_pill, LV_OPA_30, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(hint_pill, lv_color_hex(0x2E86DE), LV_PART_MAIN);
+    lv_obj_align(hint_pill, LV_ALIGN_TOP_MID, 0, 272);
+    lv_obj_t *hint_keys = make_label(hint_pill, &lucky_font_16, COLOR_TEXT);
     lv_label_set_text(hint_keys, "上下调整 · 确定开始");
-    lv_obj_align(hint_keys, LV_ALIGN_TOP_MID, 0, 278);
+    lv_obj_center(hint_keys);
 
     // ---- 结果页 ----
     s_result_panel = lv_obj_create(s_scr);
