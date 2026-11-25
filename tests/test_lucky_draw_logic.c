@@ -103,13 +103,53 @@ int main(void) {
     assert(!lucky_numbers_valid(good, LUCKY_COUNT_MAX + 1));
     assert(!lucky_numbers_valid(NULL, 3));
 
+    // 双色球:参数非法拒绝;多种 seed 下红球 6 个均在 [1,33] 升序不重复、蓝球在 [1,16]。
+    uint8_t ssq[LUCKY_SSQ_TOTAL];
+    assert(!lucky_draw_ssq(NULL, ssq));
+    assert(!lucky_draw_ssq(rng_lcg, NULL));
+    for (uint32_t seed = 0; seed < 200u; seed++) {
+        g_lcg_state = seed * 104729u + 1u;
+        assert(lucky_draw_ssq(rng_lcg, ssq));
+        assert(lucky_ssq_valid(ssq));
+    }
+    // 双色球:确定性——同一 seed 两次一致。
+    g_lcg_state = 99u;
+    uint8_t s1[LUCKY_SSQ_TOTAL], s2[LUCKY_SSQ_TOTAL];
+    assert(lucky_draw_ssq(rng_lcg, s1));
+    g_lcg_state = 99u;
+    assert(lucky_draw_ssq(rng_lcg, s2));
+    assert(memcmp(s1, s2, LUCKY_SSQ_TOTAL) == 0);
+    // 双色球校验器:蓝球越界/红球越界/红球重复/空指针。
+    const uint8_t ssq_good[LUCKY_SSQ_TOTAL] = {1, 5, 16, 22, 30, 33, 16};
+    assert(lucky_ssq_valid(ssq_good));
+    const uint8_t ssq_bad_blue[LUCKY_SSQ_TOTAL] = {1, 5, 16, 22, 30, 33, 17};
+    assert(!lucky_ssq_valid(ssq_bad_blue));
+    const uint8_t ssq_bad_red[LUCKY_SSQ_TOTAL] = {1, 5, 16, 22, 30, 34, 7};
+    assert(!lucky_ssq_valid(ssq_bad_red));
+    const uint8_t ssq_dup[LUCKY_SSQ_TOTAL] = {1, 5, 16, 16, 30, 33, 7};
+    assert(!lucky_ssq_valid(ssq_dup));
+    assert(!lucky_ssq_valid(NULL));
+
+    // lucky_draw_range:pool_max 越界拒绝;小池子抽满合法。
+    assert(!lucky_draw_range(rng_lcg, 0, 1, nums));
+    assert(!lucky_draw_range(rng_lcg, LUCKY_NUM_MAX + 1, 1, nums));
+    g_lcg_state = 5u;
+    assert(lucky_draw_range(rng_lcg, 2, 2, nums));
+    assert(nums[0] == 1 && nums[1] == 2);  // 全池抽满,必为 1、2
+    assert(!lucky_draw_range(rng_lcg, 2, 3, nums));  // count 超池子
+
     // 状态机:SETUP 页 UP/DOWN 调个数,两端夹紧。
     lucky_state_t st = {0};
     st.page = LUCKY_PAGE_SETUP;
+    st.mode = LUCKY_MODE_LUCKY;
     st.count = 6;
     bool need_draw = true;  // 非法输入不得误置 need_draw
-    assert(!lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
+    assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
     assert(need_draw == false);
+    // SETUP 长按=切换玩法:快乐选号 -> 双色球,旧结果被清空。
+    assert(st.mode == LUCKY_MODE_SSQ && st.nums_len == 0);
+    assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
+    assert(st.mode == LUCKY_MODE_LUCKY && st.nums_len == 0);
     assert(lucky_handle_input(&st, LUCKY_KEY_DOWN_CLICK, &need_draw));
     assert(st.count == 5 && !need_draw);
     assert(lucky_handle_input(&st, LUCKY_KEY_UP_CLICK, &need_draw));
@@ -121,18 +161,41 @@ int main(void) {
     assert(!lucky_handle_input(&st, LUCKY_KEY_DOWN_CLICK, &need_draw));
     assert(st.count == LUCKY_COUNT_MIN);
 
-    // 状态机:SETUP OK 进结果页并要求抽取。
-    st.count = 3;
-    assert(lucky_handle_input(&st, LUCKY_KEY_OK_CLICK, &need_draw));
-    assert(st.page == LUCKY_PAGE_RESULT && need_draw);
-
-    // 状态机:结果页 OK 再抽一组,长按回设置页。
-    assert(lucky_handle_input(&st, LUCKY_KEY_OK_CLICK, &need_draw));
-    assert(st.page == LUCKY_PAGE_RESULT && need_draw);
+    // 状态机:双色球模式下 UP/DOWN 无效(个数固定),OK 仍进结果页。
+    st.mode = LUCKY_MODE_SSQ;
+    st.count = 6;
     assert(!lucky_handle_input(&st, LUCKY_KEY_UP_CLICK, &need_draw));
-    assert(!need_draw);
+    assert(st.count == 6 && !need_draw);
+    assert(!lucky_handle_input(&st, LUCKY_KEY_DOWN_CLICK, &need_draw));
+    assert(st.count == 6 && !need_draw);
+    assert(lucky_handle_input(&st, LUCKY_KEY_OK_CLICK, &need_draw));
+    assert(st.page == LUCKY_PAGE_RESULT && need_draw);
+    // 结果页行为与玩法无关:OK 再抽、长按回设置。
+    assert(lucky_handle_input(&st, LUCKY_KEY_OK_CLICK, &need_draw));
+    assert(st.page == LUCKY_PAGE_RESULT && need_draw);
     assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
     assert(st.page == LUCKY_PAGE_SETUP && !need_draw);
+    // 回到设置页后,长按从双色球切回快乐选号,再切一次回双色球。
+    assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
+    assert(st.mode == LUCKY_MODE_LUCKY && !need_draw);
+    assert(lucky_handle_input(&st, LUCKY_KEY_OK_LONG, &need_draw));
+    assert(st.mode == LUCKY_MODE_SSQ && !need_draw);
+
+    // 状态机(快乐选号):SETUP OK 进结果页并要求抽取。
+    lucky_state_t st2 = {0};
+    st2.page = LUCKY_PAGE_SETUP;
+    st2.mode = LUCKY_MODE_LUCKY;
+    st2.count = 3;
+    assert(lucky_handle_input(&st2, LUCKY_KEY_OK_CLICK, &need_draw));
+    assert(st2.page == LUCKY_PAGE_RESULT && need_draw);
+
+    // 状态机(快乐选号):结果页 OK 再抽一组,长按回设置页。
+    assert(lucky_handle_input(&st2, LUCKY_KEY_OK_CLICK, &need_draw));
+    assert(st2.page == LUCKY_PAGE_RESULT && need_draw);
+    assert(!lucky_handle_input(&st2, LUCKY_KEY_UP_CLICK, &need_draw));
+    assert(!need_draw);
+    assert(lucky_handle_input(&st2, LUCKY_KEY_OK_LONG, &need_draw));
+    assert(st2.page == LUCKY_PAGE_SETUP && !need_draw);
 
     // 空状态指针。
     assert(!lucky_handle_input(NULL, LUCKY_KEY_OK_CLICK, &need_draw));

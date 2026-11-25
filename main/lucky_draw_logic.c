@@ -22,12 +22,25 @@ bool lucky_numbers_valid(const uint8_t *nums, int count) {
     return true;
 }
 
-bool lucky_draw_numbers(lucky_rng_fn rng, int count, uint8_t *out) {
-    if (rng == NULL || out == NULL) return false;
-    if (count < LUCKY_COUNT_MIN || count > LUCKY_COUNT_MAX) return false;
+bool lucky_ssq_valid(const uint8_t *nums) {
+    if (nums == NULL) return false;
+    for (int i = 0; i < LUCKY_SSQ_RED_COUNT; i++) {
+        if (nums[i] < LUCKY_NUM_MIN || nums[i] > LUCKY_SSQ_RED_MAX) return false;
+        if (i > 0 && nums[i] <= nums[i - 1]) return false;
+    }
+    uint8_t blue = nums[LUCKY_SSQ_RED_COUNT];
+    return blue >= LUCKY_NUM_MIN && blue <= LUCKY_SSQ_BLUE_MAX;
+}
 
+bool lucky_draw_range(lucky_rng_fn rng, int pool_max, int count, uint8_t *out) {
+    if (rng == NULL || out == NULL) return false;
+    if (pool_max < LUCKY_NUM_MIN || pool_max > LUCKY_NUM_MAX) return false;
+    if (count < LUCKY_COUNT_MIN || count > LUCKY_COUNT_MAX) return false;
+    if (count > pool_max) return false;
+
+    const int range = pool_max;
     uint8_t pool[LUCKY_NUM_RANGE];
-    for (int i = 0; i < LUCKY_NUM_RANGE; i++) {
+    for (int i = 0; i < range; i++) {
         pool[i] = (uint8_t)(LUCKY_NUM_MIN + i);
     }
 
@@ -35,7 +48,7 @@ bool lucky_draw_numbers(lucky_rng_fn rng, int count, uint8_t *out) {
     for (int i = 0; i < count; i++) {
         uint32_t r = rng();
         // 无偏取模:Lemons 方法,拒绝会落进最后一个不完整区间的样本。
-        uint32_t remain = (uint32_t)(LUCKY_NUM_RANGE - i);
+        uint32_t remain = (uint32_t)(range - i);
         uint32_t limit = UINT32_MAX - UINT32_MAX % remain;
         while (r >= limit) {
             r = rng();
@@ -60,6 +73,22 @@ bool lucky_draw_numbers(lucky_rng_fn rng, int count, uint8_t *out) {
     return true;
 }
 
+bool lucky_draw_numbers(lucky_rng_fn rng, int count, uint8_t *out) {
+    return lucky_draw_range(rng, LUCKY_NUM_MAX, count, out);
+}
+
+bool lucky_draw_ssq(lucky_rng_fn rng, uint8_t *out) {
+    if (!lucky_draw_range(rng, LUCKY_SSQ_RED_MAX, LUCKY_SSQ_RED_COUNT, out)) {
+        return false;
+    }
+    uint8_t blue[LUCKY_SSQ_BLUE_COUNT];
+    if (!lucky_draw_range(rng, LUCKY_SSQ_BLUE_MAX, LUCKY_SSQ_BLUE_COUNT, blue)) {
+        return false;
+    }
+    out[LUCKY_SSQ_RED_COUNT] = blue[0];
+    return true;
+}
+
 bool lucky_handle_input(lucky_state_t *st, lucky_input_t in, bool *need_draw) {
     if (st == NULL) return false;
     if (need_draw) *need_draw = false;
@@ -68,14 +97,14 @@ bool lucky_handle_input(lucky_state_t *st, lucky_input_t in, bool *need_draw) {
         case LUCKY_PAGE_SETUP:
             switch (in) {
                 case LUCKY_KEY_UP_CLICK:
-                    // 两端夹紧而不是绕圈。
-                    if (st->count < LUCKY_COUNT_MAX) {
+                    // 仅快乐选号需要调个数;双色球个数固定,上下键无效。
+                    if (st->mode == LUCKY_MODE_LUCKY && st->count < LUCKY_COUNT_MAX) {
                         st->count++;
                         return true;
                     }
                     return false;
                 case LUCKY_KEY_DOWN_CLICK:
-                    if (st->count > LUCKY_COUNT_MIN) {
+                    if (st->mode == LUCKY_MODE_LUCKY && st->count > LUCKY_COUNT_MIN) {
                         st->count--;
                         return true;
                     }
@@ -85,7 +114,11 @@ bool lucky_handle_input(lucky_state_t *st, lucky_input_t in, bool *need_draw) {
                     if (need_draw) *need_draw = true;
                     return true;
                 case LUCKY_KEY_OK_LONG:
-                    return false;
+                    // 设置页长按:在两种玩法之间切换,清掉旧结果避免串玩法显示。
+                    st->mode = (st->mode == LUCKY_MODE_LUCKY) ? LUCKY_MODE_SSQ
+                                                              : LUCKY_MODE_LUCKY;
+                    st->nums_len = 0;
+                    return true;
                 default:
                     return false;
             }
