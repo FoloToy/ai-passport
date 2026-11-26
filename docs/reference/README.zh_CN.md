@@ -75,6 +75,14 @@
 - [eden*](shinku-chen/port-eden/README.zh_CN.md) — 《eden\*》横屏阅读器：真机没有大块连续堆，所以用单图缩放铺满而不是分带。
 - [星之终途](shinku-chen/port-stella/README.zh_CN.md) — 21 章的《星之终途》横屏阅读器，本批分区最紧（99.20%）。
 - [纸上的魔法使](shinku-chen/port-paper/README.zh_CN.md) — 《纸上的魔法使》横屏阅读器：修正 BGR→RGB565 换序，CG 铺满比按画布高度运行时计算。
+- [天使☆騒々 RE-BOOT!](shinku-chen/tsxx-reboot/README.zh_CN.md) — 竖屏阅读器：61,436 页剧本、六条女主线、十五个结局，由原作的数据驱动分支系统驱动。
+- [死馆](shinku-chen/shinuyakata/README.zh_CN.md) — 无声竖屏阅读器：198 个运行页、17,409 条文本记录、56 组 CG；保留源中未解析节点，不虚构内容。
+- [星光咖啡馆与死神之蝶](shinku-chen/cafestella/README.zh_CN.md) — 横屏阅读器：923 个剧情节点、七个结局、五个后日谈，保留完整音频与 OP 视频，画面用三条 224×42 条带绘制。
+- [爱上火车·二六线](shinku-chen/maitetsu/README.zh_CN.md) — 横屏阅读器：二六线四章、35 张 CG、鉴赏室试读不授予永久结局，并保留完整 283.88 秒标题曲。
+- [9-nine- 九次九日九重色](shinku-chen/nine-kokoiro/README.zh_CN.md) — 横屏阅读器：17 章、两个二周目结局、30 个手动存档位，并把永久进度放在独立记录中。
+- [9-nine- 天色天歌天籁音](shinku-chen/nine-sorairo/README.zh_CN.md) — 横屏阅读器：21 章、22 组 CG，鉴赏室 OP 从本地资源包播放且不需要通关。
+- [9-nine- 春色春恋春熙风](shinku-chen/nine-haruiro/README.zh_CN.md) — 横屏阅读器：15 章、13 个选项、两个结局，对白与源剧情图逐行对账。
+- [9-nine- 雪色雪花雪之痕](shinku-chen/nine-yukiiro/README.zh_CN.md) — 横屏阅读器：23 章、47 个选项节点、两个结局，章节预览不会写入永久进度。
 
 ### PhoenixZHC
 
