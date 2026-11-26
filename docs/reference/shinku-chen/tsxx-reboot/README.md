@@ -52,8 +52,7 @@ off. The menu covers continue, save, load, skip chapter and chapter select.
 - Release: `v0.1.1-tsxx-reboot`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v0.1.1-tsxx-reboot>)
 - Community play: <https://ai-passport.folotoy.cn/plays/re-boot-galgame>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **8,135,520 B**, **97.75%** of the
-  partition used, **187,552 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **8,135,520 B** (merged image)
 
 ## Upstream
 

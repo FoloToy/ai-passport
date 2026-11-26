@@ -44,8 +44,7 @@ endings, the gallery and the opening movie offline.
 - Release: `v1.0.0-nine-haruiro`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-nine-haruiro>)
 - Community play: <https://ai-passport.folotoy.cn/plays/9-nine-3>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **8,127,984 B**, **97.66%** of the
-  partition used, **195,088 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **8,127,984 B** (merged image)
 
 ## Upstream
 

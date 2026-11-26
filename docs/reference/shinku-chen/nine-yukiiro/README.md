@@ -43,8 +43,7 @@ ending record, the gallery and the opening offline.
 - Release: `v1.0.0-nine-yukiiro`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-nine-yukiiro>)
 - Community play: <https://ai-passport.folotoy.cn/plays/9-nine-4>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **8,258,768 B**, **99.23%** of the
-  partition used, **64,304 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **8,258,768 B** (merged image)
 
 ## Upstream
 

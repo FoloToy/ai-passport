@@ -39,8 +39,7 @@ AI Passport 上的 320×240 横屏视觉小说阅读器，承载《9-nine- 天�
 - Release：`v1.0.0-nine-sorairo`
   （<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-nine-sorairo>）
 - 社区条目：<https://ai-passport.folotoy.cn/plays/9-nine-2>
-- 固件：`FoloToy-AI-Passport-full.bin`，**7,266,952 B**，分区占用 **87.31%**，
-  剩余 **1,056,120 B**
+- 固件：`FoloToy-AI-Passport-full.bin`，**7,266,952 B**（合并镜像）
 
 ## 上游
 

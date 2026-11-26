@@ -42,8 +42,7 @@ AI Passport 上的 320×240 横屏视觉小说阅读器。固件内置剧情、�
 - Release：`v1.0.0-cafestella`
   （<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-cafestella>）
 - 社区条目：<https://ai-passport.folotoy.cn/plays/community-0c95d859>
-- 固件：`FoloToy-AI-Passport-full.bin`，**8,312,208 B**，分区占用 **99.87%**，
-  剩余 **10,864 B**
+- 固件：`FoloToy-AI-Passport-full.bin`，**8,312,208 B**（合并镜像）
 
 ## 上游
 

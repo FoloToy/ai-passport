@@ -44,8 +44,7 @@ title visuals and two BGM tracks offline.
 - Release: `v1.0.0-nine-kokoiro`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-nine-kokoiro>)
 - Community play: <https://ai-passport.folotoy.cn/plays/9-nine>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **5,405,040 B**, **64.94%** of the
-  partition used, **2,918,032 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **5,405,040 B** (merged image)
 
 ## Upstream
 

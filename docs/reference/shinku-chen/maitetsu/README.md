@@ -43,8 +43,7 @@ complete 283.88-second title theme offline.
 - Release: `v1.0.0-maitetsu`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-maitetsu>)
 - Community play: <https://ai-passport.folotoy.cn/plays/community-386921bf>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **7,825,488 B**, **94.02%** of the
-  partition used, **497,584 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **7,825,488 B** (merged image)
 
 ## Upstream
 

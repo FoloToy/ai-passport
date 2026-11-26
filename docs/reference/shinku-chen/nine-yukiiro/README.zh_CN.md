@@ -38,8 +38,7 @@ AI Passport 上的 320×240 横屏视觉小说阅读器，承载《9-nine- 雪�
 - Release：`v1.0.0-nine-yukiiro`
   （<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-nine-yukiiro>）
 - 社区条目：<https://ai-passport.folotoy.cn/plays/9-nine-4>
-- 固件：`FoloToy-AI-Passport-full.bin`，**8,258,768 B**，分区占用 **99.23%**，
-  剩余 **64,304 B**
+- 固件：`FoloToy-AI-Passport-full.bin`，**8,258,768 B**（合并镜像）
 
 ## 上游
 

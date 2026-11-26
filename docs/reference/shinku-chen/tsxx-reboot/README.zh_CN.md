@@ -45,8 +45,7 @@ AI Passport 上的 240×320 竖屏视觉小说阅读器。固件内置完整的�
 - Release：`v0.1.1-tsxx-reboot`
   （<https://github.com/Shinku-Chen/ai-passport/releases/tag/v0.1.1-tsxx-reboot>）
 - 社区条目：<https://ai-passport.folotoy.cn/plays/re-boot-galgame>
-- 固件：`FoloToy-AI-Passport-full.bin`，**8,135,520 B**，分区占用 **97.75%**，
-  剩余 **187,552 B**
+- 固件：`FoloToy-AI-Passport-full.bin`，**8,135,520 B**（合并镜像）
 
 ## 上游
 

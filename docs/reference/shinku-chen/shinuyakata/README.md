@@ -46,8 +46,7 @@ contains unlocked CGs, recalls and chapter entries.
 - Release: `v0.1.3-shinuyakata`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v0.1.3-shinuyakata>)
 - Community play: <https://ai-passport.folotoy.cn/plays/galgame-4>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **8,180,560 B**, **98.29%** of the
-  partition used, **142,512 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **8,180,560 B** (merged image)
 
 ## Upstream
 

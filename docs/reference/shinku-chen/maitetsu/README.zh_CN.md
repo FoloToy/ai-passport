@@ -40,8 +40,7 @@ AI Passport 上的 320×240 横屏视觉小说阅读器，承载《爱上火车�
 - Release：`v1.0.0-maitetsu`
   （<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-maitetsu>）
 - 社区条目：<https://ai-passport.folotoy.cn/plays/community-386921bf>
-- 固件：`FoloToy-AI-Passport-full.bin`，**7,825,488 B**，分区占用 **94.02%**，
-  剩余 **497,584 B**
+- 固件：`FoloToy-AI-Passport-full.bin`，**7,825,488 B**（合并镜像）
 
 ## 上游
 

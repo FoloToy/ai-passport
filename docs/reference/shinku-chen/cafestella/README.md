@@ -45,8 +45,7 @@ opening video, seven main endings and five after stories offline.
 - Release: `v1.0.0-cafestella`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-cafestella>)
 - Community play: <https://ai-passport.folotoy.cn/plays/community-0c95d859>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **8,312,208 B**, **99.87%** of the
-  partition used, **10,864 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **8,312,208 B** (merged image)
 
 ## Upstream
 

@@ -46,8 +46,7 @@ silent, and returning to the title restores the title music.
 - Release: `v1.0.0-nine-sorairo`
   (<https://github.com/Shinku-Chen/ai-passport/releases/tag/v1.0.0-nine-sorairo>)
 - Community play: <https://ai-passport.folotoy.cn/plays/9-nine-2>
-- Firmware: `FoloToy-AI-Passport-full.bin`, **7,266,952 B**, **87.31%** of the
-  partition used, **1,056,120 B** free
+- Firmware: `FoloToy-AI-Passport-full.bin`, **7,266,952 B** (merged image)
 
 ## Upstream
 

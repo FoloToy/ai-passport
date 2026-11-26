@@ -40,8 +40,7 @@ AI Passport 上的 240×320 竖屏视觉小说阅读器。固件内置剧情、�
 - Release：`v0.1.3-shinuyakata`
   （<https://github.com/Shinku-Chen/ai-passport/releases/tag/v0.1.3-shinuyakata>）
 - 社区条目：<https://ai-passport.folotoy.cn/plays/galgame-4>
-- 固件：`FoloToy-AI-Passport-full.bin`，**8,180,560 B**，分区占用 **98.29%**，
-  剩余 **142,512 B**
+- 固件：`FoloToy-AI-Passport-full.bin`，**8,180,560 B**（合并镜像）
 
 ## 上游
 
