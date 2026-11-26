@@ -51,6 +51,8 @@
 - [无 PSRAM 把视觉小说装进 8 MB](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.zh_CN.md) — 在最大连续空闲块只有 7.7 KB 的前提下塞进 5.26 MB 图片包与 1.43 MB 剧本包：ROM inflate 为何不可用、3 KB 块上限及其压缩率代价、按设备原生几何打包，以及两次由固定上限导致的静默失败。
 
 - [Galgame 阅读器移植经验](shinku-chen/galgame-port-lessons.zh_CN.md) —— 十二部视觉小说共用的阅读器需求、打包与分带渲染能力、只在真机上才暴露的十二个缺陷（LVGL 9 标签换行模式、tjpgd 的 BGR 输出、`lv_image_set_src` 重置对象尺寸、带高之和超过屏幕导致 root 滚动条、每带独立缓冲、栈大小与吞点击的坑），以及发版前的验收清单。
+- [AI Passport 网络音频流与内存预算](shinku-chen/network-audio-streaming.zh_CN.md) — 无 PSRAM 的 ESP32-C3 上从 HTTP 流到 ES8311 的有界播放链路：流式解码、I2S DMA 大小、真正会触发崩溃的 JSON/TLS 内存峰值，以及如何判断是哪一类预算先耗尽。
+- [AI Passport SoftAP 配网、DHCP 与强制门户](shinku-chen/softap-provisioning.zh_CN.md) — 带 DHCP、强制门户探测与有界 HTTP 表单的配网热点：启动 Wi-Fi 前要释放哪些资源、如何限制每一段请求长度，以及应先检查的故障特征。
 **应用档案：**
 
 - [音效钥匙扣](shinku-chen/voice-keychain/README.zh_CN.md) — 把 AI Passport 变成口袋音频播放器的音效钥匙扣。
