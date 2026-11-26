@@ -58,6 +58,9 @@ The engineering rules themselves live under
 - [Packing a Visual Novel into 8 MB with No PSRAM](shinku-chen/packing-a-visual-novel-into-8mb-no-psram.md) — a 5.26 MB image pack and a 1.43 MB script pack around a 7.7 KB largest free block: why the ROM's inflate did not fit, the 3 KB block ceilings and the compression ratio they cost, native-geometry packing, and two silent failures caused by fixed-size limits.
 
 - [Galgame Reader Porting Lessons](shinku-chen/galgame-port-lessons.md) — the shared reader requirements, packing and banded-rendering capabilities, twelve defects that only surfaced on hardware (LVGL 9 label wrap modes, tjpgd's BGR output, `lv_image_set_src` resetting the object size, a root scrollbar from oversized bands, per-band buffers, stack-size and click-swallow traps), and the pre-release acceptance checklist across twelve visual-novel ports.
+- [Porting the Newer Galgame Batch](shinku-chen/newer-galgame-port-lessons.md) — shared rules from eight late-2026 ports: pinned watch sources, immediate-advance key semantics, preview isolation, banded display budgets, separate permanent progress, opening-video downsampling, and source-graph reconciliation.
+- [Network Audio Streaming and Memory Budgeting on AI Passport](shinku-chen/network-audio-streaming.md) — a bounded HTTP-to-ES8311 playback pipeline on the no-PSRAM ESP32-C3: streaming decode, I2S DMA sizing, the JSON and TLS peaks that actually crash it, and how to tell which memory budget ran out.
+- [SoftAP Provisioning, DHCP, and Captive Portal on AI Passport](shinku-chen/softap-provisioning.md) — a provisioning hotspot with DHCP, captive-portal probing and a bounded HTTP form: what to release before Wi-Fi starts, how to cap every request length, and the failure signatures to check first.
 **Application playbooks:**
 
 - [Voice Keychain](shinku-chen/voice-keychain/README.md) — a sound-effects keychain that turns the AI Passport into a pocket audio player.
