@@ -15,6 +15,31 @@
 - 添加字库前评估 Flash 与内部 RAM 影响；ESP32-C3 无 PSRAM。
 - 不提交许可不允许分发的字库。
 
+### 快乐选号应用字体子集（2026-11-24）
+
+| 文件 | 字级 | 字符范围 | 生成文件大小 |
+| --- | --- | --- | --- |
+| [`fonts/lucky_font_16.c`](fonts/lucky_font_16.c) | 16 px | ASCII 0x20-0x7E + 中文「快乐选号选择个数上下调整确定开始本组再抽长按返回」+ U+00B7 间隔号 + U+25B2/U+25BC 三角 | ~68 KB |
+| [`fonts/lucky_font_24.c`](fonts/lucky_font_24.c) | 24 px | 同上字符集（页面标题、号码球数字） | ~119 KB |
+| [`fonts/lucky_font_40.c`](fonts/lucky_font_40.c) | 40 px | ASCII 0x20-0x3F（设置页大数字） | ~47 KB |
+
+- 源字体：[`fonts/NotoSansCJKsc-Regular.otf`](fonts/NotoSansCJKsc-Regular.otf)（Noto Sans CJK SC Regular，思源黑体）。
+- 许可：SIL Open Font License 1.1，允许再分发；许可全文见上游仓库 `LICENSE`（https://github.com/notofonts/noto-cjk）。
+- 转换工具：lv_font_conv 1.5.3（固定版本，经 npx 调用）。
+- 转换命令（16 px 为例，24 px 换 `--size 24 --lv-font-name lucky_font_24`，40 px 换 `--size 40 --lv-font-name lucky_font_40 --range 0x20-0x3F`）：
+
+  ```bash
+  npx lv_font_conv@1.5.3 \
+    --font assets/fonts/NotoSansCJKsc-Regular.otf \
+    --size 16 --bpp 4 --format lvgl --no-compress \
+    --lv-font-name lucky_font_16 --lv-include lvgl.h \
+    --range 0x20-0x7E \
+    --symbols "快乐选号选择号码个数上下调整确定开始本组再抽长按返回双色球红蓝换玩法开奖结果期翻刷新未配置网络加载中拉取失败暂无数据连接看键切交保出动后启存已式待手机模点热等自退重提▲▼·" \
+    --output assets/fonts/lucky_font_16.c
+  ```
+
+- 接入：`main/CMakeLists.txt` 以 `target_sources` 编译；控件经 `LV_FONT_DECLARE` + `lv_obj_set_style_text_font` 显式绑定。文案变化时必须重新生成全部受影响字号并重跑 `./tools/validate.sh --static`（`tools/check_glyphs.py` 会扫描 `main/` 字面量与字体覆盖）。
+
 ## 图片（images）
 
 可复用的源图与生成的显示资产放在 `images/`。

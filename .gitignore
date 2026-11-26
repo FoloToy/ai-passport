@@ -11,3 +11,13 @@ managed_components/
 /.agents/skills/passport-build
 /.agents/skills/passport-device-test
 /.agents/skills/passport-debug
+
+# 字体源文件体积大（Noto CJK 单字重 ~16 MB），按 assets/README.md 记录的命令重新获取。
+# 生成的 lv_font_conv C 子集需要提交。
+assets/fonts/*.otf
+assets/fonts/*.ttf
+assets/fonts/*.otc
+assets/fonts/*.ttc
+
+# 本地构建与门禁日志
+*.log

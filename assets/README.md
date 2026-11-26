@@ -17,6 +17,31 @@ Store reusable font files and generated font sources in `fonts/`.
 - Check Flash and internal-RAM impact before adding a font; the ESP32-C3 has no PSRAM.
 - Do not commit fonts whose license does not permit redistribution.
 
+### Lucky Draw app font subsets (2026-11-24)
+
+| File | Size | Character range | Generated size |
+| --- | --- | --- | --- |
+| [`fonts/lucky_font_16.c`](fonts/lucky_font_16.c) | 16 px | ASCII 0x20-0x7E + the Chinese glyphs used by the app UI (see the Chinese entry for the full list) + U+00B7 middle dot + U+25B2/U+25BC triangles | ~68 KB |
+| [`fonts/lucky_font_24.c`](fonts/lucky_font_24.c) | 24 px | Same character set (page title, ball digits) | ~119 KB |
+| [`fonts/lucky_font_40.c`](fonts/lucky_font_40.c) | 40 px | ASCII 0x20-0x3F (setup-page large counter) | ~47 KB |
+
+- Source font: [`fonts/NotoSansCJKsc-Regular.otf`](fonts/NotoSansCJKsc-Regular.otf) (Noto Sans CJK SC Regular, aka Source Han Sans SC).
+- License: SIL Open Font License 1.1; redistribution permitted. Full license text lives in the upstream repository (https://github.com/notofonts/noto-cjk).
+- Conversion tool: lv_font_conv 1.5.3 (pinned, invoked via npx).
+- Conversion command (16 px shown; swap `--size`/`--lv-font-name` for the other sizes, and use `--range 0x20-0x3F` for the 40 px digit-only subset). The `--symbols` argument is written with bash ANSI-C Unicode escapes to keep this file free of CJK prose; the Chinese version lists the same glyphs literally:
+
+  ```bash
+  npx lv_font_conv@1.5.3 \
+    --font assets/fonts/NotoSansCJKsc-Regular.otf \
+    --size 16 --bpp 4 --format lvgl --no-compress \
+    --lv-font-name lucky_font_16 --lv-include lvgl.h \
+    --range 0x20-0x7E \
+    --symbols $'\u5FEB\u4E50\u9009\u53F7\u9009\u62E9\u53F7\u7801\u4E2A\u6570\u4E0A\u4E0B\u8C03\u6574\u786E\u5B9A\u5F00\u59CB\u672C\u7EC4\u518D\u62BD\u957F\u6309\u8FD4\u56DE\u53CC\u8272\u7403\u7EA2\u84DD\u6362\u73A9\u6CD5\u5F00\u5956\u7ED3\u679C\u671F\u7FFB\u5237\u65B0\u672A\u914D\u7F6E\u7F51\u7EDC\u52A0\u8F7D\u4E2D\u62C9\u53D6\u5931\u8D25\u6682\u65E0\u6570\u636E\u8FDE\u63A5\u770B\u952E\u5207\u4EA4\u4FDD\u51FA\u52A8\u540E\u542F\u5B58\u5DF2\u5F0F\u5F85\u624B\u673A\u6A21\u70B9\u70ED\u7B49\u81EA\u9000\u91CD\u63D0\u25B2\u25BC\u00B7' \
+    --output assets/fonts/lucky_font_16.c
+  ```
+
+- Integration: compiled via `target_sources` in `main/CMakeLists.txt`; widgets bind them through `LV_FONT_DECLARE` + `lv_obj_set_style_text_font`. When UI copy changes, regenerate every affected size and re-run `./tools/validate.sh --static` (`tools/check_glyphs.py` scans `main/` string literals against glyph coverage).
+
 ## Images
 
 Store reusable source images and generated display assets in `images/`.
