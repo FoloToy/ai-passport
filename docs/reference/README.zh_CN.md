@@ -57,7 +57,7 @@
 - [今天吃啥](shinku-chen/eat-what/README.zh_CN.md) — 按键驱动的食物轮盘，把 AI Passport 变成「今天吃什么」小转盘。
 - [四子棋](shinku-chen/connect-four/README.zh_CN.md) — 横屏 10 列 × 7 行的四子连珠游戏，带三档电脑难度、双人模式、合成音效与空闲自动深睡。
 - [飞鸟会长不肯认输](shinku-chen/asunabi/README.zh_CN.md) — 竖屏视觉小说阅读器，承载完整的 30 章故事（原作是小米手环快应用），带六个存档位、选章与自动阅读。
-- [沙耶之歌](shinku-chen/saya-no-uta/README.zh_CN.md) — 横屏视觉小说阅读器：44 章、3,828 段对白、3 个结局，全程离线，三个按键读完。
+- [沙耶之歌](shinku-chen/saya-no-uta/README.zh_CN.md) — 横屏视觉小说阅读器：44 章、4,078 段对白、3 个结局，全程离线，三个按键读完。
 - [亚托莉阅读器](shinku-chen/atri-reader/README.zh_CN.md) — 把完整《亚托莉 -My Dear Moments-》剧情装进 AI Passport 的竖屏视觉小说阅读器：34 章、1,069 幕、12,188 句对白、立绘跟说话人、三个结局，全程离线。
 - [星空列车与白的旅行](shinku-chen/starry-sky-railroad/README.zh_CN.md) — 把 39 章的同人移植剧本离线装进机身的竖屏视觉小说阅读器，立绘跟随说话人、每次换场景自动存档。
 - [千恋＊万花](shinku-chen/senren-banka/README.zh_CN.md) — 竖屏视觉小说阅读器，把整部剧情连通背景、立绘与事件插图装进设备，支持自动阅读、快进、跳过章节与多档存档。
@@ -75,6 +75,14 @@
 - [eden*](shinku-chen/port-eden/README.zh_CN.md) — 《eden\*》横屏阅读器：真机没有大块连续堆，所以用单图缩放铺满而不是分带。
 - [星之终途](shinku-chen/port-stella/README.zh_CN.md) — 21 章的《星之终途》横屏阅读器，本批分区最紧（99.20%）。
 - [纸上的魔法使](shinku-chen/port-paper/README.zh_CN.md) — 《纸上的魔法使》横屏阅读器：修正 BGR→RGB565 换序，CG 铺满比按画布高度运行时计算。
+- [天使☆騒々 RE-BOOT!](shinku-chen/tsxx-reboot/README.zh_CN.md) — 竖屏阅读器：61,436 页剧本、六条女主线、十五个结局，由原作的数据驱动分支系统驱动。
+- [死馆](shinku-chen/shinuyakata/README.zh_CN.md) — 无声竖屏阅读器：198 个运行页、17,409 条文本记录、56 组 CG；保留源中未解析节点，不虚构内容。
+- [星光咖啡馆与死神之蝶](shinku-chen/cafestella/README.zh_CN.md) — 横屏阅读器：923 个剧情节点、七个结局、五个后日谈，保留完整音频与 OP 视频，画面用三条 224×42 条带绘制。
+- [爱上火车·二六线](shinku-chen/maitetsu/README.zh_CN.md) — 横屏阅读器：二六线四章、35 张 CG、鉴赏室试读不授予永久结局，并保留完整 283.88 秒标题曲。
+- [9-nine- 九次九日九重色](shinku-chen/nine-kokoiro/README.zh_CN.md) — 横屏阅读器：17 章、两个二周目结局、30 个手动存档位，并把永久进度放在独立记录中。
+- [9-nine- 天色天歌天籁音](shinku-chen/nine-sorairo/README.zh_CN.md) — 横屏阅读器：21 章、22 组 CG，鉴赏室 OP 从本地资源包播放且不需要通关。
+- [9-nine- 春色春恋春熙风](shinku-chen/nine-haruiro/README.zh_CN.md) — 横屏阅读器：15 章、13 个选项、两个结局，对白与源剧情图逐行对账。
+- [9-nine- 雪色雪花雪之痕](shinku-chen/nine-yukiiro/README.zh_CN.md) — 横屏阅读器：23 章、47 个选项节点、两个结局，章节预览不会写入永久进度。
 
 ### PhoenixZHC
 

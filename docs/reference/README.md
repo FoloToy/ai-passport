@@ -64,7 +64,7 @@ The engineering rules themselves live under
 - [What to Eat Today](shinku-chen/eat-what/README.md) — a button-driven food roulette that turns the AI Passport into a "what should I eat?" spinner.
 - [Connect Four](shinku-chen/connect-four/README.md) — a landscape 10 × 7 four-in-a-row game with three computer difficulty levels, a two-player mode, synthesized sound, and an idle deep sleep.
 - [Asunabi](shinku-chen/asunabi/README.md) — a portrait visual-novel reader that carries a complete 30-chapter story, originally a Xiaomi Band quick app, with six save slots, chapter select, and auto-play.
-- [Saya no Uta](shinku-chen/saya-no-uta/README.md) — a landscape visual-novel reader with 44 chapters, 3,828 dialogue lines and three endings, read fully offline with three keys.
+- [Saya no Uta](shinku-chen/saya-no-uta/README.md) — a landscape visual-novel reader with 44 chapters, 4,078 dialogue lines and three endings, read fully offline with three keys.
 - [ATRI Reader](shinku-chen/atri-reader/README.md) — a portrait visual-novel reader that plays the complete *ATRI -My Dear Moments-* story offline: 34 chapters, 1,069 scenes, 12,188 dialogue lines, speaker-driven full-body sprites and three endings.
 - [Starry Sky Railroad and Shiro's Journey](shinku-chen/starry-sky-railroad/README.md) — a portrait visual-novel reader carrying a 39-chapter fan port offline, with per-speaker sprites and an automatic save on every scene.
 - [Senren * Banka](shinku-chen/senren-banka/README.md) — a portrait visual novel reader that carries the whole game — story, backgrounds, sprites and event illustrations — on the device, with auto-read, fast-forward, chapter skipping and save slots.
@@ -82,6 +82,14 @@ The engineering rules themselves live under
 - [eden*](shinku-chen/port-eden/README.md) — a landscape reader for *eden\** that fills the panel with one scaled image instead of bands, because the device gives no large contiguous heap.
 - [Stella of the End](shinku-chen/port-stella/README.md) — a landscape reader for the 21-chapter *Stella of the End*, the tightest partition of the batch at 99.20%.
 - [Paper no Mahou Tsukai](shinku-chen/port-paper/README.md) — a landscape reader for *Paper no Mahou Tsukai* with a fixed BGR-to-RGB565 path and a runtime CG cover ratio.
+- [Tenshi☆Sousou RE-BOOT!](shinku-chen/tsxx-reboot/README.md) — a portrait reader with 61,436 script pages, six heroine routes and fifteen endings, driven by the original flag-gated branch system.
+- [Shinuyakata](shinku-chen/shinuyakata/README.md) — a silent portrait reader with 198 runtime pages, 17,409 text records and 56 CG groups, preserving unresolved source nodes rather than inventing content.
+- [Café Stella and the Reaper's Butterflies](shinku-chen/cafestella/README.md) — a landscape reader with 923 story nodes, seven endings, five after stories, complete audio and OP video, packed into three 224×42 bands.
+- [Maitetsu · Niiroku Route](shinku-chen/maitetsu/README.md) — a landscape reader for the four Niiroku chapters, with 35 CGs, preview-only gallery runs and the complete 283.88-second title theme.
+- [9-nine- Kokoiro](shinku-chen/nine-kokoiro/README.md) — a landscape reader with 17 chapters, two loop-gated endings, 30 manual saves and a separate permanent-progress record.
+- [9-nine- Sorairo](shinku-chen/nine-sorairo/README.md) — a landscape reader with 21 chapters, 22 CG groups and a gallery opening that plays from the local pack without clearing the story.
+- [9-nine- Haruiro](shinku-chen/nine-haruiro/README.md) — a landscape reader with 15 chapters, 13 choices and two endings, reconciled line by line against the source graph.
+- [9-nine- Yukiiro](shinku-chen/nine-yukiiro/README.md) — a landscape reader with 23 chapters, 47 choice nodes and two endings, keeping chapter previews out of permanent progress.
 
 ### PhoenixZHC
 
